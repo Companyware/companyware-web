@@ -6,25 +6,28 @@ use App\Infrastructure\AdminRepository;
 use App\Infrastructure\Database;
 use App\Infrastructure\PluginRegistry;
 use App\Infrastructure\Schema;
-use App\View\TemplateRenderer;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Twig\Environment;
+use App\Plugin\PluginLifecycleManager;
 
 final class AdminController
 {
-    public function __construct(private readonly TemplateRenderer $view)
+    public function __construct(private readonly Environment $view)
     {
     }
 
     #[Route('/admin/plugins', name: 'admin_plugins', methods: ['GET', 'POST'])]
-    public function plugins(Request $request, PluginRegistry $registry): Response
+    public function plugins(Request $request, PluginRegistry $registry, PluginLifecycleManager $lifecycle): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;
         if ($request->isMethod('POST') && $this->validToken($request)) {
             $name = (string) $request->request->get('plugin');
-            if ($name !== 'core-administration') $registry->toggle($name);
+            if ($name !== 'core-administration') {
+                $registry->toggle($name) ? $lifecycle->activate($name) : $lifecycle->deactivate($name);
+            }
             return new RedirectResponse('/admin/plugins');
         }
         return $this->page($request, 'plugins', 'Pluginmanager', ['plugins' => $registry->all()]);
@@ -66,8 +69,7 @@ final class AdminController
         $token = bin2hex(random_bytes(24));
         $request->getSession()->set('admin_token', $token);
         $request->getSession()->set('logout_token', $token);
-        $content = $this->view->render('admin/'.$template, array_merge($context, ['admin' => $request->getSession()->get('admin'), 'token' => $token]));
-        return new Response($this->view->render('admin/layout', ['content' => $content, 'title' => $title, 'active' => $template, 'admin' => $request->getSession()->get('admin'), 'token' => $token]));
+        return new Response($this->view->render('admin/'.$template.'/index.html.twig', array_merge($context, ['title' => $title, 'active' => $template, 'admin' => $request->getSession()->get('admin'), 'token' => $token])));
     }
 
     private function requireLogin(Request $request): ?Response
