@@ -43,10 +43,12 @@ plugins/AcmeExample/
 
 ```yaml
 services:
-    Plugins\AcmeExample\:
-        resource: '../src/'
+    _defaults:
         autowire: true
         autoconfigure: true
+
+    Plugins\AcmeExample\:
+        resource: '../src/'
 
     Plugins\AcmeExample\ExampleLifecycle:
         tags:
@@ -68,6 +70,16 @@ acme_example_controllers:
 ```
 
 The `_plugin` default is required; it prevents routes of inactive plugins from executing.
+
+Plugin controllers must be registered for argument injection. Add Symfony's `#[AsController]` attribute to every controller, or define the controller directory explicitly in `services.yaml`:
+
+```yaml
+Plugins\AcmeExample\Controller\:
+    resource: '../src/Controller/'
+    autowire: true
+    autoconfigure: true
+    tags: ['controller.service_arguments']
+```
 
 ## Twig
 
