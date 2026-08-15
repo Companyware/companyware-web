@@ -3,3 +3,6 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+plugin_routes:
+    resource: '../plugins/*/config/routes.yaml'

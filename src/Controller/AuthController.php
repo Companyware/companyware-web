@@ -3,12 +3,12 @@
 namespace App\Controller;
 
 use App\Infrastructure\AdminRepository;
-use App\View\TemplateRenderer;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Throwable;
+use Twig\Environment;
 
 final class AuthController
 {
@@ -19,7 +19,7 @@ final class AuthController
     }
 
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
-    public function login(Request $request, AdminRepository $admins, TemplateRenderer $view): Response
+    public function login(Request $request, AdminRepository $admins, Environment $view): Response
     {
         if ($request->getSession()->has('admin')) {
             return new RedirectResponse('/admin/plugins');
@@ -47,7 +47,7 @@ final class AuthController
 
         $token = bin2hex(random_bytes(24));
         $request->getSession()->set('login_token', $token);
-        return new Response($view->render('login', ['error' => $error, 'token' => $token]));
+        return new Response($view->render('login/index.html.twig', ['error' => $error, 'token' => $token]));
     }
 
     #[Route('/logout', name: 'app_logout', methods: ['POST'])]

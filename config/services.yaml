@@ -1,3 +1,6 @@
+imports:
+    - { resource: '../plugins/*/config/services.yaml', ignore_errors: not_found }
+
 # This file is the entry point to configure your own services.
 # Files in the packages/ subdirectory configure your dependencies.
 
@@ -23,6 +26,28 @@ services:
     App\Controller\:
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
+
+    _instanceof:
+        App\Plugin\NavigationProviderInterface:
+            tags: ['app.plugin.navigation']
+        App\Plugin\SlotProviderInterface:
+            tags: ['app.plugin.slot']
+
+    App\Plugin\NavigationRegistry:
+        arguments:
+            $providers: !tagged_iterator app.plugin.navigation
+
+    App\Plugin\SlotRenderer:
+        arguments:
+            $providers: !tagged_iterator app.plugin.slot
+
+    App\Plugin\PluginTwigLoader:
+        arguments:
+            $loader: '@twig.loader.native_filesystem'
+
+    App\Plugin\PluginLifecycleManager:
+        arguments:
+            $plugins: !tagged_locator { tag: 'app.plugin.lifecycle', index_by: 'plugin' }
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
