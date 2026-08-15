@@ -31,6 +31,10 @@ plugins/AcmeExample/
   "description": "Adds an administration capability.",
   "version": "1.0.0",
   "migrations": ["Plugins\\AcmeExample\\Migration\\Version202608150001"],
+  "assets": {
+    "styles": [{"handle": "acme-css", "path": "example.css", "priority": 100}],
+    "scripts": [{"handle": "acme-js", "path": "example.js", "priority": 100, "defer": true}]
+  },
   "navigation": [
     {"section": "PLUGINS", "label": "Example", "route": "acme_example_index", "icon": "E", "position": 100}
   ]
@@ -102,7 +106,27 @@ Available core slots include:
 - `admin.settings.fields`
 - `admin.settings.sections`
 
-Render an asset of an active plugin with `{{ plugin_asset('acme-example', 'example.css') }}`. Assets are confined to that plugin's `public/` directory.
+Assets declared in the manifest are loaded only while the plugin is active. They are delivered through an extensionless authenticated controller URL so nginx cannot bypass Symfony's plugin guard. Files remain confined to the plugin's `public/` directory.
+
+Every asset has a globally unique handle and numeric priority. Higher numbers load later. A plugin can replace Core or another plugin asset explicitly:
+
+```json
+{
+  "assets": {
+    "scripts": [
+      {
+        "handle": "acme-admin-js",
+        "path": "admin-replacement.js",
+        "priority": 100,
+        "replaces": ["core-admin-js"],
+        "defer": true
+      }
+    ]
+  }
+}
+```
+
+Core handles currently available for replacement are `core-admin`, `core-plugin-manager` and `core-admin-js`. Replacing `core-admin-js` transfers responsibility for menu and password-toggle behavior to the plugin. Prefer extending `window.AdminFramework` hooks unless a complete replacement is intentional.
 
 ## Override policy
 
