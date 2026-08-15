@@ -1,0 +1,5 @@
+documents_controllers:
+    resource: '../src/Controller/'
+    type: attribute
+    prefix: /admin/documents
+    defaults: { _plugin: 'documents' }

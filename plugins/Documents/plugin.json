@@ -1,0 +1,10 @@
+{
+  "name": "documents",
+  "label": "Dokumentenmanagement",
+  "description": "Verwaltet interne Dokumente als Grundlage für individuelle Companyware-Prozesse.",
+  "version": "1.0.0",
+  "migrations": ["Plugins\\Documents\\Migration\\Version202608150001"],
+  "navigation": [
+    {"section": "PLUGINS", "label": "Dokumente", "route": "documents_index", "icon": "▤", "position": 100}
+  ]
+}

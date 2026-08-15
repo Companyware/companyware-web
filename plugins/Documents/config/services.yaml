@@ -1,0 +1,16 @@
+services:
+    Plugins\Documents\:
+        resource: '../src/'
+        autowire: true
+        autoconfigure: true
+        exclude: '../src/Migration/'
+
+    Plugins\Documents\DocumentStorage:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    Plugins\Documents\DocumentsLifecycle:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+        tags:
+            - { name: 'app.plugin.lifecycle', plugin: 'documents' }

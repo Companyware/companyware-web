@@ -12,6 +12,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Twig\Environment;
 use App\Plugin\PluginLifecycleManager;
+use App\Plugin\PluginPackageException;
+use App\Plugin\PluginPackageInstaller;
+use App\Plugin\Migration\MigrationManager;
 
 final class AdminController
 {
@@ -20,17 +23,26 @@ final class AdminController
     }
 
     #[Route('/admin/plugins', name: 'admin_plugins', methods: ['GET', 'POST'])]
-    public function plugins(Request $request, PluginRegistry $registry, PluginLifecycleManager $lifecycle): Response
+    public function plugins(Request $request, PluginRegistry $registry, PluginLifecycleManager $lifecycle, PluginPackageInstaller $installer, MigrationManager $migrations): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;
-        if ($request->isMethod('POST') && $this->validToken($request)) {
-            $name = (string) $request->request->get('plugin');
-            if ($name !== 'core-administration') {
-                $registry->toggle($name) ? $lifecycle->activate($name) : $lifecycle->deactivate($name);
-            }
+        if ($request->isMethod('POST')) {
+            if (!$this->validToken($request)) { $request->getSession()->set('plugin_error','Die Sitzung ist abgelaufen.'); return new RedirectResponse('/admin/plugins'); }
+            try {
+                $action=(string)$request->request->get('action','toggle');
+                if ($action==='install') {
+                    $file=$request->files->get('plugin_package'); if(!$file) throw new PluginPackageException('Bitte wähle eine ZIP-Datei aus.');
+                    $plugin=$installer->install($file); $request->getSession()->set('plugin_message',$plugin->label.' wurde installiert und kann jetzt aktiviert werden.');
+                } else {
+                    $name=(string)$request->request->get('plugin'); $plugin=$registry->manifest($name); if(!$plugin) throw new PluginPackageException('Plugin wurde nicht gefunden.');
+                    if ($action==='uninstall') { $installer->uninstall($plugin); $request->getSession()->set('plugin_message',$plugin->label.' wurde vollständig deinstalliert.'); }
+                    elseif ($name!=='core-administration') { $active=$registry->toggle($name); if($active){$migrations->migrate($plugin);$lifecycle->activate($name);}else{$lifecycle->deactivate($name);} $request->getSession()->set('plugin_message',$plugin->label.($active?' wurde aktiviert.':' wurde deaktiviert.')); }
+                }
+            } catch (\Throwable $e) { $request->getSession()->set('plugin_error',$e->getMessage()); }
             return new RedirectResponse('/admin/plugins');
         }
-        return $this->page($request, 'plugins', 'Pluginmanager', ['plugins' => $registry->all()]);
+        $message=$request->getSession()->remove('plugin_message'); $error=$request->getSession()->remove('plugin_error');
+        return $this->page($request, 'plugins', 'Pluginmanager', ['plugins' => $registry->all(),'message'=>$message,'error'=>$error]);
     }
 
     #[Route('/admin/profile', name: 'admin_profile', methods: ['GET', 'POST'])]
