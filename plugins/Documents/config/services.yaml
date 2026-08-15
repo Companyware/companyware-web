@@ -1,13 +1,21 @@
 services:
-    Plugins\Documents\:
-        resource: '../src/'
+    _defaults:
         autowire: true
         autoconfigure: true
+
+    Plugins\Documents\:
+        resource: '../src/'
         exclude: '../src/Migration/'
 
     Plugins\Documents\DocumentStorage:
         arguments:
             $projectDir: '%kernel.project_dir%'
+
+    Plugins\Documents\Controller\:
+        resource: '../src/Controller/'
+        autowire: true
+        autoconfigure: true
+        tags: ['controller.service_arguments']
 
     Plugins\Documents\DocumentsLifecycle:
         arguments:
