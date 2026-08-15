@@ -6,4 +6,5 @@ final class PluginLifecycleManager
     public function __construct(private readonly ContainerInterface $plugins) {}
     public function activate(string $name): void { if ($this->plugins->has($name)) $this->plugins->get($name)->activate(); }
     public function deactivate(string $name): void { if ($this->plugins->has($name)) $this->plugins->get($name)->deactivate(); }
+    public function uninstall(string $name): void { if ($this->plugins->has($name)) $this->plugins->get($name)->uninstall(); }
 }

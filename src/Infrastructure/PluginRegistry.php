@@ -55,6 +55,12 @@ final class PluginRegistry
         return array_values(array_filter($this->manifests(), fn(PluginManifest $plugin) => $this->isActive($plugin->name)));
     }
 
+    public function manifest(string $name): ?PluginManifest
+    {
+        foreach ($this->manifests() as $manifest) if ($manifest->name===$name) return $manifest;
+        return null;
+    }
+
     public function isActive(string $name): bool
     {
         $this->schema->ensure();

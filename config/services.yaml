@@ -49,5 +49,10 @@ services:
         arguments:
             $plugins: !tagged_locator { tag: 'app.plugin.lifecycle', index_by: 'plugin' }
 
+    App\Plugin\PluginPackageInstaller:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $cacheDir: '%kernel.cache_dir%'
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
