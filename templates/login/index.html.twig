@@ -5,10 +5,22 @@
 
 {% block body %}
 <main class="login-shell">
+    {% block login_visual %}
+    <section class="login-visual">
+        <img src="/assets/brand/companyware-login-hero-cool.png?v=20260817" alt="Abstrakte, miteinander verbundene Prozessmodule">
+        <div class="login-visual-shade"></div>
+        <div class="visual-copy">
+            <span class="eyebrow">Companyware · Open process platform</span>
+            <h2>Aus Bausteinen<br>wird Fortschritt.</h2>
+            <p>Companyware verbindet Menschen, Informationen und Abläufe zu genau der Lösung, die deine Organisation braucht.</p>
+        </div>
+    </section>
+    {% endblock %}
+
     <section class="login-panel">
         <div class="login-panel-inner">
             <a class="brand-lockup brand-lockup-dark" href="{{ path('app_login') }}" aria-label="Companyware">
-                <img src="/assets/brand/companyware-mark.svg" alt="">
+                <img src="/assets/brand/companyware-mark.svg?v=20260817" alt="">
                 <span>Companyware</span>
             </a>
 
@@ -47,17 +59,5 @@
             <small class="login-footer">Open Source. Erweiterbar. Für deine Organisation.</small>
         </div>
     </section>
-
-    {% block login_visual %}
-    <section class="login-visual">
-        <img src="/assets/brand/companyware-login-hero-cool.png" alt="Abstrakte, miteinander verbundene Prozessmodule">
-        <div class="login-visual-shade"></div>
-        <div class="visual-copy">
-            <span class="eyebrow">Companyware · Open process platform</span>
-            <h2>Aus Bausteinen<br>wird Fortschritt.</h2>
-            <p>Companyware verbindet Menschen, Informationen und Abläufe zu genau der Lösung, die deine Organisation braucht.</p>
-        </div>
-    </section>
-    {% endblock %}
 </main>
 {% endblock %}
