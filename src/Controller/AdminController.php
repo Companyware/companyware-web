@@ -73,7 +73,7 @@ final class AdminController
             $saved = true;
         }
         $statement = $database->connection()->query("SELECT config_value FROM system_config WHERE config_key = 'app.name'");
-        return $this->page($request, 'settings', 'Einstellungen', ['appName' => $statement->fetchColumn() ?: 'Administration', 'saved' => $saved]);
+        return $this->page($request, 'settings', 'Einstellungen', ['appName' => $statement->fetchColumn() ?: 'Companyware', 'saved' => $saved]);
     }
 
     private function page(Request $request, string $template, string $title, array $context = []): Response

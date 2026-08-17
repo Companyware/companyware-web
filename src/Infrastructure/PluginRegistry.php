@@ -15,7 +15,7 @@ final class PluginRegistry
         $this->schema->ensure();
         $plugins = [[
             'name' => 'core-administration',
-            'label' => 'Core Administration',
+            'label' => 'Companyware Core',
             'description' => 'Login, Navigation, Profil und Systemeinstellungen.',
             'version' => '1.0.0',
             'active' => true,
