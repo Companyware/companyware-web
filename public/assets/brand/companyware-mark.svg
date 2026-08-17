@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Companyware</title>
+  <defs>
+    <linearGradient id="cw-gradient" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7887dc"/>
+      <stop offset="1" stop-color="#4d4a91"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#cw-gradient)" d="M53.4 15.3A27 27 0 1 0 54 48l-10.7-8.2A13.5 13.5 0 1 1 43 24.4l10.4-9.1Z"/>
+  <path fill="#ef7a62" d="M39 27h17a5 5 0 0 1 0 10H39a5 5 0 0 1 0-10Z"/>
+  <circle cx="56" cy="32" r="5" fill="#f49a82"/>
+</svg>
