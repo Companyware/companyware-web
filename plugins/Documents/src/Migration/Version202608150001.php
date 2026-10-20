@@ -1,6 +1,6 @@
 <?php
 namespace Plugins\Documents\Migration;
-use App\Plugin\Migration\PluginMigrationInterface;
+use Companyware\Core\Framework\Plugin\Contract\Migration\PluginMigrationInterface;
 use PDO;
 final class Version202608150001 implements PluginMigrationInterface
 {

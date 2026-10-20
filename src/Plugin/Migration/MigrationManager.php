@@ -3,6 +3,7 @@ namespace App\Plugin\Migration;
 use App\Infrastructure\Database;
 use App\Infrastructure\Schema;
 use App\Plugin\PluginManifest;
+use Companyware\Core\Framework\Plugin\Contract\Migration\PluginMigrationInterface;
 use RuntimeException;
 final class MigrationManager
 {

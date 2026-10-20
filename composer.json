@@ -1,12 +1,12 @@
 {
     "name": "mbdus/admin-framework",
-    "description": "Extensible Symfony administration framework with a plugin system.",
+    "description": "Companyware is an extensible, Symfony-native process platform.",
     "type": "project",
-    "license": "proprietary",
+    "license": "MIT",
     "minimum-stability": "stable",
     "prefer-stable": true,
     "require": {
-        "php": ">=8.1",
+        "php": "~8.3.0",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "ext-zip": "*",
@@ -28,7 +28,8 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "App\\": "src/",
+            "Companyware\\Core\\": "src/Core/"
         }
     },
     "autoload-dev": {
@@ -61,6 +62,9 @@
         "symfony/symfony": "*"
     },
     "extra": {
+        "companyware": {
+            "public-api": "1.0"
+        },
         "symfony": {
             "allow-contrib": false,
             "require": "6.4.*"
