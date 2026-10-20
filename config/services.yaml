@@ -19,6 +19,7 @@ services:
     App\:
         resource: '../src/'
         exclude:
+            - '../src/Core/'
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
@@ -28,9 +29,9 @@ services:
         tags: ['controller.service_arguments']
 
     _instanceof:
-        App\Plugin\NavigationProviderInterface:
+        Companyware\Core\Framework\Plugin\Contract\NavigationProviderInterface:
             tags: ['app.plugin.navigation']
-        App\Plugin\SlotProviderInterface:
+        Companyware\Core\Framework\Plugin\Contract\SlotProviderInterface:
             tags: ['app.plugin.slot']
 
     App\Plugin\NavigationRegistry:

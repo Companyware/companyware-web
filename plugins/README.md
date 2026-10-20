@@ -2,6 +2,8 @@
 
 Plugins are self-contained Symfony modules below `plugins/`. Their PHP namespace starts with `Plugins\\`, followed by the directory name. The framework registers this isolated class loader before Symfony compiles its container.
 
+Plugins may import only public `Companyware\\Core\\` symbols marked `@api`. The `App\\` namespace is internal and is not a compatibility contract. See [`docs/public-api.md`](../docs/public-api.md) for the API version, compatibility promise and protected Core boundaries.
+
 ```text
 plugins/AcmeExample/
 ├── plugin.json
@@ -59,7 +61,7 @@ services:
             - { name: 'app.plugin.lifecycle', plugin: 'acme-example' }
 ```
 
-Symfony service decoration is the supported way to replace core PHP behavior. Direct edits to core services are not required.
+Symfony service decoration is supported only for public interfaces explicitly marked `@api`. No Core service identifier is public yet; CW-004 will publish the first decoration-ready Core services. Plugins must never decorate protected recovery services.
 
 ## Routes
 
@@ -134,7 +136,7 @@ Templates, services, navigation, routes, slots and assets are extensible. Authen
 
 ## Migrations
 
-Migration classes implement `App\\Plugin\\Migration\\PluginMigrationInterface` with a stable version plus `up()` and `down()` methods. Versions are recorded as `<plugin-name>:<version>`. `up()` runs during installation/activation; complete uninstall calls `down()` in reverse order. Migrations must be idempotent because MySQL can implicitly commit DDL statements.
+Migration classes implement `Companyware\\Core\\Framework\\Plugin\\Contract\\Migration\\PluginMigrationInterface` with a stable version plus `up()` and `down()` methods. Versions are recorded as `<plugin-name>:<version>`. `up()` runs during installation/activation; complete uninstall calls `down()` in reverse order. Migrations must be idempotent because MySQL and MariaDB can implicitly commit DDL statements.
 
 ## ZIP packages
 

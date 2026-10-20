@@ -1,6 +1,6 @@
 <?php
 namespace Plugins\Documents;
-use App\Plugin\PluginLifecycleInterface;
+use Companyware\Core\Framework\Plugin\Contract\PluginLifecycleInterface;
 use Symfony\Component\Filesystem\Filesystem;
 final class DocumentsLifecycle implements PluginLifecycleInterface
 {

@@ -1,8 +1,10 @@
 <?php
 namespace App\Plugin;
 use App\Infrastructure\PluginRegistry;
+use Companyware\Core\Framework\Plugin\Contract\NavigationProviderInterface;
 final class NavigationRegistry
 {
+    /** @param iterable<NavigationProviderInterface> $providers */
     public function __construct(private readonly PluginRegistry $plugins, private readonly iterable $providers) {}
     public function items(): array
     {
