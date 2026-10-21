@@ -16,7 +16,7 @@ final class PluginRegistry
         $plugins = [[
             'name' => 'core-administration',
             'label' => 'Companyware Core',
-            'description' => 'Login, Navigation, Profil und Systemeinstellungen.',
+            'description' => 'plugins.core.description',
             'version' => '1.0.0',
             'active' => true,
             'core' => true,

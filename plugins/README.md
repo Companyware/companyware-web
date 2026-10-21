@@ -32,6 +32,7 @@ plugins/AcmeExample/
   "label": "Acme Example",
   "description": "Adds an administration capability.",
   "version": "1.0.0",
+  "locales": [{"code": "es", "label": "Español"}],
   "migrations": ["Plugins\\AcmeExample\\Migration\\Version202608150001"],
   "assets": {
     "styles": [{"handle": "acme-css", "path": "example.css", "priority": 100}],
@@ -42,6 +43,12 @@ plugins/AcmeExample/
   ]
 }
 ```
+
+## Translations and language packs
+
+Core always provides German (`de`) and English (`en`). A plugin can contribute translated messages by placing YAML catalogs below its `translations/` directory, for example `translations/messages.en.yaml`. Use stable message keys in Twig with `|trans` and in PHP through `TranslatorInterface`.
+
+A language-pack plugin additionally declares one or more locales in its manifest through `locales`. Only active language-pack plugins add their locales to the system-language selector. `plugins/LanguageSpanish` is the reference package: activating it makes Spanish (`es`) selectable. Domain plugins remain responsible for supplying their own messages for each locale they support; missing messages fall back to German.
 
 ## Services
 

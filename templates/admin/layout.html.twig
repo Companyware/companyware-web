@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ title }} · Companyware{% endblock %}
+{% block title %}{{ title|trans }} · Companyware{% endblock %}
 {% block body_class %}admin-body{% endblock %}
 
 {% block body %}
@@ -8,27 +8,27 @@
 <aside class="sidebar">
     <a class="sidebar-brand brand-lockup" href="{{ path('admin_plugins') }}">
         <img src="/assets/brand/companyware-mark.svg?v=20260817" alt="">
-        <span><strong>Companyware</strong><small>Open process platform</small></span>
+        <span><strong>Companyware</strong><small>{{ 'layout.tagline'|trans }}</small></span>
     </a>
     <nav>
         {% set section = null %}
         {% for item in admin_navigation() %}
             {% if item.section != section %}
-                <span class="nav-caption">{{ item.section }}</span>
+                <span class="nav-caption">{{ item.section|trans }}</span>
                 {% set section = item.section %}
             {% endif %}
             <a class="{{ app.request.attributes.get('_route') == item.route ? 'active' : '' }}" href="{{ path(item.route) }}">
-                <span class="nav-icon">{{ item.icon }}</span>{{ item.label }}
+                <span class="nav-icon">{{ item.icon }}</span>{{ item.label|trans }}
             </a>
         {% endfor %}
         {{ plugin_slot('admin.navigation.after') }}
     </nav>
     <div class="sidebar-user">
         <div class="avatar">{{ admin.display_name|slice(0,2)|upper }}</div>
-        <div><strong>{{ admin.display_name }}</strong><small>Administrator</small></div>
+        <div><strong>{{ admin.display_name }}</strong><small>{{ 'layout.administrator'|trans }}</small></div>
         <form method="post" action="{{ path('app_logout') }}">
             <input type="hidden" name="_token" value="{{ token }}">
-            <button title="Abmelden">↗</button>
+            <button title="{{ 'layout.logout'|trans }}">↗</button>
         </form>
     </div>
 </aside>
@@ -38,8 +38,8 @@
     <header class="topbar">
         {% block topbar %}
         <button class="mobile-menu" data-admin-menu>☰</button>
-        <div class="breadcrumb"><strong>Companyware</strong><span>›</span>{{ title }}</div>
-        <div class="top-actions"><span class="status-dot"></span><span>System bereit</span><a href="{{ path('admin_profile') }}" class="mini-avatar">{{ admin.display_name|slice(0,2)|upper }}</a></div>
+        <div class="breadcrumb"><strong>Companyware</strong><span>›</span>{{ title|trans }}</div>
+        <div class="top-actions"><span class="status-dot"></span><span>{{ 'layout.ready'|trans }}</span><a href="{{ path('admin_profile') }}" class="mini-avatar">{{ admin.display_name|slice(0,2)|upper }}</a></div>
         {% endblock %}
     </header>
     <main class="admin-content">

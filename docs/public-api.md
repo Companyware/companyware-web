@@ -15,7 +15,8 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 | Surface | Identifiers | Status |
 | --- | --- | --- |
 | PHP contracts | the four `Plugin\\Contract` interfaces listed above | stable in API 1.x |
-| Runtime manifest | `name`, `label`, `description`, `version`, `navigation`, `migrations`, `assets` | stable in API 1.x |
+| Runtime manifest | `name`, `label`, `description`, `version`, `navigation`, `migrations`, `assets`, optional `locales` | stable in API 1.x |
+| Translation catalogs | plugin-owned `translations/messages.<locale>.yaml` catalogs using stable message keys | stable in API 1.x |
 | Twig slots | `document.stylesheets`, `document.javascripts`, `login.form.before`, `login.form.after`, `admin.navigation.after`, `admin.content.before`, `admin.content.after`, `admin.profile.form.before`, `admin.profile.form.after`, `admin.settings.fields`, `admin.settings.sections` | stable in API 1.x |
 | Twig blocks | `head`, `title`, `stylesheets`, `body_class`, `body`, `javascripts`, `login_visual`, `login_form`, `sidebar`, `topbar`, `content` | stable in API 1.x |
 | Asset handles | `core-admin`, `core-plugin-manager`, `core-admin-js` plus plugin-owned globally unique handles | stable in API 1.x |
