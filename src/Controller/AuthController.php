@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Infrastructure\AdminRepository;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,7 +20,7 @@ final class AuthController
     }
 
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
-    public function login(Request $request, AdminRepository $admins, Environment $view): Response
+    public function login(Request $request, AdminRepository $admins, Environment $view, TranslatorInterface $translator): Response
     {
         if ($request->getSession()->has('admin')) {
             return new RedirectResponse('/admin/plugins');
@@ -28,7 +29,7 @@ final class AuthController
         $error = null;
         if ($request->isMethod('POST')) {
             if (!hash_equals((string) $request->getSession()->get('login_token'), (string) $request->request->get('_token'))) {
-                $error = 'Die Sitzung ist abgelaufen. Bitte versuche es erneut.';
+                $error = $translator->trans('login.error.expired');
             } else {
                 try {
                     $admin = $admins->findByUsername(trim((string) $request->request->get('username')));
@@ -38,9 +39,9 @@ final class AuthController
                         $request->getSession()->set('admin', $admin);
                         return new RedirectResponse('/admin/plugins');
                     }
-                    $error = 'Benutzername oder Passwort ist nicht korrekt.';
+                    $error = $translator->trans('login.error.invalid');
                 } catch (Throwable) {
-                    $error = 'Die Datenbank ist noch nicht erreichbar oder eingerichtet.';
+                    $error = $translator->trans('login.error.database');
                 }
             }
         }

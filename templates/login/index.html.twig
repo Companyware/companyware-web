@@ -1,18 +1,18 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Anmelden · Companyware{% endblock %}
+{% block title %}{{ 'login.title'|trans }} · Companyware{% endblock %}
 {% block body_class %}login-body{% endblock %}
 
 {% block body %}
 <main class="login-shell">
     {% block login_visual %}
     <section class="login-visual">
-        <img src="/assets/brand/companyware-login-hero-cool.png?v=20260817" alt="Abstrakte, miteinander verbundene Prozessmodule">
+        <img src="/assets/brand/companyware-login-hero-cool.png?v=20260817" alt="{{ 'login.visual_alt'|trans }}">
         <div class="login-visual-shade"></div>
         <div class="visual-copy">
             <span class="eyebrow">Companyware · Open process platform</span>
-            <h2>Aus Bausteinen<br>wird Fortschritt.</h2>
-            <p>Companyware verbindet Menschen, Informationen und Abläufe zu genau der Lösung, die deine Organisation braucht.</p>
+            <h2>{{ 'login.visual_title'|trans|raw }}</h2>
+            <p>{{ 'login.visual_text'|trans }}</p>
         </div>
     </section>
     {% endblock %}
@@ -26,37 +26,37 @@
 
             <div class="login-form-wrap">
                 {{ plugin_slot('login.form.before') }}
-                <span class="eyebrow">Willkommen zurück</span>
-                <h1>Dein Arbeitsraum<br>für gute Prozesse.</h1>
-                <p class="muted">Melde dich an und bringe die Dinge ins Rollen.</p>
+                <span class="eyebrow">{{ 'login.welcome'|trans }}</span>
+                <h1>{{ 'login.headline'|trans|raw }}</h1>
+                <p class="muted">{{ 'login.intro'|trans }}</p>
 
                 {% if error %}<div class="alert error">{{ error }}</div>{% endif %}
 
                 {% block login_form %}
                 <form method="post">
                     <input type="hidden" name="_token" value="{{ token }}">
-                    <label>Benutzername
-                        <input name="username" autocomplete="username" required autofocus placeholder="Dein Benutzername">
+                    <label>{{ 'login.username'|trans }}
+                        <input name="username" autocomplete="username" required autofocus placeholder="{{ 'login.username_placeholder'|trans }}">
                     </label>
-                    <label>Passwort
+                    <label>{{ 'login.password'|trans }}
                         <span class="password-wrap">
-                            <input id="password" type="password" name="password" autocomplete="current-password" required placeholder="Dein Passwort">
-                            <button type="button" class="show-password" data-password-toggle="password">Anzeigen</button>
+                            <input id="password" type="password" name="password" autocomplete="current-password" required placeholder="{{ 'login.password_placeholder'|trans }}">
+                            <button type="button" class="show-password" data-password-toggle="password">{{ 'login.show_password'|trans }}</button>
                         </span>
                     </label>
                     <div class="login-options">
-                        <label class="check"><input type="checkbox" name="remember"> <span>Angemeldet bleiben</span></label>
-                        <span>Sicherer Zugang</span>
+                        <label class="check"><input type="checkbox" name="remember"> <span>{{ 'login.remember'|trans }}</span></label>
+                        <span>{{ 'login.secure'|trans }}</span>
                     </div>
-                    <button class="primary wide" type="submit">Arbeitsraum öffnen <span>↗</span></button>
+                    <button class="primary wide" type="submit">{{ 'login.submit'|trans }} <span>↗</span></button>
                 </form>
                 {% endblock %}
 
-                <p class="login-help">Probleme bei der Anmeldung? Wende dich an deine Administration.</p>
+                <p class="login-help">{{ 'login.help'|trans }}</p>
                 {{ plugin_slot('login.form.after') }}
             </div>
 
-            <small class="login-footer">Open Source. Erweiterbar. Für deine Organisation.</small>
+            <small class="login-footer">{{ 'login.footer'|trans }}</small>
         </div>
     </section>
 </main>
