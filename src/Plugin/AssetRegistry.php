@@ -45,7 +45,7 @@ final class AssetRegistry
                 $assets[] = $asset + [
                     'priority' => 100,
                     'defer' => true,
-                    'url' => '/plugin-assets/'.rawurlencode($plugin->name).'?path='.rawurlencode($asset['path']),
+                    'url' => $this->pluginAssetUrl($plugin, $asset['path']),
                 ];
             }
         }
@@ -63,5 +63,13 @@ final class AssetRegistry
         usort($assets, fn (array $a, array $b): int => ($a['priority'] ?? 100) <=> ($b['priority'] ?? 100));
 
         return $assets;
+    }
+
+    private function pluginAssetUrl(PluginManifest $plugin, string $path): string
+    {
+        $file = $plugin->path.'/public/'.$path;
+        $version = is_file($file) ? (string) filemtime($file) : $plugin->version;
+
+        return '/plugin-assets/'.rawurlencode($plugin->name).'?path='.rawurlencode($path).'&v='.rawurlencode($version);
     }
 }

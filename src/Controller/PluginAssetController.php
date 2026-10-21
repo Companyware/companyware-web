@@ -12,7 +12,20 @@ final class PluginAssetController
         $path=(string)$request->query->get('path');
         foreach ($plugins->activeManifests() as $manifest) if ($manifest->name === $plugin) {
             $root=realpath($manifest->path.'/public'); $file=realpath($manifest->path.'/public/'.$path);
-            if ($root && $file && str_starts_with($file,$root.DIRECTORY_SEPARATOR) && is_file($file)) return new BinaryFileResponse($file);
+            if ($root && $file && str_starts_with($file,$root.DIRECTORY_SEPARATOR) && is_file($file)) {
+                $response = new BinaryFileResponse($file);
+                $response->headers->set('Content-Type', match (strtolower(pathinfo($file, PATHINFO_EXTENSION))) {
+                    'css' => 'text/css; charset=UTF-8',
+                    'js' => 'application/javascript; charset=UTF-8',
+                    default => 'application/octet-stream',
+                });
+                $response->headers->set('X-Content-Type-Options', 'nosniff');
+                $response->setPublic();
+                $response->setMaxAge(31536000);
+                $response->setImmutable();
+
+                return $response;
+            }
         }
         return new Response('Asset not found.',404);
     }
