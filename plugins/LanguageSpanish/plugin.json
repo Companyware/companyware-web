@@ -2,7 +2,7 @@
   "name": "language-spanish",
   "label": "language_spanish.label",
   "description": "language_spanish.description",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "compatibility": {
     "companyware": "^0.1",
     "php": "~8.3.0"

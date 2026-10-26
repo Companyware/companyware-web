@@ -8,41 +8,28 @@
         if (!dashboard) return;
 
         const owner = dashboard.dataset.dashboardOwner || 'anonymous';
-        const storageKey = 'companyware.dashboard.' + owner + '.v1';
-        const hiddenCookieKey = 'companyware_dashboard_hidden_' + String(owner).replace(/[^a-zA-Z0-9_-]/g, '_');
-        let state = {order: {}, hidden: [], sizes: {}};
-
-        const readHiddenCookie = function () {
-            const prefix = hiddenCookieKey + '=';
-            const value = document.cookie.split(';').map(function (part) { return part.trim(); })
-                .find(function (part) { return part.indexOf(prefix) === 0; });
-            if (!value) return [];
-            try {
-                const hidden = JSON.parse(decodeURIComponent(value.substring(prefix.length)));
-                return Array.isArray(hidden) ? hidden.filter(function (id) { return typeof id === 'string'; }) : [];
-            } catch (error) {
-                return [];
-            }
-        };
-        const writeHiddenCookie = function () {
-            document.cookie = hiddenCookieKey + '=' + encodeURIComponent(JSON.stringify(state.hidden)) + '; path=/admin; max-age=31536000; SameSite=Lax';
-        };
-
+        let state = {order: {}, hidden: []};
         try {
-            const stored = window.localStorage.getItem(storageKey);
-            if (stored) state = Object.assign(state, JSON.parse(stored));
+            const source = dashboard.querySelector('[data-dashboard-state]');
+            if (source) state = Object.assign(state, JSON.parse(source.textContent || '{}'));
         } catch (error) {
             window.AdminFramework.emit('dashboard:storage-error', {error: error});
         }
-        state.hidden = Array.from(new Set((Array.isArray(state.hidden) ? state.hidden : []).concat(readHiddenCookie())));
+        state.hidden = Array.isArray(state.hidden) ? state.hidden : [];
+        state.order = state.order && typeof state.order === 'object' ? state.order : {};
 
         const save = function () {
-            try {
-                window.localStorage.setItem(storageKey, JSON.stringify(state));
-            } catch (error) {
+            return window.fetch(dashboard.dataset.dashboardSaveUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': dashboard.dataset.dashboardToken},
+                body: JSON.stringify(state)
+            }).then(function (response) {
+                if (!response.ok) throw new Error('Dashboard state could not be saved.');
+            }).catch(function (error) {
                 window.AdminFramework.emit('dashboard:storage-error', {error: error});
-            }
-            writeHiddenCookie();
+                throw error;
+            });
         };
         const zones = Array.from(dashboard.querySelectorAll('[data-dashboard-zone]'));
         const widgets = function () { return Array.from(dashboard.querySelectorAll('[data-dashboard-widget]')); };
@@ -60,7 +47,6 @@
         widgets().forEach(function (widget) {
             const id = widget.dataset.dashboardWidget;
             widget.hidden = state.hidden.includes(id);
-            widget.dataset.dashboardSize = state.sizes[id] === 'wide' ? 'wide' : (widget.dataset.dashboardSize || 'normal');
 
             const controls = document.createElement('div');
             controls.className = 'dashboard-widget-controls';
@@ -80,6 +66,31 @@
             widget.appendChild(controls);
         });
 
+        const hiddenManager = dashboard.querySelector('[data-dashboard-hidden-manager]');
+        const hiddenList = dashboard.querySelector('[data-dashboard-hidden-list]');
+        const addButton = dashboard.querySelector('[data-dashboard-add]');
+        const renderHiddenManager = function () {
+            if (!hiddenManager || !hiddenList) return;
+            hiddenList.replaceChildren();
+            state.hidden.forEach(function (id) {
+                const widget = widgets().find(function (candidate) { return candidate.dataset.dashboardWidget === id; });
+                if (!widget) return;
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'secondary';
+                button.dataset.dashboardRestore = id;
+                const heading = widget.querySelector('h3');
+                button.textContent = (heading ? heading.textContent.trim() : id) + ' · ' + dashboard.dataset.labelRestore;
+                hiddenList.appendChild(button);
+            });
+            const available = hiddenList.children.length > 0;
+            if (addButton) addButton.hidden = !dashboard.classList.contains('dashboard-customizing') || !available;
+            if (!available) {
+                hiddenManager.hidden = true;
+                if (addButton) addButton.setAttribute('aria-expanded', 'false');
+            }
+        };
+
         const persistOrder = function (zone) {
             state.order[zone.dataset.dashboardZone] = Array.from(zone.children)
                 .filter(function (child) { return child.dataset && child.dataset.dashboardWidget; })
@@ -95,18 +106,43 @@
                 customize.setAttribute('aria-pressed', active ? 'true' : 'false');
                 const reset = dashboard.querySelector('[data-dashboard-reset]');
                 if (reset) reset.hidden = !active;
+                if (!active && hiddenManager) hiddenManager.hidden = true;
+                if (addButton) addButton.setAttribute('aria-expanded', 'false');
+                renderHiddenManager();
+                return;
+            }
+
+            const add = event.target.closest('[data-dashboard-add]');
+            if (add && hiddenManager) {
+                hiddenManager.hidden = !hiddenManager.hidden;
+                add.setAttribute('aria-expanded', hiddenManager.hidden ? 'false' : 'true');
                 return;
             }
 
             if (event.target.closest('[data-dashboard-reset]')) {
-                try {
-                    window.localStorage.removeItem(storageKey);
-                } catch (error) {
-                    window.AdminFramework.emit('dashboard:storage-error', {error: error});
-                }
-                state.hidden = [];
-                document.cookie = hiddenCookieKey + '=; path=/admin; max-age=0; SameSite=Lax';
-                window.location.reload();
+                window.fetch(dashboard.dataset.dashboardSaveUrl, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {'Content-Type': 'application/json', 'X-CSRF-TOKEN': dashboard.dataset.dashboardToken},
+                    body: JSON.stringify({reset: true})
+                }).then(function (response) {
+                    if (!response.ok) throw new Error('Dashboard state could not be reset.');
+                    window.location.reload();
+                }).catch(function (error) { window.AdminFramework.emit('dashboard:storage-error', {error: error}); });
+                return;
+            }
+
+            const restore = event.target.closest('[data-dashboard-restore]');
+            if (restore) {
+                const id = restore.dataset.dashboardRestore;
+                const widget = widgets().find(function (candidate) { return candidate.dataset.dashboardWidget === id; });
+                state.hidden = state.hidden.filter(function (hiddenId) { return hiddenId !== id; });
+                if (widget) widget.hidden = false;
+                save().then(function () {
+                    renderHiddenManager();
+                    if (hiddenManager) hiddenManager.hidden = true;
+                    if (addButton) addButton.setAttribute('aria-expanded', 'false');
+                });
                 return;
             }
 
@@ -123,8 +159,8 @@
 
             if (direction === 'hide') {
                 if (!state.hidden.includes(id)) state.hidden = state.hidden.concat(id);
-                save();
-                widget.remove();
+                widget.hidden = true;
+                save().then(renderHiddenManager);
             }
         });
 

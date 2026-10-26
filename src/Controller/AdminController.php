@@ -30,7 +30,7 @@ final class AdminController
     }
 
     #[Route('/admin', name: 'admin_dashboard', methods: ['GET'])]
-    public function dashboard(Request $request, PluginRegistry $registry): Response
+    public function dashboard(Request $request, PluginRegistry $registry, AdminRepository $admins): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;
         $plugins = $registry->all();
@@ -38,7 +38,26 @@ final class AdminController
         return $this->page($request, 'dashboard', 'dashboard.title', [
             'plugins' => $plugins,
             'activePluginCount' => count(array_filter($plugins, static fn (array $plugin): bool => (bool) $plugin['active'])),
+            'dashboardState' => $admins->preference((int) $request->getSession()->get('admin')['id'], 'dashboard.layout') ?? [],
         ]);
+    }
+
+    #[Route('/admin/dashboard/layout', name: 'admin_dashboard_layout', methods: ['POST'])]
+    public function dashboardLayout(Request $request, AdminRepository $admins): Response
+    {
+        if ($redirect = $this->requireLogin($request)) return $redirect;
+        if (!hash_equals((string) $request->getSession()->get('admin_token'), (string) $request->headers->get('X-CSRF-TOKEN'))) {
+            return new JsonResponse(['error' => 'Invalid CSRF token.'], 403);
+        }
+        $adminId = (int) $request->getSession()->get('admin')['id'];
+        $payload = $request->toArray();
+        if (($payload['reset'] ?? false) === true) {
+            $admins->deletePreference($adminId, 'dashboard.layout');
+        } else {
+            $admins->savePreference($adminId, 'dashboard.layout', $this->normalizeDashboardState($payload));
+        }
+
+        return new JsonResponse(['saved' => true]);
     }
 
     #[Route('/admin/plugins', name: 'admin_plugins', methods: ['GET', 'POST'])]
@@ -157,5 +176,19 @@ final class AdminController
     private function validToken(Request $request): bool
     {
         return hash_equals((string) $request->getSession()->get('admin_token'), (string) $request->request->get('_token'));
+    }
+
+    private function normalizeDashboardState(array $payload): array
+    {
+        $hiddenInput = is_array($payload['hidden'] ?? null) ? $payload['hidden'] : [];
+        $orderInput = is_array($payload['order'] ?? null) ? $payload['order'] : [];
+        $hidden = array_values(array_unique(array_filter($hiddenInput, static fn (mixed $id): bool => is_string($id) && preg_match('/^[a-z0-9._-]{1,190}$/i', $id) === 1)));
+        $order = [];
+        foreach ($orderInput as $zone => $ids) {
+            if (!is_string($zone) || !is_array($ids) || preg_match('/^[a-z0-9._-]{1,100}$/i', $zone) !== 1) continue;
+            $order[$zone] = array_values(array_unique(array_filter($ids, static fn (mixed $id): bool => is_string($id) && preg_match('/^[a-z0-9._-]{1,190}$/i', $id) === 1)));
+        }
+
+        return ['order' => $order, 'hidden' => $hidden];
     }
 }
