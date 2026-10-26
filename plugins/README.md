@@ -69,6 +69,8 @@ The optional `official` flag identifies packages maintained by Companyware and e
 
 Core always provides German (`de`) and English (`en`). Every plugin package must provide a non-empty `translations/messages.de.yaml`; an official Companyware plugin must additionally provide `translations/messages.en.yaml`. Further catalogs are optional. Use stable message keys in Twig with `|trans` and in PHP through `TranslatorInterface`.
 
+Plugin catalogs are registered while Symfony compiles the service container. Installing or removing a package invalidates that container; Git-based deployments must clear the production cache after changing plugin catalogs or packages.
+
 A language-pack plugin additionally declares one or more locales in its manifest through `locales` and must contain a catalog for every declared locale. Only active language-pack plugins add their locales to the system-language selector. `plugins/LanguageSpanish` is the reference package: activating it makes Spanish (`es`) selectable. Domain plugins remain responsible for supplying their own messages for each locale they support; missing messages fall back to German.
 
 ## Services
