@@ -19,6 +19,11 @@ final class PluginPackageValidator
             throw new PluginPackageException('plugins.error.manifest_invalid');
         }
 
+        $runtimeManifest = $this->readJson($directory.'/plugin.json', 'plugins.error.manifest_missing', 'plugins.error.manifest_invalid');
+        if (!in_array($runtimeManifest['uninstall']['data'] ?? null, ['remove', 'retain'], true)) {
+            throw new PluginPackageException('plugins.error.uninstall_policy_invalid');
+        }
+
         $composer = $this->readJson($directory.'/composer.json', 'plugins.error.composer_missing', 'plugins.error.composer_invalid');
         if (($composer['type'] ?? null) !== 'companyware-plugin') {
             throw new PluginPackageException('plugins.error.composer_type');

@@ -9,6 +9,9 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\NavigationProviderInterface`
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\SlotProviderInterface`
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\Migration\\PluginMigrationInterface`
+- `Companyware\\Core\\Framework\\Plugin\\Contract\\Migration\\IrreversibleMigrationInterface`
+- `Companyware\\Core\\Framework\\Plugin\\Contract\\Migration\\MigrationStateProviderInterface`
+- `Companyware\\Core\\Framework\\Plugin\\Contract\\Migration\\MigrationState`
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\PluginConfigurationInterface`
 - `Companyware\\Core\\Framework\\File\\FileNameNormalizerInterface` (decoration supported)
 - `Companyware\\Core\\Framework\\Plugin\\Event\\BeforePluginLifecycleEvent`
@@ -23,7 +26,7 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 | --- | --- | --- |
 | PHP contracts | the interfaces, events, enum and `Plugin` base class listed above | stable in API 1.x |
 | Composer package | package type `companyware-plugin` and `extra.companyware-plugin.manifest` | stable in API 1.x |
-| Runtime manifest | `name`, `label`, `description`, `version`, `navigation`, `migrations`, `assets`, optional `locales`, `compatibility`, `require`, `optional`, `conflict`, `provide`, `replace`, optional `settings` | stable in API 1.x |
+| Runtime manifest | `name`, `label`, `description`, `version`, `navigation`, `migrations`, `assets`, `uninstall.data`, optional `locales`, `compatibility`, `require`, `optional`, `conflict`, `provide`, `replace`, optional `settings` | stable in API 1.x |
 | Translation catalogs | plugin-owned `translations/messages.<locale>.yaml` catalogs using stable message keys | stable in API 1.x |
 | Twig slots | `document.stylesheets`, `document.javascripts`, `login.form.before`, `login.form.after`, `admin.navigation.after`, `admin.content.before`, `admin.content.after`, `admin.profile.form.before`, `admin.profile.form.after`, `admin.settings.fields`, `admin.settings.sections`, `dashboard.content.before`, `dashboard.continue`, `dashboard.quick_actions`, `dashboard.widgets`, `dashboard.activity`, `dashboard.content.after` | stable in API 1.x |
 | Twig blocks | `head`, `title`, `stylesheets`, `body_class`, `body`, `javascripts`, `login_visual`, `login_form`, `sidebar`, `topbar`, `content`, `dashboard_header`, `dashboard_continue`, `dashboard_quick_actions`, `dashboard_widgets`, `dashboard_activity` | stable in API 1.x |
@@ -59,6 +62,14 @@ Each plugin is a Composer package of type `companyware-plugin`. Its Composer met
 The platform version is exposed by `Companyware\Core\Framework\Api\PlatformVersion::VERSION`. Plugin manifests declare compatible Companyware and PHP versions, required PHP extensions, required or optional plugin packages, conflicts and virtual packages. Companyware resolves the complete prospective graph before any package, migration, lifecycle or activation-state mutation.
 
 Lifecycle services should extend `Companyware\\Core\\Framework\\Plugin\\Plugin`. Its no-op lifecycle methods allow a plugin to override only required hooks. Activation state is persisted only after migrations and the activation hook succeed. Failed ZIP installation rolls back applied plugin migrations and removes the staged package.
+
+## Versioned migrations
+
+Core and plugin migrations share the stable `PluginMigrationInterface`. Versions are immutable within one owner and run in lexical order. Companyware derives a SHA-256 checksum from the class, version and source file; changing a successfully applied migration is rejected. Failed migrations may be repaired and retried under the same version because their failure remains explicit. A database-level named lock serializes each owner's migration batch, while the primary key gives a second exactly-once boundary. Transactions are used when the database operation supports them; MySQL/MariaDB DDL can commit implicitly, so migrations must remain idempotent and recoverable on retry.
+
+Migration state is persisted as `running`, `completed` or `failed`, with direction, checksum, timestamps and a bounded error message. Failed/running states are visible through `MigrationStateProviderInterface`, `app:migrations:status`, the authenticated `/admin/api/migrations` endpoint and Plugin Manager. `app:migrations:migrate` applies pending Core and installed-plugin migrations and is the deployment command.
+
+Every newly packaged plugin explicitly declares `uninstall.data` as `remove` or `retain`. `remove` executes `down()` in reverse order and deletes migration/configuration state only after success. `retain` removes code and activation state while preserving plugin-owned data, settings and completed migration records for a later reinstall. A migration that cannot safely implement `down()` also implements `IrreversibleMigrationInterface` with an operator-facing reason; Companyware then blocks destructive rollback. Such plugins must use the `retain` policy for normal uninstall. Packages created before this field was mandatory retain the historical `remove` interpretation when read, but the package validator requires the explicit field for new installation. Installation recovery always attempts reverse migration regardless of the uninstall policy and preserves the package for manual recovery if an irreversible migration prevents cleanup.
 
 ## Dashboard extension
 

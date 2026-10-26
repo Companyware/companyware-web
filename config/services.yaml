@@ -62,6 +62,9 @@ services:
     Companyware\Core\Framework\Plugin\Contract\PluginConfigurationInterface:
         alias: App\Plugin\PluginConfiguration
 
+    Companyware\Core\Framework\Plugin\Contract\Migration\MigrationStateProviderInterface:
+        alias: App\Plugin\Migration\MigrationManager
+
     Companyware\Core\Framework\File\FileNameNormalizerInterface:
         alias: App\Framework\File\FileNameNormalizer
 

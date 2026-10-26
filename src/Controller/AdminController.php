@@ -10,6 +10,7 @@ use App\Localization\LocaleRegistry;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Twig\Environment;
 use App\Plugin\PluginLifecycleManager;
@@ -68,7 +69,16 @@ final class AdminController
             return new RedirectResponse('/admin/plugins');
         }
         $message=$request->getSession()->remove('plugin_message'); $error=$request->getSession()->remove('plugin_error');
-        return $this->page($request, 'plugins', 'plugins.title', ['plugins' => $registry->all(),'message'=>$message,'error'=>$error]);
+        return $this->page($request, 'plugins', 'plugins.title', ['plugins' => $registry->all(),'message'=>$message,'error'=>$error,'migrationStates'=>$migrations->states()]);
+    }
+
+    #[Route('/admin/api/migrations', name: 'admin_api_migrations', methods: ['GET'])]
+    public function migrationState(Request $request, Schema $schema, MigrationManager $migrations): Response
+    {
+        if ($redirect = $this->requireLogin($request)) return $redirect;
+        $schema->ensure();
+
+        return new JsonResponse($migrations->states());
     }
 
     #[Route('/admin/plugins/{name}/settings', name: 'admin_plugin_settings', requirements: ['name' => '[a-z][a-z0-9-]+'], methods: ['GET', 'POST'])]
