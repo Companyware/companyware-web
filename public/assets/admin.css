@@ -92,7 +92,7 @@ input:focus, select:focus { border-color: var(--violet); box-shadow: 0 0 0 4px r
 .sidebar-brand { height: 76px; gap: 12px; padding: 15px 24px; color: #4f4b65; border-bottom: 1px solid #e1deea; }
 .sidebar-brand:hover { color: var(--violet-dark); background: rgba(255,255,255,.35); }
 .sidebar-brand img { width: 40px; height: 40px; padding: 6px; border-radius: 50%; background: #fff; box-shadow: 0 5px 16px rgba(77,74,145,.1); }
-.sidebar-brand strong { font-size: 16px; line-height: 1.2; letter-spacing: -.015em; }
+.sidebar-brand strong { font-size: 18px; font-weight: 650; line-height: 1.15; letter-spacing: -.015em; }
 .sidebar-brand small { margin-top: 2px; color: #858095; font-size: 11px; font-weight: 500; }
 .sidebar-nav { min-height: 0; flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 14px 16px 12px; overflow: hidden; }
 .nav-primary { min-height: 0; flex: 1 1 auto; overflow-y: auto; }
