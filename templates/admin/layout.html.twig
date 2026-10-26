@@ -12,9 +12,15 @@
     </a>
     {% set current_route = app.request.attributes.get('_route') %}
     {% set navigation = admin_navigation() %}
+    {% set current_group = 'work' %}
+    {% for item in navigation %}
+        {% if item.route == current_route %}
+            {% set current_group = item.group %}
+        {% endif %}
+    {% endfor %}
     <nav class="sidebar-nav">
         <div class="nav-primary">
-            <details class="nav-group" name="sidebar-navigation" data-nav-accordion open>
+            <details class="nav-group" name="sidebar-navigation" data-nav-accordion {{ current_group == 'work' ? 'open' : '' }}>
                 <summary><span>{{ 'nav.section.workspaces'|trans }}</span><svg class="nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
                 <div class="nav-group-items">
                     {% for item in navigation|filter(item => item.group == 'work') %}
@@ -29,7 +35,7 @@
         <div class="nav-secondary">
             {% for group, label in {'management': 'nav.section.management', 'account': 'nav.section.account'} %}
                 {% set items = navigation|filter(item => item.group == group) %}
-                <details class="nav-group" name="sidebar-navigation" data-nav-accordion>
+                <details class="nav-group" name="sidebar-navigation" data-nav-accordion {{ current_group == group ? 'open' : '' }}>
                     <summary><span>{{ label|trans }}</span><svg class="nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
                     <div class="nav-group-items">
                         {% for item in items %}
