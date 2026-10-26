@@ -1,0 +1,9 @@
+<article class="panel dashboard-activity-card" data-dashboard-widget="documents.activity" data-dashboard-size="wide">
+    {% for document in documents %}
+        <a class="dashboard-activity-item" href="{{ path('documents_download', {id: document.id}) }}">
+            <span class="activity-dot"></span>
+            <span><strong>{{ 'documents.dashboard.activity_uploaded'|trans }}</strong><small>{{ document.title }} · {{ document.created_at }}</small></span>
+            <b>→</b>
+        </a>
+    {% endfor %}
+</article>

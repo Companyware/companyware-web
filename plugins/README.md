@@ -114,7 +114,7 @@ A language-pack plugin additionally declares one or more locales in its manifest
 
 `config/services.yaml` is imported automatically. Plugin services can implement `NavigationProviderInterface` or `SlotProviderInterface`; autoconfiguration tags them. A lifecycle service extends the public plugin base class and is explicitly tagged with the manifest name:
 
-Dashboard widget plugins should prefer the additive `dashboard.quick_actions` and `dashboard.widgets` slots. The framing slots are `dashboard.content.before` and `dashboard.content.after`. For intentional structural changes, extend the stable `dashboard_header`, `dashboard_quick_actions` or `dashboard_widgets` Twig blocks; full template replacement remains available through the plugin override directory. Core renders the fallback dashboard whenever the replacing plugin is inactive. Documents contains the reference provider.
+Dashboard plugins should prefer the additive `dashboard.continue`, `dashboard.quick_actions`, `dashboard.widgets` and `dashboard.activity` slots. The framing slots are `dashboard.content.before` and `dashboard.content.after`. For intentional structural changes, extend the stable `dashboard_header`, `dashboard_continue`, `dashboard_quick_actions`, `dashboard_widgets` or `dashboard_activity` Twig blocks; full template replacement remains available through the plugin override directory. Core renders the fallback dashboard whenever the replacing plugin is inactive. Documents contains the reference provider. Add a globally unique `data-dashboard-widget` identifier to personalizable contributions and place them in a `data-dashboard-zone`; Core then supplies ordering, hiding and normal/wide sizing per administrator and browser.
 
 ```yaml
 services:
@@ -210,6 +210,11 @@ Available core slots include:
 - `admin.profile.form.before` / `admin.profile.form.after`
 - `admin.settings.fields`
 - `admin.settings.sections`
+- `dashboard.content.before` / `dashboard.content.after`
+- `dashboard.continue`
+- `dashboard.quick_actions`
+- `dashboard.widgets`
+- `dashboard.activity`
 
 Assets declared in the manifest are loaded only while the plugin is active. They are delivered through an extensionless authenticated controller URL so nginx cannot bypass Symfony's plugin guard. Files remain confined to the plugin's `public/` directory.
 

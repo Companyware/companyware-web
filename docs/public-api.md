@@ -25,10 +25,10 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 | Composer package | package type `companyware-plugin` and `extra.companyware-plugin.manifest` | stable in API 1.x |
 | Runtime manifest | `name`, `label`, `description`, `version`, `navigation`, `migrations`, `assets`, optional `locales`, `compatibility`, `require`, `optional`, `conflict`, `provide`, `replace`, optional `settings` | stable in API 1.x |
 | Translation catalogs | plugin-owned `translations/messages.<locale>.yaml` catalogs using stable message keys | stable in API 1.x |
-| Twig slots | `document.stylesheets`, `document.javascripts`, `login.form.before`, `login.form.after`, `admin.navigation.after`, `admin.content.before`, `admin.content.after`, `admin.profile.form.before`, `admin.profile.form.after`, `admin.settings.fields`, `admin.settings.sections`, `dashboard.content.before`, `dashboard.quick_actions`, `dashboard.widgets`, `dashboard.content.after` | stable in API 1.x |
-| Twig blocks | `head`, `title`, `stylesheets`, `body_class`, `body`, `javascripts`, `login_visual`, `login_form`, `sidebar`, `topbar`, `content`, `dashboard_header`, `dashboard_quick_actions`, `dashboard_widgets` | stable in API 1.x |
+| Twig slots | `document.stylesheets`, `document.javascripts`, `login.form.before`, `login.form.after`, `admin.navigation.after`, `admin.content.before`, `admin.content.after`, `admin.profile.form.before`, `admin.profile.form.after`, `admin.settings.fields`, `admin.settings.sections`, `dashboard.content.before`, `dashboard.continue`, `dashboard.quick_actions`, `dashboard.widgets`, `dashboard.activity`, `dashboard.content.after` | stable in API 1.x |
+| Twig blocks | `head`, `title`, `stylesheets`, `body_class`, `body`, `javascripts`, `login_visual`, `login_form`, `sidebar`, `topbar`, `content`, `dashboard_header`, `dashboard_continue`, `dashboard_quick_actions`, `dashboard_widgets`, `dashboard_activity` | stable in API 1.x |
 | Asset handles | `core-admin`, `core-plugin-manager`, `core-admin-js` plus plugin-owned globally unique handles | stable in API 1.x |
-| Browser hook API | `window.AdminFramework.on()`, `emit()` and the `ready` event | stable in API 1.x |
+| Browser hook API | `window.AdminFramework.on()`, `emit()` and the `ready`, `dashboard:ready` and `dashboard:storage-error` events | stable in API 1.x |
 | Theme registry and semantic theme package contract | planned for the platform foundation | experimental; not yet public API |
 | Core service decoration | `FileNameNormalizerInterface`; decorate the public interface service ID | stable in API 1.x |
 | Core events | lifecycle before/after events and configuration-changed event listed above | stable in API 1.x |
@@ -62,9 +62,11 @@ Lifecycle services should extend `Companyware\\Core\\Framework\\Plugin\\Plugin`.
 
 ## Dashboard extension
 
-Core owns the authenticated dashboard route and always renders a usable welcome area, quick access and system-status widget. Active plugins add server-rendered actions through `dashboard.quick_actions` and widget cards through `dashboard.widgets`. `dashboard.content.before` and `dashboard.content.after` frame the Core content. Slot contributions are additive and disappear automatically while their owning plugin is inactive.
+Core owns the authenticated dashboard route and always renders a usable welcome area, a quiet system-status strip, quick access and process-oriented sections. Active plugins add server-rendered continuation cards through `dashboard.continue`, contextual actions through `dashboard.quick_actions`, overview cards through `dashboard.widgets` and recent events through `dashboard.activity`. `dashboard.content.before` and `dashboard.content.after` frame the Core content. Slot contributions are additive and disappear automatically while their owning plugin is inactive. Providers receive the current administrator and installed-plugin collection as slot context, allowing context-aware output without importing internal Core services.
 
-Structural customization uses the stable `dashboard_header`, `dashboard_quick_actions` and `dashboard_widgets` Twig blocks. A plugin may override one block through Twig inheritance or deliberately replace the dashboard template through its documented override path. Core remains the fallback when that plugin is disabled. Documents is the reference widget provider.
+Structural customization uses the stable `dashboard_header`, `dashboard_continue`, `dashboard_quick_actions`, `dashboard_widgets` and `dashboard_activity` Twig blocks. A plugin may override one block through Twig inheritance or deliberately replace the dashboard template through its documented override path. Core remains the fallback when that plugin is disabled. Documents is the reference provider for every process-oriented slot.
+
+Every contributed dashboard element that participates in personalization uses a globally unique `data-dashboard-widget` identifier and belongs to a `data-dashboard-zone`. Core persists order, visibility and normal/wide size per administrator in browser-local storage. The `dashboard:ready` browser hook exposes the dashboard element and resolved state. Server-side synchronization and role-based defaults may be added compatibly once the corresponding user-settings and authorization contracts are public.
 
 ## Supported platform
 
