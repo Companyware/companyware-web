@@ -3,10 +3,11 @@
 namespace App\Infrastructure;
 
 use App\Plugin\PluginManifest;
+use App\Plugin\PluginPackageLocator;
 
 final class PluginRegistry
 {
-    public function __construct(private readonly Database $database, private readonly Schema $schema)
+    public function __construct(private readonly Database $database, private readonly Schema $schema, private readonly PluginPackageLocator $packages)
     {
     }
 
@@ -22,8 +23,8 @@ final class PluginRegistry
             'core' => true,
         ]];
 
-        $root = dirname(__DIR__, 2).'/plugins';
-        foreach (glob($root.'/*/plugin.json') ?: [] as $manifest) {
+        foreach ($this->packages->directories() as $directory) {
+            $manifest = $directory.'/plugin.json';
             $data = json_decode((string) file_get_contents($manifest), true);
             if (!is_array($data) || empty($data['name'])) {
                 continue;
@@ -41,9 +42,9 @@ final class PluginRegistry
     /** @return list<PluginManifest> */
     public function manifests(): array
     {
-        $root = dirname(__DIR__, 2).'/plugins';
         $manifests = [];
-        foreach (glob($root.'/*/plugin.json') ?: [] as $file) {
+        foreach ($this->packages->directories() as $directory) {
+            $file = $directory.'/plugin.json';
             if ($manifest = PluginManifest::fromFile($file)) $manifests[] = $manifest;
         }
         return $manifests;
@@ -69,12 +70,11 @@ final class PluginRegistry
         return (bool) $statement->fetchColumn();
     }
 
-    public function toggle(string $name): bool
+    public function setActive(string $name, bool $active): void
     {
         $this->schema->ensure();
-        $statement = $this->database->connection()->prepare('INSERT INTO plugin (name, active) VALUES (:name, 1)
-            ON DUPLICATE KEY UPDATE active = NOT active');
-        $statement->execute(['name' => $name]);
-        return $this->isActive($name);
+        $statement = $this->database->connection()->prepare('INSERT INTO plugin (name, active) VALUES (:name, :active)
+            ON DUPLICATE KEY UPDATE active = VALUES(active)');
+        $statement->execute(['name' => $name, 'active' => $active ? 1 : 0]);
     }
 }

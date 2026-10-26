@@ -1,11 +1,12 @@
 # Plugin development
 
-Plugins are self-contained Symfony modules below `plugins/`. Their PHP namespace starts with `Plugins\\`, followed by the directory name. The framework registers this isolated class loader before Symfony compiles its container.
+Plugins are self-contained Composer packages of type `companyware-plugin`. Development packages conventionally live below `plugins/` and can be linked through a Composer path repository; distribution packages may come from any Composer repository.
 
 Plugins may import only public `Companyware\\Core\\` symbols marked `@api`. The `App\\` namespace is internal and is not a compatibility contract. See [`docs/public-api.md`](../docs/public-api.md) for the API version, compatibility promise and protected Core boundaries.
 
 ```text
 plugins/AcmeExample/
+├── composer.json
 ├── plugin.json
 ├── config/
 │   ├── routes.yaml
@@ -23,6 +24,26 @@ plugins/AcmeExample/
     ├── example.css
     └── example.js
 ```
+
+## Composer package
+
+```json
+{
+  "name": "acme/companyware-example",
+  "type": "companyware-plugin",
+  "version": "1.0.0",
+  "require": { "php": "~8.3.0" },
+  "autoload": { "psr-4": { "Plugins\\AcmeExample\\": "src/" } },
+  "extra": {
+    "companyware-plugin": {
+      "manifest": "plugin.json",
+      "official": false
+    }
+  }
+}
+```
+
+The optional `official` flag identifies packages maintained by Companyware and enables the additional official-package checks. Composer and runtime-manifest versions must match. Published packages use the same metadata as local path packages. Composer-installed packages are discovered by package type, independent of their installation directory.
 
 ## Manifest
 
@@ -46,13 +67,13 @@ plugins/AcmeExample/
 
 ## Translations and language packs
 
-Core always provides German (`de`) and English (`en`). A plugin can contribute translated messages by placing YAML catalogs below its `translations/` directory, for example `translations/messages.en.yaml`. Use stable message keys in Twig with `|trans` and in PHP through `TranslatorInterface`.
+Core always provides German (`de`) and English (`en`). Every plugin package must provide a non-empty `translations/messages.de.yaml`; an official Companyware plugin must additionally provide `translations/messages.en.yaml`. Further catalogs are optional. Use stable message keys in Twig with `|trans` and in PHP through `TranslatorInterface`.
 
-A language-pack plugin additionally declares one or more locales in its manifest through `locales`. Only active language-pack plugins add their locales to the system-language selector. `plugins/LanguageSpanish` is the reference package: activating it makes Spanish (`es`) selectable. Domain plugins remain responsible for supplying their own messages for each locale they support; missing messages fall back to German.
+A language-pack plugin additionally declares one or more locales in its manifest through `locales` and must contain a catalog for every declared locale. Only active language-pack plugins add their locales to the system-language selector. `plugins/LanguageSpanish` is the reference package: activating it makes Spanish (`es`) selectable. Domain plugins remain responsible for supplying their own messages for each locale they support; missing messages fall back to German.
 
 ## Services
 
-`config/services.yaml` is imported automatically. Plugin services can implement `NavigationProviderInterface` or `SlotProviderInterface`; autoconfiguration tags them. A lifecycle service is explicitly tagged with the manifest name:
+`config/services.yaml` is imported automatically. Plugin services can implement `NavigationProviderInterface` or `SlotProviderInterface`; autoconfiguration tags them. A lifecycle service extends the public plugin base class and is explicitly tagged with the manifest name:
 
 ```yaml
 services:
@@ -63,9 +84,21 @@ services:
     Plugins\AcmeExample\:
         resource: '../src/'
 
-    Plugins\AcmeExample\ExampleLifecycle:
+    Plugins\AcmeExample\ExamplePlugin:
         tags:
             - { name: 'app.plugin.lifecycle', plugin: 'acme-example' }
+```
+
+```php
+use Companyware\Core\Framework\Plugin\Plugin;
+
+final class ExamplePlugin extends Plugin
+{
+    public function activate(): void
+    {
+        // Optional hook; dependencies are injected through Symfony.
+    }
+}
 ```
 
 Symfony service decoration is supported only for public interfaces explicitly marked `@api`. No Core service identifier is public yet; CW-004 will publish the first decoration-ready Core services. Plugins must never decorate protected recovery services.
@@ -147,7 +180,7 @@ Migration classes implement `Companyware\\Core\\Framework\\Plugin\\Contract\\Mig
 
 ## ZIP packages
 
-Package either the plugin contents directly or one enclosing plugin directory. The installer accepts ZIP files up to 20 MB and rejects traversal paths, absolute paths, symbolic links, excessive file counts and expanded payloads above 100 MB. `plugin.json` must contain a lowercase kebab-case name, label and semantic version.
+Package either the plugin contents directly or one enclosing plugin directory. The installer accepts ZIP files up to 20 MB and rejects traversal paths, absolute paths, symbolic links, excessive file counts and expanded payloads above 100 MB. It validates `composer.json`, `plugin.json`, matching semantic versions and required translation catalogs before the package becomes visible. Failed migrations are rolled back before package files are removed.
 
 The installer invalidates the compiled Symfony container after install/uninstall so newly supplied or removed services and routes take effect on the next request. For Git-based plugin deployment, rebuild explicitly:
 
