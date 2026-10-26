@@ -3,6 +3,7 @@ namespace App\Plugin;
 use App\Infrastructure\Database;
 use App\Infrastructure\PluginRegistry;
 use App\Plugin\Compatibility\PluginCompatibilityResolver;
+use Companyware\Core\Framework\Plugin\Event\PluginLifecycleOperation;
 use App\Plugin\Migration\MigrationManager;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -11,7 +12,7 @@ final class PluginPackageInstaller
 {
     private const MAX_ARCHIVE=20_000_000; private const MAX_EXPANDED=100_000_000; private const MAX_FILES=1000;
     private readonly string $pluginRoot;
-    public function __construct(string $projectDir, private readonly string $cacheDir, private readonly MigrationManager $migrations, private readonly Database $database, private readonly PluginLifecycleManager $lifecycle, private readonly PluginPackageValidator $validator, private readonly PluginCompatibilityResolver $compatibility, private readonly PluginRegistry $registry, private readonly PluginConfiguration $configuration)
+    public function __construct(string $projectDir, private readonly string $cacheDir, private readonly MigrationManager $migrations, private readonly Database $database, private readonly PluginLifecycleManager $lifecycle, private readonly PluginPackageValidator $validator, private readonly PluginCompatibilityResolver $compatibility, private readonly PluginRegistry $registry, private readonly PluginConfiguration $configuration, private readonly PluginEventBus $events)
     { $this->pluginRoot=$projectDir.'/plugins'; }
     public function install(UploadedFile $upload): PluginManifest
     {
@@ -31,10 +32,12 @@ final class PluginPackageInstaller
             try {
                 $this->extract($zip,$prefix,$stage);
                 $manifest=$this->validator->validate($stage);
+                $this->events->before($manifest->name,PluginLifecycleOperation::Install);
                 if(!rename($stage,$target))throw new PluginPackageException('plugins.error.atomic_install');
                 $manifest=$this->validator->validate($target);
                 $this->migrations->migrate($manifest);
                 $this->lifecycle->install($manifest->name);
+                $this->events->after($manifest->name,PluginLifecycleOperation::Install);
                 $this->invalidateContainer();
                 return $manifest;
             }
@@ -55,12 +58,14 @@ final class PluginPackageInstaller
         $root=realpath($this->pluginRoot); $target=realpath($plugin->path);
         if (!$root || !$target || !str_starts_with($target,$root.DIRECTORY_SEPARATOR) || $plugin->core) throw new PluginPackageException('plugins.error.unsafe_path');
         $this->compatibility->assertUninstallable($plugin, $this->registry->manifests());
+        $this->events->before($plugin->name,PluginLifecycleOperation::Uninstall);
         $this->lifecycle->deactivate($plugin->name);
         $inactive=$this->database->connection()->prepare('UPDATE plugin SET active=0 WHERE name=:name'); $inactive->execute(['name'=>$plugin->name]);
         $this->migrations->rollback($plugin); $this->lifecycle->uninstall($plugin->name);
         $this->configuration->delete($plugin->name);
         $delete=$this->database->connection()->prepare('DELETE FROM plugin WHERE name=:name'); $delete->execute(['name'=>$plugin->name]);
         (new Filesystem())->remove($target);
+        $this->events->after($plugin->name,PluginLifecycleOperation::Uninstall);
         $this->invalidateContainer();
     }
     private function packagePrefix(ZipArchive $zip): string

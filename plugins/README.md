@@ -140,7 +140,29 @@ final class ExamplePlugin extends Plugin
 }
 ```
 
-Symfony service decoration is supported only for public interfaces explicitly marked `@api`. No Core service identifier is public yet; CW-004 will publish the first decoration-ready Core services. Plugins must never decorate protected recovery services.
+Symfony service decoration is supported only for public interfaces explicitly marked `@api` and documented as decoration-supported. The first such service is `Companyware\Core\Framework\File\FileNameNormalizerInterface`. Decorate the interface service ID and inject `.inner`; Documents provides the reference implementation:
+
+```yaml
+Plugins\Documents\DocumentsFileNameNormalizer:
+    decorates: Companyware\Core\Framework\File\FileNameNormalizerInterface
+    arguments:
+        $inner: '@Plugins\Documents\DocumentsFileNameNormalizer.inner'
+```
+
+Container compilation rejects decoration of unpublished or protected services, including authentication, activation guards, compatibility/package validation and plugin recovery. Symfony autowiring and autoconfiguration remain the canonical backend registration mechanism.
+
+## Core events
+
+Plugins subscribe through Symfony's `EventSubscriberInterface`. Stable class-named events are `BeforePluginLifecycleEvent`, `AfterPluginLifecycleEvent` and `PluginConfigurationChangedEvent`; lifecycle operations use the `PluginLifecycleOperation` enum. Standard Symfony listener priorities apply, with higher numbers running first.
+
+Before-events run synchronously before mutation and may abort by throwing. After/configuration events run after successful persistence; listener failures are logged and do not turn a completed mutation into a reported failure. Payloads are immutable.
+
+```php
+public static function getSubscribedEvents(): array
+{
+    return [BeforePluginLifecycleEvent::class => ['validateConfiguration', 100]];
+}
+```
 
 ## Routes
 
