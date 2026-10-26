@@ -2,7 +2,7 @@
   "name": "documents",
   "label": "documents.plugin_label",
   "description": "documents.plugin_description",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "compatibility": {
     "companyware": "^0.1",
     "php": "~8.3.0",

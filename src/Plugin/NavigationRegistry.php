@@ -9,6 +9,7 @@ final class NavigationRegistry
     public function items(): array
     {
         $items = [
+            ['group'=>'work','section'=>'nav.section.workspaces','label'=>'nav.dashboard','route'=>'admin_dashboard','icon'=>'⌂','position'=>0],
             ['group'=>'management','section'=>'nav.section.management','label'=>'nav.plugins','route'=>'admin_plugins','icon'=>'◇','position'=>900],
             ['group'=>'management','section'=>'nav.section.management','label'=>'nav.settings','route'=>'admin_settings','icon'=>'⚙','position'=>910],
             ['group'=>'account','section'=>'nav.section.account','label'=>'nav.profile','route'=>'admin_profile','icon'=>'○','position'=>920],

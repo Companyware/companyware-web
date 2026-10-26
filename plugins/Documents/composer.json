@@ -2,7 +2,7 @@
   "name": "companyware/documents",
   "description": "Companyware reference plugin for document management.",
   "type": "companyware-plugin",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "license": "MIT",
   "require": {
     "php": "~8.3.0",

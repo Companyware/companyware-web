@@ -1,0 +1,16 @@
+<article class="panel dashboard-widget">
+    <div class="dashboard-widget-head">
+        <span class="widget-icon documents-widget-icon">▤</span>
+        <div><h3>{{ 'documents.dashboard.title'|trans }}</h3><p>{{ 'documents.dashboard.count'|trans({'%count%': documentCount}) }}</p></div>
+        <a href="{{ path('documents_index') }}">{{ 'documents.dashboard.open'|trans }} →</a>
+    </div>
+    {% if documents %}
+        <div class="dashboard-list">
+            {% for document in documents %}
+                <a href="{{ path('documents_download', {id: document.id}) }}"><span>{{ document.title }}</span><small>{{ document.original_name }}</small></a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="dashboard-empty">{{ 'documents.empty'|trans }}</p>
+    {% endif %}
+</article>

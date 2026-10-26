@@ -28,6 +28,18 @@ final class AdminController
     {
     }
 
+    #[Route('/admin', name: 'admin_dashboard', methods: ['GET'])]
+    public function dashboard(Request $request, PluginRegistry $registry): Response
+    {
+        if ($redirect = $this->requireLogin($request)) return $redirect;
+        $plugins = $registry->all();
+
+        return $this->page($request, 'dashboard', 'dashboard.title', [
+            'plugins' => $plugins,
+            'activePluginCount' => count(array_filter($plugins, static fn (array $plugin): bool => (bool) $plugin['active'])),
+        ]);
+    }
+
     #[Route('/admin/plugins', name: 'admin_plugins', methods: ['GET', 'POST'])]
     public function plugins(Request $request, PluginRegistry $registry, PluginLifecycleManager $lifecycle, PluginPackageInstaller $installer, MigrationManager $migrations, PluginCompatibilityResolver $compatibility, PluginEventBus $events): Response
     {

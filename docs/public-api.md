@@ -25,8 +25,8 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 | Composer package | package type `companyware-plugin` and `extra.companyware-plugin.manifest` | stable in API 1.x |
 | Runtime manifest | `name`, `label`, `description`, `version`, `navigation`, `migrations`, `assets`, optional `locales`, `compatibility`, `require`, `optional`, `conflict`, `provide`, `replace`, optional `settings` | stable in API 1.x |
 | Translation catalogs | plugin-owned `translations/messages.<locale>.yaml` catalogs using stable message keys | stable in API 1.x |
-| Twig slots | `document.stylesheets`, `document.javascripts`, `login.form.before`, `login.form.after`, `admin.navigation.after`, `admin.content.before`, `admin.content.after`, `admin.profile.form.before`, `admin.profile.form.after`, `admin.settings.fields`, `admin.settings.sections` | stable in API 1.x |
-| Twig blocks | `head`, `title`, `stylesheets`, `body_class`, `body`, `javascripts`, `login_visual`, `login_form`, `sidebar`, `topbar`, `content` | stable in API 1.x |
+| Twig slots | `document.stylesheets`, `document.javascripts`, `login.form.before`, `login.form.after`, `admin.navigation.after`, `admin.content.before`, `admin.content.after`, `admin.profile.form.before`, `admin.profile.form.after`, `admin.settings.fields`, `admin.settings.sections`, `dashboard.content.before`, `dashboard.quick_actions`, `dashboard.widgets`, `dashboard.content.after` | stable in API 1.x |
+| Twig blocks | `head`, `title`, `stylesheets`, `body_class`, `body`, `javascripts`, `login_visual`, `login_form`, `sidebar`, `topbar`, `content`, `dashboard_header`, `dashboard_quick_actions`, `dashboard_widgets` | stable in API 1.x |
 | Asset handles | `core-admin`, `core-plugin-manager`, `core-admin-js` plus plugin-owned globally unique handles | stable in API 1.x |
 | Browser hook API | `window.AdminFramework.on()`, `emit()` and the `ready` event | stable in API 1.x |
 | Theme registry and semantic theme package contract | planned for the platform foundation | experimental; not yet public API |
@@ -59,6 +59,12 @@ Each plugin is a Composer package of type `companyware-plugin`. Its Composer met
 The platform version is exposed by `Companyware\Core\Framework\Api\PlatformVersion::VERSION`. Plugin manifests declare compatible Companyware and PHP versions, required PHP extensions, required or optional plugin packages, conflicts and virtual packages. Companyware resolves the complete prospective graph before any package, migration, lifecycle or activation-state mutation.
 
 Lifecycle services should extend `Companyware\\Core\\Framework\\Plugin\\Plugin`. Its no-op lifecycle methods allow a plugin to override only required hooks. Activation state is persisted only after migrations and the activation hook succeed. Failed ZIP installation rolls back applied plugin migrations and removes the staged package.
+
+## Dashboard extension
+
+Core owns the authenticated dashboard route and always renders a usable welcome area, quick access and system-status widget. Active plugins add server-rendered actions through `dashboard.quick_actions` and widget cards through `dashboard.widgets`. `dashboard.content.before` and `dashboard.content.after` frame the Core content. Slot contributions are additive and disappear automatically while their owning plugin is inactive.
+
+Structural customization uses the stable `dashboard_header`, `dashboard_quick_actions` and `dashboard_widgets` Twig blocks. A plugin may override one block through Twig inheritance or deliberately replace the dashboard template through its documented override path. Core remains the fallback when that plugin is disabled. Documents is the reference widget provider.
 
 ## Supported platform
 

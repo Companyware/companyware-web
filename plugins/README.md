@@ -114,6 +114,8 @@ A language-pack plugin additionally declares one or more locales in its manifest
 
 `config/services.yaml` is imported automatically. Plugin services can implement `NavigationProviderInterface` or `SlotProviderInterface`; autoconfiguration tags them. A lifecycle service extends the public plugin base class and is explicitly tagged with the manifest name:
 
+Dashboard widget plugins should prefer the additive `dashboard.quick_actions` and `dashboard.widgets` slots. The framing slots are `dashboard.content.before` and `dashboard.content.after`. For intentional structural changes, extend the stable `dashboard_header`, `dashboard_quick_actions` or `dashboard_widgets` Twig blocks; full template replacement remains available through the plugin override directory. Core renders the fallback dashboard whenever the replacing plugin is inactive. Documents contains the reference provider.
+
 ```yaml
 services:
     _defaults:
