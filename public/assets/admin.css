@@ -97,7 +97,7 @@ input:focus, select:focus { border-color: var(--violet); box-shadow: 0 0 0 4px r
 .nav-primary { min-height: 0; flex: 1 1 auto; overflow-y: auto; }
 .nav-secondary { flex: 0 0 auto; padding-top: 12px; border-top: 1px solid #dfdbe8; }
 .nav-group + .nav-group { margin-top: 8px; }
-.nav-group summary { display: flex; align-items: center; justify-content: space-between; margin: 0 5px 6px; padding: 8px 9px; color: #8d88a0; font-size: 9px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; border-radius: 9px; cursor: pointer; list-style: none; user-select: none; }
+.nav-group summary { display: flex; align-items: center; justify-content: space-between; margin: 0 5px 6px; padding: 10px 9px; color: #777287; font-size: 16px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; border-radius: 9px; cursor: pointer; list-style: none; user-select: none; }
 .nav-group summary::-webkit-details-marker { display: none; }
 .nav-group summary:hover { color: var(--graphite); background: rgba(255,255,255,.55); }
 .nav-chevron { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round; transition: transform .18s ease; }
