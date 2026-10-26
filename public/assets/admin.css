@@ -240,8 +240,11 @@ input:focus, select:focus { border-color: var(--violet); box-shadow: 0 0 0 4px r
 .dashboard-widget-controls { position: absolute; z-index: 3; top: 8px; right: 8px; display: none; gap: 4px; padding: 4px; background: rgba(255,255,255,.94); border: 1px solid var(--line); border-radius: 9px; box-shadow: 0 5px 15px rgba(43,40,61,.1); }
 .dashboard-widget-controls button { width: 28px; height: 28px; padding: 0; color: var(--violet); background: transparent; border: 0; border-radius: 6px; cursor: pointer; }
 .dashboard-widget-controls button:hover { background: #f0eff8; }
+.dashboard-widget-controls [data-dashboard-action="drag"] { cursor: grab; }
+.dashboard-widget-controls [data-dashboard-action="drag"]:active { cursor: grabbing; }
 .dashboard-customizing [data-dashboard-widget] { outline: 2px dashed rgba(92,90,167,.3); outline-offset: 3px; }
 .dashboard-customizing .dashboard-widget-controls { display: flex; }
+.dashboard-widget-dragging { opacity: .45; }
 .migration-panel { margin-top: 22px; }
 .migration-list { border-top: 1px solid var(--line); }
 .migration-row { display: grid; grid-template-columns: minmax(180px, 1fr) 120px 110px minmax(150px, auto); align-items: center; gap: 16px; padding: 14px 34px; border-bottom: 1px solid var(--line); }

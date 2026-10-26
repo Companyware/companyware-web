@@ -46,14 +46,13 @@
             const controls = document.createElement('div');
             controls.className = 'dashboard-widget-controls';
             [
-                ['before', '\u2190', dashboard.dataset.labelBefore],
-                ['after', '\u2192', dashboard.dataset.labelAfter],
-                ['size', '\u2194', dashboard.dataset.labelSize],
+                ['drag', '\u2637', dashboard.dataset.labelDrag],
                 ['hide', '\u00d7', dashboard.dataset.labelHide]
             ].forEach(function (definition) {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.dataset.dashboardAction = definition[0];
+                if (definition[0] === 'drag') button.draggable = true;
                 button.textContent = definition[1];
                 button.title = definition[2] || '';
                 button.setAttribute('aria-label', definition[2] || '');
@@ -101,22 +100,49 @@
             const zone = widget.closest('[data-dashboard-zone]');
             const direction = action.dataset.dashboardAction;
 
-            if (direction === 'before' && widget.previousElementSibling) {
-                zone.insertBefore(widget, widget.previousElementSibling);
-                persistOrder(zone);
-            } else if (direction === 'after' && widget.nextElementSibling) {
-                zone.insertBefore(widget.nextElementSibling, widget);
-                persistOrder(zone);
-            } else if (direction === 'size') {
-                const size = widget.dataset.dashboardSize === 'wide' ? 'normal' : 'wide';
-                widget.dataset.dashboardSize = size;
-                state.sizes[id] = size;
-                save();
-            } else if (direction === 'hide') {
-                widget.hidden = true;
+            if (direction === 'hide') {
                 if (!state.hidden.includes(id)) state.hidden = state.hidden.concat(id);
                 save();
+                widget.remove();
             }
+        });
+
+        let draggedWidget = null;
+        dashboard.addEventListener('dragstart', function (event) {
+            const handle = event.target.closest('[data-dashboard-action="drag"]');
+            if (!handle || !dashboard.classList.contains('dashboard-customizing')) {
+                event.preventDefault();
+                return;
+            }
+            draggedWidget = handle.closest('[data-dashboard-widget]');
+            draggedWidget.classList.add('dashboard-widget-dragging');
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', draggedWidget.dataset.dashboardWidget);
+        });
+        dashboard.addEventListener('dragover', function (event) {
+            const zone = event.target.closest('[data-dashboard-zone]');
+            if (!draggedWidget || !zone || draggedWidget.closest('[data-dashboard-zone]') !== zone) return;
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+            const next = Array.from(zone.querySelectorAll(':scope > [data-dashboard-widget]:not(.dashboard-widget-dragging)'))
+                .find(function (candidate) {
+                    const rectangle = candidate.getBoundingClientRect();
+                    return event.clientY < rectangle.top + rectangle.height / 2;
+                });
+            zone.insertBefore(draggedWidget, next || null);
+        });
+        dashboard.addEventListener('drop', function (event) {
+            if (!draggedWidget) return;
+            event.preventDefault();
+            const zone = draggedWidget.closest('[data-dashboard-zone]');
+            persistOrder(zone);
+        });
+        dashboard.addEventListener('dragend', function () {
+            if (!draggedWidget) return;
+            const zone = draggedWidget.closest('[data-dashboard-zone]');
+            draggedWidget.classList.remove('dashboard-widget-dragging');
+            persistOrder(zone);
+            draggedWidget = null;
         });
 
         window.AdminFramework.emit('dashboard:ready', {dashboard: dashboard, owner: owner, state: state});

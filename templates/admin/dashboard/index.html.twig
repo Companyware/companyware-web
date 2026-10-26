@@ -3,7 +3,7 @@
 {% block content %}
 {% set continue_items %}{{ plugin_slot('dashboard.continue', {admin: admin, plugins: plugins}) }}{% endset %}
 {% set activity_items %}{{ plugin_slot('dashboard.activity', {admin: admin, plugins: plugins}) }}{% endset %}
-<div class="dashboard" data-dashboard data-dashboard-owner="{{ admin.id }}" data-label-before="{{ 'dashboard.move_before'|trans }}" data-label-after="{{ 'dashboard.move_after'|trans }}" data-label-size="{{ 'dashboard.change_size'|trans }}" data-label-hide="{{ 'dashboard.hide_widget'|trans }}">
+<div class="dashboard" data-dashboard data-dashboard-owner="{{ admin.id }}" data-label-drag="{{ 'dashboard.drag_widget'|trans }}" data-label-hide="{{ 'dashboard.hide_widget'|trans }}">
     {% block dashboard_header %}
     <div class="dashboard-welcome">
         <div>
