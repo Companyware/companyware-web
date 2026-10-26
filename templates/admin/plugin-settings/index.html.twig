@@ -1,0 +1,21 @@
+{% extends 'admin/layout.html.twig' %}
+{% block content %}
+<div class="page-head"><div><span class="eyebrow blue">{{ 'plugins.settings_eyebrow'|trans }}</span><h1>{{ plugin.label|trans }}</h1><p>{{ 'plugins.settings_intro'|trans }}</p></div></div>
+{% if message %}<div class="alert success">{{ message }}</div>{% endif %}{% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+<section class="panel form-panel"><form class="admin-form" method="post"><input type="hidden" name="_token" value="{{ token }}">
+{% for field in plugin.settings %}
+    {% if field.type == 'checkbox' %}
+        <label class="check setting-check"><input type="hidden" name="settings[{{ field.key }}]" value="0"><input type="checkbox" name="settings[{{ field.key }}]" value="1" {{ values[field.key] ? 'checked' : '' }}> {{ field.label|trans }}</label>
+    {% else %}
+        <label for="setting-{{ field.key }}">{{ field.label|trans }}</label>
+        {% if field.type == 'select' %}
+            <select id="setting-{{ field.key }}" name="settings[{{ field.key }}]">{% for option in field.options %}<option value="{{ option.value }}" {{ values[field.key] == option.value ? 'selected' : '' }}>{{ option.label|trans }}</option>{% endfor %}</select>
+        {% else %}
+            <input id="setting-{{ field.key }}" type="{{ field.type }}" name="settings[{{ field.key }}]" value="{{ values[field.key] }}"{% if field.min is defined %} min="{{ field.min }}"{% endif %}{% if field.max is defined %} max="{{ field.max }}"{% endif %}{% if field.step is defined %} step="{{ field.step }}"{% endif %}>
+        {% endif %}
+    {% endif %}
+    {% if field.help is defined %}<p class="field-help">{{ field.help|trans }}</p>{% endif %}
+{% endfor %}
+<div class="form-actions"><button class="primary">{{ 'plugins.settings_save'|trans }}</button> <a class="secondary" href="{{ path('admin_plugins') }}">{{ 'plugins.settings_back'|trans }}</a></div>
+</form></section>
+{% endblock %}

@@ -9,15 +9,16 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\NavigationProviderInterface`
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\SlotProviderInterface`
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\Migration\\PluginMigrationInterface`
+- `Companyware\\Core\\Framework\\Plugin\\Contract\\PluginConfigurationInterface`
 - documented manifest fields, Twig blocks and slots, asset handles and the `window.AdminFramework` hooks listed in `plugins/README.md`
 
 ## Extension-point inventory
 
 | Surface | Identifiers | Status |
 | --- | --- | --- |
-| PHP contracts | the four `Plugin\\Contract` interfaces and the `Plugin` base class listed above | stable in API 1.x |
+| PHP contracts | the five `Plugin\\Contract` interfaces and the `Plugin` base class listed above | stable in API 1.x |
 | Composer package | package type `companyware-plugin` and `extra.companyware-plugin.manifest` | stable in API 1.x |
-| Runtime manifest | `name`, `label`, `description`, `version`, `navigation`, `migrations`, `assets`, optional `locales`, `compatibility`, `require`, `optional`, `conflict`, `provide`, `replace` | stable in API 1.x |
+| Runtime manifest | `name`, `label`, `description`, `version`, `navigation`, `migrations`, `assets`, optional `locales`, `compatibility`, `require`, `optional`, `conflict`, `provide`, `replace`, optional `settings` | stable in API 1.x |
 | Translation catalogs | plugin-owned `translations/messages.<locale>.yaml` catalogs using stable message keys | stable in API 1.x |
 | Twig slots | `document.stylesheets`, `document.javascripts`, `login.form.before`, `login.form.after`, `admin.navigation.after`, `admin.content.before`, `admin.content.after`, `admin.profile.form.before`, `admin.profile.form.after`, `admin.settings.fields`, `admin.settings.sections` | stable in API 1.x |
 | Twig blocks | `head`, `title`, `stylesheets`, `body_class`, `body`, `javascripts`, `login_visual`, `login_form`, `sidebar`, `topbar`, `content` | stable in API 1.x |

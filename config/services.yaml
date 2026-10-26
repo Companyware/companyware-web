@@ -59,5 +59,8 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    Companyware\Core\Framework\Plugin\Contract\PluginConfigurationInterface:
+        alias: App\Plugin\PluginConfiguration
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

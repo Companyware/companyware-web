@@ -16,6 +16,7 @@ use App\Plugin\PluginLifecycleManager;
 use App\Plugin\PluginPackageException;
 use App\Plugin\PluginPackageInstaller;
 use App\Plugin\Compatibility\PluginCompatibilityResolver;
+use App\Plugin\PluginConfiguration;
 use App\Plugin\Migration\MigrationManager;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -54,6 +55,32 @@ final class AdminController
         }
         $message=$request->getSession()->remove('plugin_message'); $error=$request->getSession()->remove('plugin_error');
         return $this->page($request, 'plugins', 'plugins.title', ['plugins' => $registry->all(),'message'=>$message,'error'=>$error]);
+    }
+
+    #[Route('/admin/plugins/{name}/settings', name: 'admin_plugin_settings', requirements: ['name' => '[a-z][a-z0-9-]+'], methods: ['GET', 'POST'])]
+    public function pluginSettings(string $name, Request $request, PluginRegistry $registry, PluginConfiguration $configuration): Response
+    {
+        if ($redirect = $this->requireLogin($request)) return $redirect;
+        $plugin = $registry->manifest($name);
+        if (!$plugin || $plugin->settings === []) return new Response($this->translator->trans('plugins.message.settings_unavailable'), 404);
+
+        if ($request->isMethod('POST')) {
+            if (!$this->validToken($request)) {
+                $request->getSession()->set('plugin_settings_error', $this->translator->trans('plugins.message.expired'));
+            } else {
+                $configuration->save($plugin, $request->request->all('settings'));
+                $request->getSession()->set('plugin_settings_message', $this->translator->trans('plugins.settings_saved'));
+            }
+
+            return new RedirectResponse('/admin/plugins/'.$plugin->name.'/settings');
+        }
+
+        return $this->page($request, 'plugin-settings', $plugin->label, [
+            'plugin' => $plugin,
+            'values' => $configuration->values($plugin),
+            'message' => $request->getSession()->remove('plugin_settings_message'),
+            'error' => $request->getSession()->remove('plugin_settings_error'),
+        ]);
     }
 
     #[Route('/admin/profile', name: 'admin_profile', methods: ['GET', 'POST'])]

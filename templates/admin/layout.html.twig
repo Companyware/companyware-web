@@ -13,6 +13,7 @@
     {% set current_route = app.request.attributes.get('_route') %}
     {% set navigation = admin_navigation() %}
     {% set current_group = 'work' %}
+    {% if current_route == 'admin_plugin_settings' %}{% set current_group = 'management' %}{% endif %}
     {% for item in navigation %}
         {% if item.route == current_route %}
             {% set current_group = item.group %}
@@ -39,7 +40,7 @@
                     <summary><span>{{ label|trans }}</span><svg class="nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
                     <div class="nav-group-items">
                         {% for item in items %}
-                            <a class="{{ current_route == item.route ? 'active' : '' }}" href="{{ path(item.route) }}">
+                            <a class="{{ current_route == item.route or (current_route == 'admin_plugin_settings' and item.route == 'admin_plugins') ? 'active' : '' }}" href="{{ path(item.route) }}">
                                 <span class="nav-icon">{{ item.icon }}</span>{{ item.label|trans }}
                             </a>
                         {% endfor %}

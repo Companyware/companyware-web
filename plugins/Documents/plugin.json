@@ -2,13 +2,25 @@
   "name": "documents",
   "label": "documents.plugin_label",
   "description": "documents.plugin_description",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "compatibility": {
     "companyware": "^0.1",
     "php": "~8.3.0",
     "extensions": {"zip": "*"}
   },
   "provide": {"companyware.documents": "1.0.0"},
+  "settings": [
+    {
+      "key": "max_upload_mb",
+      "type": "number",
+      "label": "documents.settings.max_upload_mb",
+      "help": "documents.settings.max_upload_help",
+      "default": 15,
+      "min": 1,
+      "max": 100,
+      "step": 1
+    }
+  ],
   "migrations": ["Plugins\\Documents\\Migration\\Version202608150001"],
   "assets": {
     "styles": [

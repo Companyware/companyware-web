@@ -73,6 +73,42 @@ final class PluginPackageValidator
                 }
             }
         }
+        if (!array_is_list($manifest->settings)) {
+            throw new PluginPackageException('plugins.error.settings_invalid');
+        }
+        $keys = [];
+        foreach ($manifest->settings as $field) {
+            if (!is_array($field) || !is_string($field['key'] ?? null) || !preg_match('/^[a-z][a-z0-9_.-]*$/', $field['key']) || isset($keys[$field['key']])) {
+                throw new PluginPackageException('plugins.error.settings_invalid');
+            }
+            if (!in_array($field['type'] ?? null, ['text', 'number', 'checkbox', 'select'], true) || !is_string($field['label'] ?? null)) {
+                throw new PluginPackageException('plugins.error.settings_invalid');
+            }
+            if (isset($field['help']) && !is_string($field['help'])) {
+                throw new PluginPackageException('plugins.error.settings_invalid');
+            }
+            if (($field['type'] ?? null) === 'select' && (!is_array($field['options'] ?? null) || $field['options'] === [])) {
+                throw new PluginPackageException('plugins.error.settings_invalid');
+            }
+            if ((isset($field['min']) && !is_numeric($field['min'])) || (isset($field['max']) && !is_numeric($field['max'])) || (isset($field['step']) && !is_numeric($field['step']))) {
+                throw new PluginPackageException('plugins.error.settings_invalid');
+            }
+            if (isset($field['step']) && (float) $field['step'] <= 0) {
+                throw new PluginPackageException('plugins.error.settings_invalid');
+            }
+            if (isset($field['min'], $field['max']) && $field['min'] > $field['max']) {
+                throw new PluginPackageException('plugins.error.settings_invalid');
+            }
+            if (isset($field['maxLength']) && (!is_int($field['maxLength']) || $field['maxLength'] < 1 || $field['maxLength'] > 4000)) {
+                throw new PluginPackageException('plugins.error.settings_invalid');
+            }
+            foreach ($field['options'] ?? [] as $option) {
+                if (!is_array($option) || !is_scalar($option['value'] ?? null) || !is_string($option['label'] ?? null)) {
+                    throw new PluginPackageException('plugins.error.settings_invalid');
+                }
+            }
+            $keys[$field['key']] = true;
+        }
 
     }
 

@@ -4,7 +4,7 @@ namespace App\Plugin;
 
 final readonly class PluginManifest
 {
-    public function __construct(public string $name, public string $label, public string $version, public string $description, public string $path, public array $navigation = [], public array $migrations = [], public array $assets = [], public array $locales = [], public bool $core = false, public string $companyware = '*', public string $php = '*', public array $extensions = [], public array $requires = [], public array $optional = [], public array $conflicts = [], public array $provides = [], public array $replaces = [])
+    public function __construct(public string $name, public string $label, public string $version, public string $description, public string $path, public array $navigation = [], public array $migrations = [], public array $assets = [], public array $locales = [], public bool $core = false, public string $companyware = '*', public string $php = '*', public array $extensions = [], public array $requires = [], public array $optional = [], public array $conflicts = [], public array $provides = [], public array $replaces = [], public array $settings = [])
     {
     }
 
@@ -19,7 +19,7 @@ final readonly class PluginManifest
     {
         if (!is_array($data) || !preg_match('/^[a-z][a-z0-9-]+$/', $data['name'] ?? '')) return null;
         if (!is_string($data['label'] ?? null) || !preg_match('/^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/', $data['version'] ?? '')) return null;
-        foreach (['require', 'optional', 'conflict', 'provide', 'replace'] as $field) {
+        foreach (['require', 'optional', 'conflict', 'provide', 'replace', 'settings'] as $field) {
             if (isset($data[$field]) && !is_array($data[$field])) return null;
         }
         if (isset($data['compatibility']) && !is_array($data['compatibility'])) return null;
@@ -42,6 +42,7 @@ final readonly class PluginManifest
             is_array($data['conflict'] ?? null) ? $data['conflict'] : [],
             is_array($data['provide'] ?? null) ? $data['provide'] : [],
             is_array($data['replace'] ?? null) ? $data['replace'] : [],
+            is_array($data['settings'] ?? null) ? $data['settings'] : [],
         );
     }
 

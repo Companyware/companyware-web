@@ -11,7 +11,7 @@ final class PluginPackageInstaller
 {
     private const MAX_ARCHIVE=20_000_000; private const MAX_EXPANDED=100_000_000; private const MAX_FILES=1000;
     private readonly string $pluginRoot;
-    public function __construct(string $projectDir, private readonly string $cacheDir, private readonly MigrationManager $migrations, private readonly Database $database, private readonly PluginLifecycleManager $lifecycle, private readonly PluginPackageValidator $validator, private readonly PluginCompatibilityResolver $compatibility, private readonly PluginRegistry $registry)
+    public function __construct(string $projectDir, private readonly string $cacheDir, private readonly MigrationManager $migrations, private readonly Database $database, private readonly PluginLifecycleManager $lifecycle, private readonly PluginPackageValidator $validator, private readonly PluginCompatibilityResolver $compatibility, private readonly PluginRegistry $registry, private readonly PluginConfiguration $configuration)
     { $this->pluginRoot=$projectDir.'/plugins'; }
     public function install(UploadedFile $upload): PluginManifest
     {
@@ -58,6 +58,7 @@ final class PluginPackageInstaller
         $this->lifecycle->deactivate($plugin->name);
         $inactive=$this->database->connection()->prepare('UPDATE plugin SET active=0 WHERE name=:name'); $inactive->execute(['name'=>$plugin->name]);
         $this->migrations->rollback($plugin); $this->lifecycle->uninstall($plugin->name);
+        $this->configuration->delete($plugin->name);
         $delete=$this->database->connection()->prepare('DELETE FROM plugin WHERE name=:name'); $delete->execute(['name'=>$plugin->name]);
         (new Filesystem())->remove($target);
         $this->invalidateContainer();
