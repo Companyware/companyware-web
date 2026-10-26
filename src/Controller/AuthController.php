@@ -16,14 +16,14 @@ final class AuthController
     #[Route('/', name: 'app_home', methods: ['GET'])]
     public function home(Request $request): Response
     {
-        return new RedirectResponse($request->getSession()->has('admin') ? '/admin/plugins' : '/login');
+        return new RedirectResponse($request->getSession()->has('admin') ? '/admin' : '/login');
     }
 
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
     public function login(Request $request, AdminRepository $admins, Environment $view, TranslatorInterface $translator): Response
     {
         if ($request->getSession()->has('admin')) {
-            return new RedirectResponse('/admin/plugins');
+            return new RedirectResponse('/admin');
         }
 
         $error = null;
@@ -37,7 +37,7 @@ final class AuthController
                         unset($admin['password_hash']);
                         $request->getSession()->migrate(true);
                         $request->getSession()->set('admin', $admin);
-                        return new RedirectResponse('/admin/plugins');
+                        return new RedirectResponse('/admin');
                     }
                     $error = $translator->trans('login.error.invalid');
                 } catch (Throwable) {

@@ -16,6 +16,9 @@ services:
         arguments:
             $inner: '@Plugins\Documents\DocumentsFileNameNormalizer.inner'
 
+    Plugins\Documents\DocumentsDashboardProvider:
+        tags: ['app.plugin.slot']
+
     Plugins\Documents\Controller\:
         resource: '../src/Controller/'
         autowire: true
