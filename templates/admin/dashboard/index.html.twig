@@ -5,6 +5,7 @@
 {% set activity_items %}{{ plugin_slot('dashboard.activity', {admin: admin, plugins: plugins}) }}{% endset %}
 <div class="dashboard" data-dashboard data-dashboard-owner="{{ admin.id }}" data-dashboard-save-url="{{ path('admin_dashboard_layout') }}" data-dashboard-token="{{ token }}" data-label-drag="{{ 'dashboard.drag_widget'|trans }}" data-label-hide="{{ 'dashboard.hide_widget'|trans }}" data-label-restore="{{ 'dashboard.restore_widget'|trans }}">
     <script type="application/json" data-dashboard-state>{{ dashboardState|json_encode|raw }}</script>
+    <div class="alert error" data-dashboard-error hidden>{{ 'dashboard.save_error'|trans }}</div>
     {% block dashboard_header %}
     <div class="dashboard-welcome">
         <div>

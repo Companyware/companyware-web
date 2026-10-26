@@ -8,6 +8,7 @@
         if (!dashboard) return;
 
         const owner = dashboard.dataset.dashboardOwner || 'anonymous';
+        const errorMessage = dashboard.querySelector('[data-dashboard-error]');
         let state = {order: {}, hidden: []};
         try {
             const source = dashboard.querySelector('[data-dashboard-state]');
@@ -19,6 +20,7 @@
         state.order = state.order && typeof state.order === 'object' ? state.order : {};
 
         const save = function () {
+            if (errorMessage) errorMessage.hidden = true;
             return window.fetch(dashboard.dataset.dashboardSaveUrl, {
                 method: 'POST',
                 credentials: 'same-origin',
@@ -27,6 +29,7 @@
             }).then(function (response) {
                 if (!response.ok) throw new Error('Dashboard state could not be saved.');
             }).catch(function (error) {
+                if (errorMessage) errorMessage.hidden = false;
                 window.AdminFramework.emit('dashboard:storage-error', {error: error});
                 throw error;
             });
@@ -142,6 +145,10 @@
                     renderHiddenManager();
                     if (hiddenManager) hiddenManager.hidden = true;
                     if (addButton) addButton.setAttribute('aria-expanded', 'false');
+                }).catch(function () {
+                    if (!state.hidden.includes(id)) state.hidden = state.hidden.concat(id);
+                    if (widget) widget.hidden = true;
+                    renderHiddenManager();
                 });
                 return;
             }
@@ -151,6 +158,8 @@
                 if (dashboard.classList.contains('dashboard-customizing') && event.target.closest('[data-dashboard-widget] a')) event.preventDefault();
                 return;
             }
+            event.preventDefault();
+            event.stopPropagation();
 
             const widget = action.closest('[data-dashboard-widget]');
             const id = widget.dataset.dashboardWidget;
@@ -160,7 +169,11 @@
             if (direction === 'hide') {
                 if (!state.hidden.includes(id)) state.hidden = state.hidden.concat(id);
                 widget.hidden = true;
-                save().then(renderHiddenManager);
+                save().then(renderHiddenManager).catch(function () {
+                    state.hidden = state.hidden.filter(function (hiddenId) { return hiddenId !== id; });
+                    widget.hidden = false;
+                    renderHiddenManager();
+                });
             }
         });
 
