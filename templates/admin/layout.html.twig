@@ -14,7 +14,7 @@
     {% set navigation = admin_navigation() %}
     <nav class="sidebar-nav">
         <div class="nav-primary">
-            <details class="nav-group" data-nav-group="work" open>
+            <details class="nav-group" name="sidebar-navigation" data-nav-accordion open>
                 <summary><span>{{ 'nav.section.workspaces'|trans }}</span><svg class="nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
                 <div class="nav-group-items">
                     {% for item in navigation|filter(item => item.group == 'work') %}
@@ -29,7 +29,7 @@
         <div class="nav-secondary">
             {% for group, label in {'management': 'nav.section.management', 'account': 'nav.section.account'} %}
                 {% set items = navigation|filter(item => item.group == group) %}
-                <details class="nav-group" data-nav-group="{{ group }}">
+                <details class="nav-group" name="sidebar-navigation" data-nav-accordion>
                     <summary><span>{{ label|trans }}</span><svg class="nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
                     <div class="nav-group-items">
                         {% for item in items %}
