@@ -19,33 +19,39 @@
             {% set current_group = item.group %}
         {% endif %}
     {% endfor %}
+    {% set work_items = navigation|filter(item => item.group == 'work') %}
+    {% set work_extension %}{{ plugin_slot('admin.navigation.after') }}{% endset %}
     <nav class="sidebar-nav">
         <div class="nav-primary">
-            <details class="nav-group" name="sidebar-navigation" data-nav-accordion {{ current_group == 'work' ? 'open' : '' }}>
+            {% if work_items|length > 0 or work_extension|trim is not empty %}
+            <details class="nav-group nav-group-work" name="sidebar-navigation" data-nav-accordion {{ current_group == 'work' ? 'open' : '' }}>
                 <summary><span>{{ 'nav.section.workspaces'|trans }}</span><svg class="nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
                 <div class="nav-group-items">
-                    {% for item in navigation|filter(item => item.group == 'work') %}
+                    {% for item in work_items %}
                         <a class="{{ current_route == item.route ? 'active' : '' }}" href="{{ path(item.route) }}">
-                            <span class="nav-icon">{{ item.icon }}</span>{{ item.label|trans }}
+                            <span class="nav-icon">{{ item.icon }}</span><span class="nav-label">{{ item.label|trans }}</span>
                         </a>
                     {% endfor %}
-                    {{ plugin_slot('admin.navigation.after') }}
+                    {{ work_extension|raw }}
                 </div>
             </details>
+            {% endif %}
         </div>
         <div class="nav-secondary">
             {% for group, label in {'management': 'nav.section.management', 'account': 'nav.section.account'} %}
                 {% set items = navigation|filter(item => item.group == group) %}
-                <details class="nav-group" name="sidebar-navigation" data-nav-accordion {{ current_group == group ? 'open' : '' }}>
+                {% if items|length > 0 %}
+                <details class="nav-group nav-group-{{ group }}" name="sidebar-navigation" data-nav-accordion {{ current_group == group ? 'open' : '' }}>
                     <summary><span>{{ label|trans }}</span><svg class="nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
                     <div class="nav-group-items">
                         {% for item in items %}
                             <a class="{{ current_route == item.route or (current_route == 'admin_plugin_settings' and item.route == 'admin_plugins') ? 'active' : '' }}" href="{{ path(item.route) }}">
-                                <span class="nav-icon">{{ item.icon }}</span>{{ item.label|trans }}
+                                <span class="nav-icon">{{ item.icon }}</span><span class="nav-label">{{ item.label|trans }}</span>
                             </a>
                         {% endfor %}
                     </div>
                 </details>
+                {% endif %}
             {% endfor %}
         </div>
     </nav>
