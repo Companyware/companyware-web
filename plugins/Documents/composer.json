@@ -2,10 +2,11 @@
   "name": "companyware/documents",
   "description": "Companyware reference plugin for document management.",
   "type": "companyware-plugin",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "license": "MIT",
   "require": {
-    "php": "~8.3.0"
+    "php": "~8.3.0",
+    "symfony/mime": "6.4.*"
   },
   "autoload": {
     "psr-4": {
