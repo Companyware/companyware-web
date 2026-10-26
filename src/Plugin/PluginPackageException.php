@@ -1,3 +1,3 @@
 <?php
 namespace App\Plugin;
-final class PluginPackageException extends \RuntimeException {}
+class PluginPackageException extends \RuntimeException {}
