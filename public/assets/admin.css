@@ -241,7 +241,6 @@ input:focus, select:focus { border-color: var(--violet); box-shadow: 0 0 0 4px r
 .dashboard-widget-controls button { width: 28px; height: 28px; padding: 0; color: var(--violet); background: transparent; border: 0; border-radius: 6px; cursor: pointer; }
 .dashboard-widget-controls button:hover { background: #f0eff8; }
 .dashboard-customizing [data-dashboard-widget] { outline: 2px dashed rgba(92,90,167,.3); outline-offset: 3px; }
-.dashboard-customizing [data-dashboard-widget][hidden] { display: block; opacity: .38; filter: grayscale(.5); }
 .dashboard-customizing .dashboard-widget-controls { display: flex; }
 .migration-panel { margin-top: 22px; }
 .migration-list { border-top: 1px solid var(--line); }

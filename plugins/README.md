@@ -115,7 +115,7 @@ A language-pack plugin additionally declares one or more locales in its manifest
 
 `config/services.yaml` is imported automatically. Plugin services can implement `NavigationProviderInterface` or `SlotProviderInterface`; autoconfiguration tags them. A lifecycle service extends the public plugin base class and is explicitly tagged with the manifest name:
 
-Dashboard plugins should prefer the additive `dashboard.continue`, `dashboard.quick_actions`, `dashboard.widgets` and `dashboard.activity` slots. The framing slots are `dashboard.content.before` and `dashboard.content.after`. For intentional structural changes, extend the stable `dashboard_header`, `dashboard_continue`, `dashboard_quick_actions`, `dashboard_widgets` or `dashboard_activity` Twig blocks; full template replacement remains available through the plugin override directory. Core renders the fallback dashboard whenever the replacing plugin is inactive. Documents contains the reference provider. Add a globally unique `data-dashboard-widget` identifier to personalizable contributions and place them in a `data-dashboard-zone`; Core then supplies ordering, hiding and normal/wide sizing per administrator and browser.
+Dashboard plugins should prefer the additive `dashboard.continue`, `dashboard.quick_actions`, `dashboard.widgets` and `dashboard.activity` slots. The framing slots are `dashboard.content.before` and `dashboard.content.after`. For intentional structural changes, extend the stable `dashboard_header`, `dashboard_continue`, `dashboard_quick_actions`, `dashboard_widgets` or `dashboard_activity` Twig blocks; full template replacement remains available through the plugin override directory. Core renders the fallback dashboard whenever the replacing plugin is inactive. Documents contains the reference provider. Add a globally unique `data-dashboard-widget` identifier to personalizable contributions and place them in a `data-dashboard-zone`; Core then supplies ordering, immediate hiding and normal/wide sizing per administrator and browser. The dashboard reset action restores hidden contributions and all other plugin-defined defaults.
 
 ```yaml
 services:
@@ -252,7 +252,7 @@ Every package declares one explicit uninstall policy:
 - `"uninstall": {"data": "remove"}` calls `down()` in reverse order, then removes migration and plugin-configuration records;
 - `"uninstall": {"data": "retain"}` removes the package while retaining its database data, settings and migration records for reinstall.
 
-Installation recovery always attempts `down()` for migrations from the failed installation, independent of that policy. Use `app:migrations:migrate --env=prod` during deployment and inspect state with `app:migrations:status --env=prod` or `--json`.
+Installation recovery always attempts `down()` for migrations from the failed installation, independent of that policy. After deploying code that adds the migration commands, clear the production cache before invoking them. Use `app:migrations:migrate --env=prod` during deployment and inspect state with `app:migrations:status --env=prod` or `--json`.
 
 If a migration cannot safely reverse its changes, additionally implement `IrreversibleMigrationInterface` and return a concise operator-facing reason. Destructive rollback is then blocked. A plugin containing such a migration should declare `retain`; if installation fails after that migration ran, Companyware keeps the inactive package and recorded failure for manual recovery rather than pretending that cleanup succeeded.
 

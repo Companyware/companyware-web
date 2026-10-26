@@ -49,7 +49,7 @@
                 ['before', '\u2190', dashboard.dataset.labelBefore],
                 ['after', '\u2192', dashboard.dataset.labelAfter],
                 ['size', '\u2194', dashboard.dataset.labelSize],
-                ['hide', '\u00d7', widget.hidden ? dashboard.dataset.labelShow : dashboard.dataset.labelHide]
+                ['hide', '\u00d7', dashboard.dataset.labelHide]
             ].forEach(function (definition) {
                 const button = document.createElement('button');
                 button.type = 'button';
@@ -113,11 +113,8 @@
                 state.sizes[id] = size;
                 save();
             } else if (direction === 'hide') {
-                const isHidden = state.hidden.includes(id);
-                widget.hidden = !isHidden;
-                state.hidden = isHidden ? state.hidden.filter(function (hiddenId) { return hiddenId !== id; }) : state.hidden.concat(id);
-                action.title = isHidden ? dashboard.dataset.labelHide : dashboard.dataset.labelShow;
-                action.setAttribute('aria-label', action.title);
+                widget.hidden = true;
+                if (!state.hidden.includes(id)) state.hidden = state.hidden.concat(id);
                 save();
             }
         });
