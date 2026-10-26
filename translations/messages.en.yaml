@@ -97,5 +97,8 @@ plugins.error.version_mismatch: 'The versions in composer.json and plugin.json d
 plugins.error.translation_missing: 'A required translation catalog is missing or empty.'
 plugins.error.locale_invalid: 'The plugin declares an invalid locale code.'
 plugins.error.install_recovery: 'Installation failed and could not be rolled back completely. The inactive installation was preserved for recovery.'
+plugins.error.constraint_invalid: 'The plugin contains an invalid version constraint.'
+plugins.error.compatibility_invalid: 'The plugin compatibility metadata is invalid.'
+plugins.error.provided_version_invalid: 'Provided or replaced packages must declare a concrete semantic version.'
 language_spanish.label: 'Spanish language pack'
 language_spanish.description: 'Adds Spanish translations to Companyware.'

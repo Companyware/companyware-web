@@ -17,7 +17,7 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 | --- | --- | --- |
 | PHP contracts | the four `Plugin\\Contract` interfaces and the `Plugin` base class listed above | stable in API 1.x |
 | Composer package | package type `companyware-plugin` and `extra.companyware-plugin.manifest` | stable in API 1.x |
-| Runtime manifest | `name`, `label`, `description`, `version`, `navigation`, `migrations`, `assets`, optional `locales` | stable in API 1.x |
+| Runtime manifest | `name`, `label`, `description`, `version`, `navigation`, `migrations`, `assets`, optional `locales`, `compatibility`, `require`, `optional`, `conflict`, `provide`, `replace` | stable in API 1.x |
 | Translation catalogs | plugin-owned `translations/messages.<locale>.yaml` catalogs using stable message keys | stable in API 1.x |
 | Twig slots | `document.stylesheets`, `document.javascripts`, `login.form.before`, `login.form.after`, `admin.navigation.after`, `admin.content.before`, `admin.content.after`, `admin.profile.form.before`, `admin.profile.form.after`, `admin.settings.fields`, `admin.settings.sections` | stable in API 1.x |
 | Twig blocks | `head`, `title`, `stylesheets`, `body_class`, `body`, `javascripts`, `login_visual`, `login_form`, `sidebar`, `topbar`, `content` | stable in API 1.x |
@@ -46,6 +46,8 @@ Core owns platform bootstrapping, security and recovery. A plugin owns its domai
 ## Package and lifecycle baseline
 
 Each plugin is a Composer package of type `companyware-plugin`. Its Composer metadata points to `plugin.json` through `extra.companyware-plugin.manifest`. The Composer version, when present, must equal the runtime-manifest version. Path repositories are supported for development; ordinary Composer repositories can distribute the same package unchanged.
+
+The platform version is exposed by `Companyware\Core\Framework\Api\PlatformVersion::VERSION`. Plugin manifests declare compatible Companyware and PHP versions, required PHP extensions, required or optional plugin packages, conflicts and virtual packages. Companyware resolves the complete prospective graph before any package, migration, lifecycle or activation-state mutation.
 
 Lifecycle services should extend `Companyware\\Core\\Framework\\Plugin\\Plugin`. Its no-op lifecycle methods allow a plugin to override only required hooks. Activation state is persisted only after migrations and the activation hook succeed. Failed ZIP installation rolls back applied plugin migrations and removes the staged package.
 

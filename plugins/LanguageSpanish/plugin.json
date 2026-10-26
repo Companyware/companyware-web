@@ -3,6 +3,11 @@
   "label": "language_spanish.label",
   "description": "language_spanish.description",
   "version": "1.0.0",
+  "compatibility": {
+    "companyware": "^0.1",
+    "php": "~8.3.0"
+  },
+  "provide": {"companyware.locale.es": "1.0.0"},
   "locales": [
     {"code": "es", "label": "Español"}
   ]

@@ -53,6 +53,16 @@ The optional `official` flag identifies packages maintained by Companyware and e
   "label": "Acme Example",
   "description": "Adds an administration capability.",
   "version": "1.0.0",
+  "compatibility": {
+    "companyware": "^0.1",
+    "php": "~8.3.0",
+    "extensions": {"zip": "*"}
+  },
+  "require": {"companyware.documents": "^1.0"},
+  "optional": {"acme.search": "^2.0"},
+  "conflict": {"legacy-documents": "<2.0"},
+  "provide": {"acme.example": "1.0.0"},
+  "replace": {"acme.example-legacy": "1.0.0"},
   "locales": [{"code": "es", "label": "Español"}],
   "migrations": ["Plugins\\AcmeExample\\Migration\\Version202608150001"],
   "assets": {
@@ -63,6 +73,16 @@ The optional `official` flag identifies packages maintained by Companyware and e
     {"section": "PLUGINS", "label": "Example", "route": "acme_example_index", "icon": "E", "position": 100}
   ]
 }
+```
+
+All runtime versions are semantic versions. Constraints support exact versions, comparison operators, caret and tilde ranges, wildcards, AND expressions separated by spaces or commas, and `||` alternatives. `require` dependencies must be present during installation and active during activation. An installed optional integration is version-checked, while an absent one is accepted. `provide` and `replace` expose a virtual package at one concrete semantic version.
+
+The canonical compatibility resolver validates the complete prospective graph before installation, activation, deactivation or uninstall changes files, migrations, lifecycle state or the database. It checks Companyware and PHP versions, extensions, dependencies, conflicts, replacements and cycles and returns the same structured diagnostics for administration and future CLI or Store consumers.
+
+Validate the currently installed graph through the same resolver used by administration:
+
+```bash
+php bin/console app:plugins:validate --env=prod
 ```
 
 ## Translations and language packs

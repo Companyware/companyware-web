@@ -3,6 +3,12 @@
   "label": "documents.plugin_label",
   "description": "documents.plugin_description",
   "version": "1.0.0",
+  "compatibility": {
+    "companyware": "^0.1",
+    "php": "~8.3.0",
+    "extensions": {"zip": "*"}
+  },
+  "provide": {"companyware.documents": "1.0.0"},
   "migrations": ["Plugins\\Documents\\Migration\\Version202608150001"],
   "assets": {
     "styles": [
