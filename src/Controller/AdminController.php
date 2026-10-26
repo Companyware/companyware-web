@@ -15,6 +15,7 @@ use Twig\Environment;
 use App\Plugin\PluginLifecycleManager;
 use App\Plugin\PluginPackageException;
 use App\Plugin\PluginPackageInstaller;
+use App\Plugin\Compatibility\PluginCompatibilityResolver;
 use App\Plugin\Migration\MigrationManager;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -25,7 +26,7 @@ final class AdminController
     }
 
     #[Route('/admin/plugins', name: 'admin_plugins', methods: ['GET', 'POST'])]
-    public function plugins(Request $request, PluginRegistry $registry, PluginLifecycleManager $lifecycle, PluginPackageInstaller $installer, MigrationManager $migrations): Response
+    public function plugins(Request $request, PluginRegistry $registry, PluginLifecycleManager $lifecycle, PluginPackageInstaller $installer, MigrationManager $migrations, PluginCompatibilityResolver $compatibility): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;
         if ($request->isMethod('POST')) {
@@ -40,8 +41,8 @@ final class AdminController
                     if ($action==='uninstall') { $installer->uninstall($plugin); $request->getSession()->set('plugin_message',$this->translator->trans('plugins.message.uninstalled',['%plugin%'=>$this->translator->trans($plugin->label)])); }
                     elseif ($name!=='core-administration') {
                         $active=!$registry->isActive($name);
-                        if($active){$migrations->migrate($plugin);$lifecycle->activate($name);$registry->setActive($name,true);}
-                        else{$lifecycle->deactivate($name);$registry->setActive($name,false);}
+                        if($active){$compatibility->assertActivatable($plugin,$registry->manifests(),$registry->activeManifests());$migrations->migrate($plugin);$lifecycle->activate($name);$registry->setActive($name,true);}
+                        else{$compatibility->assertDeactivatable($plugin,$registry->activeManifests());$lifecycle->deactivate($name);$registry->setActive($name,false);}
                         $request->getSession()->set('plugin_message',$this->translator->trans($active?'plugins.message.activated':'plugins.message.deactivated',['%plugin%'=>$this->translator->trans($plugin->label)]));
                     }
                 }

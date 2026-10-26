@@ -97,5 +97,8 @@ plugins.error.version_mismatch: 'Die Versionen in composer.json und plugin.json 
 plugins.error.translation_missing: 'Ein erforderlicher Übersetzungskatalog fehlt oder ist leer.'
 plugins.error.locale_invalid: 'Das Plugin deklariert ein ungültiges Sprachkürzel.'
 plugins.error.install_recovery: 'Die Installation ist fehlgeschlagen und konnte nicht vollständig zurückgesetzt werden. Die inaktive Installation wurde zur Wiederherstellung beibehalten.'
+plugins.error.constraint_invalid: 'Das Plugin enthält eine ungültige Versionsbedingung.'
+plugins.error.compatibility_invalid: 'Die Kompatibilitätsangaben des Plugins sind ungültig.'
+plugins.error.provided_version_invalid: 'Bereitgestellte oder ersetzte Pakete müssen eine konkrete semantische Version angeben.'
 language_spanish.label: 'Spanisches Sprachpaket'
 language_spanish.description: 'Ergänzt spanische Übersetzungen für Companyware.'

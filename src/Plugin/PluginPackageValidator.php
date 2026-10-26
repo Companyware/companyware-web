@@ -4,8 +4,14 @@ declare(strict_types=1);
 
 namespace App\Plugin;
 
+use App\Plugin\Compatibility\VersionConstraint;
+
 final class PluginPackageValidator
 {
+    public function __construct(private readonly VersionConstraint $versions)
+    {
+    }
+
     public function validate(string $directory): PluginManifest
     {
         $manifest = PluginManifest::fromFile($directory.'/plugin.json');
@@ -41,7 +47,33 @@ final class PluginPackageValidator
             $this->requireCatalog($directory, $code);
         }
 
+        $this->validateCompatibility($manifest);
+
         return $manifest;
+    }
+
+    public function validateCompatibility(PluginManifest $manifest): void
+    {
+        foreach ([$manifest->companyware, $manifest->php, ...array_values($manifest->extensions), ...array_values($manifest->requires), ...array_values($manifest->optional), ...array_values($manifest->conflicts)] as $constraint) {
+            if (!is_string($constraint) || !$this->versions->isValid($constraint)) {
+                throw new PluginPackageException('plugins.error.constraint_invalid');
+            }
+        }
+        foreach ([$manifest->extensions, $manifest->requires, $manifest->optional, $manifest->conflicts, $manifest->provides, $manifest->replaces] as $map) {
+            foreach ($map as $name => $value) {
+                if (!is_string($name) || !preg_match('/^[a-z][a-z0-9_.-]*$/', $name) || !is_string($value)) {
+                    throw new PluginPackageException('plugins.error.compatibility_invalid');
+                }
+            }
+        }
+        foreach ([$manifest->provides, $manifest->replaces] as $map) {
+            foreach ($map as $version) {
+                if (!$this->versions->isVersion($version)) {
+                    throw new PluginPackageException('plugins.error.provided_version_invalid');
+                }
+            }
+        }
+
     }
 
     private function requireCatalog(string $directory, string $locale): void

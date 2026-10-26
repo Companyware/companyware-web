@@ -88,5 +88,8 @@ plugins.error.symlink: 'No se permiten enlaces simbólicos en los paquetes de co
 plugins.error.unsafe_archive_path: 'El archivo contiene una ruta de fichero no segura.'
 plugins.error.expanded_too_large: 'Los ficheros descomprimidos del complemento son demasiado grandes.'
 plugins.error.extract_failed: 'No se pudo descomprimir un fichero del complemento.'
+plugins.error.constraint_invalid: 'El complemento contiene una restricción de versión no válida.'
+plugins.error.compatibility_invalid: 'Los metadatos de compatibilidad del complemento no son válidos.'
+plugins.error.provided_version_invalid: 'Los paquetes proporcionados o reemplazados deben declarar una versión semántica concreta.'
 language_spanish.label: 'Paquete de idioma español'
 language_spanish.description: 'Añade traducciones al español para Companyware.'

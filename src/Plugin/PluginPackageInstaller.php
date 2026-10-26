@@ -1,6 +1,8 @@
 <?php
 namespace App\Plugin;
 use App\Infrastructure\Database;
+use App\Infrastructure\PluginRegistry;
+use App\Plugin\Compatibility\PluginCompatibilityResolver;
 use App\Plugin\Migration\MigrationManager;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -9,7 +11,7 @@ final class PluginPackageInstaller
 {
     private const MAX_ARCHIVE=20_000_000; private const MAX_EXPANDED=100_000_000; private const MAX_FILES=1000;
     private readonly string $pluginRoot;
-    public function __construct(string $projectDir, private readonly string $cacheDir, private readonly MigrationManager $migrations, private readonly Database $database, private readonly PluginLifecycleManager $lifecycle, private readonly PluginPackageValidator $validator)
+    public function __construct(string $projectDir, private readonly string $cacheDir, private readonly MigrationManager $migrations, private readonly Database $database, private readonly PluginLifecycleManager $lifecycle, private readonly PluginPackageValidator $validator, private readonly PluginCompatibilityResolver $compatibility, private readonly PluginRegistry $registry)
     { $this->pluginRoot=$projectDir.'/plugins'; }
     public function install(UploadedFile $upload): PluginManifest
     {
@@ -19,9 +21,12 @@ final class PluginPackageInstaller
             if ($zip->numFiles<1 || $zip->numFiles>self::MAX_FILES) throw new PluginPackageException('plugins.error.archive_count');
             $prefix=$this->packagePrefix($zip); $manifestName=$prefix.'plugin.json'; $json=$zip->getFromName($manifestName);
             if (!is_string($json)) throw new PluginPackageException('plugins.error.manifest_missing');
-            $data=json_decode($json,true); if (!is_array($data) || !preg_match('/^[a-z][a-z0-9-]+$/',$data['name']??'') || !is_string($data['label']??null) || !preg_match('/^\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?$/',$data['version']??'')) throw new PluginPackageException('plugins.error.manifest_invalid');
+            $data=json_decode($json,true); if (!is_array($data) || !preg_match('/^[a-z][a-z0-9-]+$/',$data['name']??'') || !is_string($data['label']??null) || !preg_match('/^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/',$data['version']??'')) throw new PluginPackageException('plugins.error.manifest_invalid');
             $directory=str_replace(' ','',ucwords(str_replace('-',' ',$data['name']))); $target=$this->pluginRoot.'/'.$directory;
             if (file_exists($target)) throw new PluginPackageException('plugins.error.already_installed');
+            $candidate=PluginManifest::fromArray($data,$target); if(!$candidate) throw new PluginPackageException('plugins.error.manifest_invalid');
+            $this->validator->validateCompatibility($candidate);
+            $this->compatibility->assertInstallable($candidate,$this->registry->manifests());
             $stage=$this->pluginRoot.'/.install-'.bin2hex(random_bytes(8)); (new Filesystem())->mkdir($stage,0750);
             try {
                 $this->extract($zip,$prefix,$stage);
@@ -49,6 +54,7 @@ final class PluginPackageInstaller
     {
         $root=realpath($this->pluginRoot); $target=realpath($plugin->path);
         if (!$root || !$target || !str_starts_with($target,$root.DIRECTORY_SEPARATOR) || $plugin->core) throw new PluginPackageException('plugins.error.unsafe_path');
+        $this->compatibility->assertUninstallable($plugin, $this->registry->manifests());
         $this->lifecycle->deactivate($plugin->name);
         $inactive=$this->database->connection()->prepare('UPDATE plugin SET active=0 WHERE name=:name'); $inactive->execute(['name'=>$plugin->name]);
         $this->migrations->rollback($plugin); $this->lifecycle->uninstall($plugin->name);
