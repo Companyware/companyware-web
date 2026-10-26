@@ -10,18 +10,38 @@
         <img src="/assets/brand/companyware-mark.svg?v=20260817" alt="">
         <span><strong>Companyware</strong><small>{{ 'layout.tagline'|trans }}</small></span>
     </a>
-    <nav>
-        {% set section = null %}
-        {% for item in admin_navigation() %}
-            {% if item.section != section %}
-                <span class="nav-caption">{{ item.section|trans }}</span>
-                {% set section = item.section %}
-            {% endif %}
-            <a class="{{ app.request.attributes.get('_route') == item.route ? 'active' : '' }}" href="{{ path(item.route) }}">
-                <span class="nav-icon">{{ item.icon }}</span>{{ item.label|trans }}
-            </a>
-        {% endfor %}
-        {{ plugin_slot('admin.navigation.after') }}
+    {% set current_route = app.request.attributes.get('_route') %}
+    {% set navigation = admin_navigation() %}
+    <nav class="sidebar-nav">
+        <div class="nav-primary">
+            <details class="nav-group" data-nav-group="work" open>
+                <summary><span>{{ 'nav.section.workspaces'|trans }}</span><span class="nav-chevron">⌄</span></summary>
+                <div class="nav-group-items">
+                    {% for item in navigation|filter(item => item.group == 'work') %}
+                        <a class="{{ current_route == item.route ? 'active' : '' }}" href="{{ path(item.route) }}">
+                            <span class="nav-icon">{{ item.icon }}</span>{{ item.label|trans }}
+                        </a>
+                    {% endfor %}
+                    {{ plugin_slot('admin.navigation.after') }}
+                </div>
+            </details>
+        </div>
+        <div class="nav-secondary">
+            {% for group, label in {'management': 'nav.section.management', 'account': 'nav.section.account'} %}
+                {% set items = navigation|filter(item => item.group == group) %}
+                {% set active_group = items|filter(item => item.route == current_route)|length > 0 %}
+                <details class="nav-group" data-nav-group="{{ group }}" {{ active_group ? 'open' : '' }}>
+                    <summary><span>{{ label|trans }}</span><span class="nav-chevron">⌄</span></summary>
+                    <div class="nav-group-items">
+                        {% for item in items %}
+                            <a class="{{ current_route == item.route ? 'active' : '' }}" href="{{ path(item.route) }}">
+                                <span class="nav-icon">{{ item.icon }}</span>{{ item.label|trans }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </details>
+            {% endfor %}
+        </div>
     </nav>
     <div class="sidebar-user">
         <div class="avatar">{{ admin.display_name|slice(0,2)|upper }}</div>

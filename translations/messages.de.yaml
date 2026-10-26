@@ -1,6 +1,7 @@
 nav.section.management: 'VERWALTUNG'
 nav.section.plugins: 'PLUGINS'
 nav.section.account: 'KONTO'
+nav.section.workspaces: 'ARBEITSBEREICHE'
 nav.plugins: 'Pluginmanager'
 nav.profile: 'Benutzerprofil'
 nav.settings: 'Einstellungen'
