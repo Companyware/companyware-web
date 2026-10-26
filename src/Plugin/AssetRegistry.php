@@ -30,7 +30,7 @@ final class AssetRegistry
     private function versioned(string $url): string
     {
         $path = $this->publicDirectory.str_replace('/', DIRECTORY_SEPARATOR, $url);
-        $version = is_file($path) ? (string) filemtime($path) : '1';
+        $version = is_file($path) ? substr((string) sha1_file($path), 0, 12) : '1';
 
         return $url.'?v='.$version;
     }
