@@ -100,8 +100,8 @@ input:focus, select:focus { border-color: var(--violet); box-shadow: 0 0 0 4px r
 .nav-group summary { display: flex; align-items: center; justify-content: space-between; margin: 0 5px 6px; padding: 8px 9px; color: #8d88a0; font-size: 9px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; border-radius: 9px; cursor: pointer; list-style: none; user-select: none; }
 .nav-group summary::-webkit-details-marker { display: none; }
 .nav-group summary:hover { color: var(--graphite); background: rgba(255,255,255,.55); }
-.nav-chevron { font-size: 15px; line-height: 1; transition: transform .18s ease; }
-.nav-group:not([open]) .nav-chevron { transform: rotate(-90deg); }
+.nav-chevron { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round; transition: transform .18s ease; }
+.nav-group[open] .nav-chevron { transform: rotate(180deg); }
 .nav-group-items { display: grid; }
 .sidebar nav a { display: flex; align-items: center; gap: 13px; margin: 4px 0; padding: 13px 14px; color: #625f70; text-decoration: none; border-radius: 12px; }
 .sidebar nav a:hover { color: var(--graphite); background: rgba(255,255,255,.7); }
