@@ -15,7 +15,7 @@
     <nav class="sidebar-nav">
         <div class="nav-primary">
             <details class="nav-group" data-nav-group="work" open>
-                <summary><span>{{ 'nav.section.workspaces'|trans }}</span><span class="nav-chevron">⌄</span></summary>
+                <summary><span>{{ 'nav.section.workspaces'|trans }}</span><svg class="nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
                 <div class="nav-group-items">
                     {% for item in navigation|filter(item => item.group == 'work') %}
                         <a class="{{ current_route == item.route ? 'active' : '' }}" href="{{ path(item.route) }}">
@@ -29,9 +29,8 @@
         <div class="nav-secondary">
             {% for group, label in {'management': 'nav.section.management', 'account': 'nav.section.account'} %}
                 {% set items = navigation|filter(item => item.group == group) %}
-                {% set active_group = items|filter(item => item.route == current_route)|length > 0 %}
-                <details class="nav-group" data-nav-group="{{ group }}" {{ active_group ? 'open' : '' }}>
-                    <summary><span>{{ label|trans }}</span><span class="nav-chevron">⌄</span></summary>
+                <details class="nav-group" data-nav-group="{{ group }}">
+                    <summary><span>{{ label|trans }}</span><svg class="nav-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
                     <div class="nav-group-items">
                         {% for item in items %}
                             <a class="{{ current_route == item.route ? 'active' : '' }}" href="{{ path(item.route) }}">
