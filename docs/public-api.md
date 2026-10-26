@@ -77,7 +77,7 @@ Core owns the authenticated dashboard route and always renders a usable welcome 
 
 Structural customization uses the stable `dashboard_header`, `dashboard_continue`, `dashboard_quick_actions`, `dashboard_widgets` and `dashboard_activity` Twig blocks. A plugin may override one block through Twig inheritance or deliberately replace the dashboard template through its documented override path. Core remains the fallback when that plugin is disabled. Documents is the reference provider for every process-oriented slot.
 
-Every contributed dashboard element that participates in personalization uses a globally unique `data-dashboard-widget` identifier and belongs to a `data-dashboard-zone`. Core persists order, visibility and normal/wide size per administrator in browser-local storage. The `dashboard:ready` browser hook exposes the dashboard element and resolved state. Server-side synchronization and role-based defaults may be added compatibly once the corresponding user-settings and authorization contracts are public.
+Every contributed dashboard element that participates in personalization uses a globally unique `data-dashboard-widget` identifier and belongs to a `data-dashboard-zone`. Core persists order, hidden state and normal/wide size per administrator in browser-local storage. Hiding takes effect immediately; the dashboard reset action restores plugin-defined defaults. The `dashboard:ready` browser hook exposes the dashboard element and resolved state. Server-side synchronization and role-based defaults may be added compatibly once the corresponding user-settings and authorization contracts are public.
 
 ## Supported platform
 
