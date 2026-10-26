@@ -245,6 +245,9 @@ input:focus, select:focus { border-color: var(--violet); box-shadow: 0 0 0 4px r
 .dashboard-customizing [data-dashboard-widget] { outline: 2px dashed rgba(92,90,167,.3); outline-offset: 3px; }
 .dashboard-customizing .dashboard-widget-controls { display: flex; }
 .dashboard-widget-dragging { opacity: .45; }
+.dashboard-hidden-manager { margin-top: 14px; padding: 16px 18px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 5px 18px rgba(61,56,79,.04); }
+.dashboard-hidden-manager > strong { display: block; margin-bottom: 10px; }
+.dashboard-hidden-manager > div { display: flex; flex-wrap: wrap; gap: 8px; }
 .migration-panel { margin-top: 22px; }
 .migration-list { border-top: 1px solid var(--line); }
 .migration-row { display: grid; grid-template-columns: minmax(180px, 1fr) 120px 110px minmax(150px, auto); align-items: center; gap: 16px; padding: 14px 34px; border-bottom: 1px solid var(--line); }

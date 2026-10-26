@@ -3,7 +3,8 @@
 {% block content %}
 {% set continue_items %}{{ plugin_slot('dashboard.continue', {admin: admin, plugins: plugins}) }}{% endset %}
 {% set activity_items %}{{ plugin_slot('dashboard.activity', {admin: admin, plugins: plugins}) }}{% endset %}
-<div class="dashboard" data-dashboard data-dashboard-owner="{{ admin.id }}" data-label-drag="{{ 'dashboard.drag_widget'|trans }}" data-label-hide="{{ 'dashboard.hide_widget'|trans }}">
+<div class="dashboard" data-dashboard data-dashboard-owner="{{ admin.id }}" data-dashboard-save-url="{{ path('admin_dashboard_layout') }}" data-dashboard-token="{{ token }}" data-label-drag="{{ 'dashboard.drag_widget'|trans }}" data-label-hide="{{ 'dashboard.hide_widget'|trans }}" data-label-restore="{{ 'dashboard.restore_widget'|trans }}">
+    <script type="application/json" data-dashboard-state>{{ dashboardState|json_encode|raw }}</script>
     {% block dashboard_header %}
     <div class="dashboard-welcome">
         <div>
@@ -13,10 +14,15 @@
         </div>
         <div class="dashboard-header-actions">
             <button class="secondary dashboard-customize" type="button" data-dashboard-customize>{{ 'dashboard.customize'|trans }}</button>
+            <button class="secondary dashboard-add" type="button" data-dashboard-add hidden aria-expanded="false" aria-label="{{ 'dashboard.add_widgets'|trans }}">+ {{ 'dashboard.add_widgets'|trans }}</button>
             <button class="secondary dashboard-reset" type="button" data-dashboard-reset hidden>{{ 'dashboard.reset'|trans }}</button>
         </div>
         <div class="dashboard-mark" aria-hidden="true"><img src="/assets/brand/companyware-mark.svg?v=20260817" alt=""></div>
     </div>
+    <section class="dashboard-hidden-manager" data-dashboard-hidden-manager hidden>
+        <strong>{{ 'dashboard.available_widgets'|trans }}</strong>
+        <div data-dashboard-hidden-list></div>
+    </section>
     {% endblock %}
 
     <div class="dashboard-status-strip">

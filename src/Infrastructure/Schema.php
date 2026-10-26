@@ -4,6 +4,7 @@ namespace App\Infrastructure;
 
 use App\Migration\Core\Version202608150001;
 use App\Migration\Core\Version202610260001;
+use App\Migration\Core\Version202610260002;
 use App\Plugin\Migration\MigrationManager;
 
 final class Schema
@@ -17,7 +18,7 @@ final class Schema
     public function ensure(): void
     {
         if ($this->ready) return;
-        $this->migrations->migrateCore([Version202608150001::class, Version202610260001::class]);
+        $this->migrations->migrateCore([Version202608150001::class, Version202610260001::class, Version202610260002::class]);
         $this->ready = true;
     }
 }

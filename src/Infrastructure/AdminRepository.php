@@ -35,4 +35,32 @@ final class AdminRepository
         $statement = $this->database->connection()->prepare('UPDATE admin_user SET display_name = :display_name, email = :email WHERE id = :id');
         $statement->execute(['id' => $id, 'display_name' => $displayName, 'email' => $email]);
     }
+
+    public function preference(int $id, string $key): ?array
+    {
+        $this->schema->ensure();
+        $statement = $this->database->connection()->prepare('SELECT preference_value FROM admin_preference WHERE admin_user_id = :id AND preference_key = :key');
+        $statement->execute(['id' => $id, 'key' => $key]);
+        $value = $statement->fetchColumn();
+        if (!is_string($value)) return null;
+        $decoded = json_decode($value, true);
+
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    public function savePreference(int $id, string $key, array $value): void
+    {
+        $this->schema->ensure();
+        $statement = $this->database->connection()->prepare('INSERT INTO admin_preference (admin_user_id, preference_key, preference_value)
+            VALUES (:id, :key, :value)
+            ON DUPLICATE KEY UPDATE preference_value = VALUES(preference_value)');
+        $statement->execute(['id' => $id, 'key' => $key, 'value' => json_encode($value, JSON_THROW_ON_ERROR)]);
+    }
+
+    public function deletePreference(int $id, string $key): void
+    {
+        $this->schema->ensure();
+        $statement = $this->database->connection()->prepare('DELETE FROM admin_preference WHERE admin_user_id = :id AND preference_key = :key');
+        $statement->execute(['id' => $id, 'key' => $key]);
+    }
 }
