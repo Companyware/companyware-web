@@ -9,7 +9,24 @@
 
         const owner = dashboard.dataset.dashboardOwner || 'anonymous';
         const storageKey = 'companyware.dashboard.' + owner + '.v1';
+        const hiddenCookieKey = 'companyware_dashboard_hidden_' + String(owner).replace(/[^a-zA-Z0-9_-]/g, '_');
         let state = {order: {}, hidden: [], sizes: {}};
+
+        const readHiddenCookie = function () {
+            const prefix = hiddenCookieKey + '=';
+            const value = document.cookie.split(';').map(function (part) { return part.trim(); })
+                .find(function (part) { return part.indexOf(prefix) === 0; });
+            if (!value) return [];
+            try {
+                const hidden = JSON.parse(decodeURIComponent(value.substring(prefix.length)));
+                return Array.isArray(hidden) ? hidden.filter(function (id) { return typeof id === 'string'; }) : [];
+            } catch (error) {
+                return [];
+            }
+        };
+        const writeHiddenCookie = function () {
+            document.cookie = hiddenCookieKey + '=' + encodeURIComponent(JSON.stringify(state.hidden)) + '; path=/admin; max-age=31536000; SameSite=Lax';
+        };
 
         try {
             const stored = window.localStorage.getItem(storageKey);
@@ -17,6 +34,7 @@
         } catch (error) {
             window.AdminFramework.emit('dashboard:storage-error', {error: error});
         }
+        state.hidden = Array.from(new Set((Array.isArray(state.hidden) ? state.hidden : []).concat(readHiddenCookie())));
 
         const save = function () {
             try {
@@ -24,6 +42,7 @@
             } catch (error) {
                 window.AdminFramework.emit('dashboard:storage-error', {error: error});
             }
+            writeHiddenCookie();
         };
         const zones = Array.from(dashboard.querySelectorAll('[data-dashboard-zone]'));
         const widgets = function () { return Array.from(dashboard.querySelectorAll('[data-dashboard-widget]')); };
@@ -85,6 +104,8 @@
                 } catch (error) {
                     window.AdminFramework.emit('dashboard:storage-error', {error: error});
                 }
+                state.hidden = [];
+                document.cookie = hiddenCookieKey + '=; path=/admin; max-age=0; SameSite=Lax';
                 window.location.reload();
                 return;
             }
