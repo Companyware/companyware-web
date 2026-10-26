@@ -63,6 +63,17 @@ The optional `official` flag identifies packages maintained by Companyware and e
   "conflict": {"legacy-documents": "<2.0"},
   "provide": {"acme.example": "1.0.0"},
   "replace": {"acme.example-legacy": "1.0.0"},
+  "settings": [
+    {
+      "key": "page_size",
+      "type": "number",
+      "label": "acme.settings.page_size",
+      "help": "acme.settings.page_size_help",
+      "default": 25,
+      "min": 5,
+      "max": 100
+    }
+  ],
   "locales": [{"code": "es", "label": "Español"}],
   "migrations": ["Plugins\\AcmeExample\\Migration\\Version202608150001"],
   "assets": {
@@ -84,6 +95,12 @@ Validate the currently installed graph through the same resolver used by adminis
 ```bash
 php bin/console app:plugins:validate --env=prod
 ```
+
+## Plugin settings
+
+Plugins optionally declare a non-empty `settings` list in their runtime manifest. Supported field types are `text`, `number`, `checkbox` and `select`; every field has a stable plugin-owned key and translated label, and may define a translated help text and default value. Number fields support `min`, `max` and `step`; select fields declare `options` with `value` and translated `label`.
+
+The Plugin Manager shows **Configure** only when the manifest contains at least one valid field. Core renders and validates the form and stores values under the plugin name and field key. Deactivation preserves settings; complete uninstall removes them. Plugins read values through the public `PluginConfigurationInterface`; they do not access Core configuration tables directly.
 
 ## Translations and language packs
 
