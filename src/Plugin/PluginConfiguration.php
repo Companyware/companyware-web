@@ -10,7 +10,7 @@ use Companyware\Core\Framework\Plugin\Contract\PluginConfigurationInterface;
 
 final class PluginConfiguration implements PluginConfigurationInterface
 {
-    public function __construct(private readonly Database $database, private readonly Schema $schema)
+    public function __construct(private readonly Database $database, private readonly Schema $schema, private readonly PluginEventBus $events)
     {
     }
 
@@ -38,9 +38,16 @@ final class PluginConfiguration implements PluginConfigurationInterface
     {
         $this->schema->ensure();
         $statement = $this->database->connection()->prepare('INSERT INTO plugin_config (plugin_name, config_key, config_value) VALUES (:plugin,:key,:value) ON DUPLICATE KEY UPDATE config_value=VALUES(config_value)');
+        $changed = [];
         foreach ($plugin->settings as $field) {
             $value = $this->normalize($field, $input[$field['key']] ?? null);
+            if ($this->get($plugin->name, $field['key'], $field['default'] ?? null) !== $value) {
+                $changed[] = $field['key'];
+            }
             $statement->execute(['plugin' => $plugin->name, 'key' => $field['key'], 'value' => json_encode($value, JSON_THROW_ON_ERROR)]);
+        }
+        if ($changed !== []) {
+            $this->events->configurationChanged($plugin->name, $changed);
         }
     }
 

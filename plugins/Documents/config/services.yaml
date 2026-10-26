@@ -11,6 +11,11 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    Plugins\Documents\DocumentsFileNameNormalizer:
+        decorates: Companyware\Core\Framework\File\FileNameNormalizerInterface
+        arguments:
+            $inner: '@Plugins\Documents\DocumentsFileNameNormalizer.inner'
+
     Plugins\Documents\Controller\:
         resource: '../src/Controller/'
         autowire: true

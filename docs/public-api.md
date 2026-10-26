@@ -10,13 +10,18 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\SlotProviderInterface`
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\Migration\\PluginMigrationInterface`
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\PluginConfigurationInterface`
+- `Companyware\\Core\\Framework\\File\\FileNameNormalizerInterface` (decoration supported)
+- `Companyware\\Core\\Framework\\Plugin\\Event\\BeforePluginLifecycleEvent`
+- `Companyware\\Core\\Framework\\Plugin\\Event\\AfterPluginLifecycleEvent`
+- `Companyware\\Core\\Framework\\Plugin\\Event\\PluginConfigurationChangedEvent`
+- `Companyware\\Core\\Framework\\Plugin\\Event\\PluginLifecycleOperation`
 - documented manifest fields, Twig blocks and slots, asset handles and the `window.AdminFramework` hooks listed in `plugins/README.md`
 
 ## Extension-point inventory
 
 | Surface | Identifiers | Status |
 | --- | --- | --- |
-| PHP contracts | the five `Plugin\\Contract` interfaces and the `Plugin` base class listed above | stable in API 1.x |
+| PHP contracts | the interfaces, events, enum and `Plugin` base class listed above | stable in API 1.x |
 | Composer package | package type `companyware-plugin` and `extra.companyware-plugin.manifest` | stable in API 1.x |
 | Runtime manifest | `name`, `label`, `description`, `version`, `navigation`, `migrations`, `assets`, optional `locales`, `compatibility`, `require`, `optional`, `conflict`, `provide`, `replace`, optional `settings` | stable in API 1.x |
 | Translation catalogs | plugin-owned `translations/messages.<locale>.yaml` catalogs using stable message keys | stable in API 1.x |
@@ -25,11 +30,14 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 | Asset handles | `core-admin`, `core-plugin-manager`, `core-admin-js` plus plugin-owned globally unique handles | stable in API 1.x |
 | Browser hook API | `window.AdminFramework.on()`, `emit()` and the `ready` event | stable in API 1.x |
 | Theme registry and semantic theme package contract | planned for the platform foundation | experimental; not yet public API |
-| Core service decoration and Core events | planned for CW-004 | experimental; no Core service ID or event is stable yet |
+| Core service decoration | `FileNameNormalizerInterface`; decorate the public interface service ID | stable in API 1.x |
+| Core events | lifecycle before/after events and configuration-changed event listed above | stable in API 1.x |
 
 No other experimental surface is currently published.
 
-The `App\\` namespace is internal application implementation. Plugins must not import it, decorate it or treat its service identifiers as stable. Until CW-004 publishes decoration-ready interfaces, Core service decoration is not a supported extension point. Authentication, authorization, plugin activation checks, package validation, the plugin manager and fallback rendering are protected recovery paths and are not replaceable.
+The `App\\` namespace is internal application implementation. Plugins must not import it, decorate it or treat its service identifiers as stable. Only public interfaces explicitly documented as decoration-supported may be decorated. Container compilation rejects decoration of unpublished or protected services. Authentication, authorization, plugin activation checks, package validation, the plugin manager and fallback rendering are protected recovery paths and are not replaceable.
+
+Lifecycle events use their FQCN as the Symfony event name. Before-events run synchronously in priority order before mutation; a listener exception aborts the operation. After-events and configuration-changed events run synchronously after successful persistence. Their listener failures are logged and cannot roll back or report failure for an already completed mutation. Event payloads are immutable; plugins coordinate behavior through services rather than mutating events.
 
 ## Compatibility and deprecation
 
