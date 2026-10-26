@@ -1,46 +1,70 @@
 {% extends 'admin/layout.html.twig' %}
 
 {% block content %}
-{% block dashboard_header %}
-<div class="dashboard-welcome">
-    <div>
-        <span class="eyebrow blue">{{ 'dashboard.eyebrow'|trans }}</span>
-        <h1>{{ 'dashboard.welcome'|trans({'%name%': admin.display_name}) }}</h1>
-        <p>{{ 'dashboard.intro'|trans }}</p>
+{% set continue_items %}{{ plugin_slot('dashboard.continue', {admin: admin, plugins: plugins}) }}{% endset %}
+{% set activity_items %}{{ plugin_slot('dashboard.activity', {admin: admin, plugins: plugins}) }}{% endset %}
+<div class="dashboard" data-dashboard data-dashboard-owner="{{ admin.id }}" data-label-before="{{ 'dashboard.move_before'|trans }}" data-label-after="{{ 'dashboard.move_after'|trans }}" data-label-size="{{ 'dashboard.change_size'|trans }}" data-label-hide="{{ 'dashboard.hide_widget'|trans }}" data-label-show="{{ 'dashboard.show_widget'|trans }}">
+    {% block dashboard_header %}
+    <div class="dashboard-welcome">
+        <div>
+            <span class="eyebrow blue">{{ 'dashboard.eyebrow'|trans }}</span>
+            <h1>{{ 'dashboard.welcome'|trans({'%name%': admin.display_name}) }}</h1>
+            <p>{{ 'dashboard.intro'|trans }}</p>
+        </div>
+        <div class="dashboard-header-actions">
+            <button class="secondary dashboard-customize" type="button" data-dashboard-customize>{{ 'dashboard.customize'|trans }}</button>
+            <button class="secondary dashboard-reset" type="button" data-dashboard-reset hidden>{{ 'dashboard.reset'|trans }}</button>
+        </div>
+        <div class="dashboard-mark" aria-hidden="true"><img src="/assets/brand/companyware-mark.svg?v=20260817" alt=""></div>
     </div>
-    <div class="dashboard-mark" aria-hidden="true"><img src="/assets/brand/companyware-mark.svg?v=20260817" alt=""></div>
+    {% endblock %}
+
+    <div class="dashboard-status-strip">
+        <span class="status-dot"></span><strong>{{ 'layout.ready'|trans }}</strong>
+        <span>{{ 'dashboard.status_summary'|trans({'%active%': activePluginCount, '%installed%': plugins|length}) }}</span>
+        <a href="{{ path('admin_plugins') }}">{{ 'dashboard.manage_system'|trans }} →</a>
+    </div>
+
+    {{ plugin_slot('dashboard.content.before', {admin: admin, plugins: plugins}) }}
+
+    {% block dashboard_continue %}
+    <section class="dashboard-section dashboard-process-section">
+        <div class="dashboard-section-head"><div><h2>{{ 'dashboard.continue'|trans }}</h2><p>{{ 'dashboard.continue_hint'|trans }}</p></div></div>
+        <div class="dashboard-flow" data-dashboard-zone="continue">
+            {% if continue_items|trim is not empty %}{{ continue_items|raw }}{% else %}<div class="dashboard-placeholder">{{ 'dashboard.continue_empty'|trans }}</div>{% endif %}
+        </div>
+    </section>
+    {% endblock %}
+
+    {% block dashboard_quick_actions %}
+    <section class="dashboard-section">
+        <div class="dashboard-section-head"><h2>{{ 'dashboard.quick_actions'|trans }}</h2></div>
+        <div class="quick-actions">
+            {{ plugin_slot('dashboard.quick_actions', {admin: admin, plugins: plugins}) }}
+            <a class="quick-action quick-action-system" href="{{ path('admin_plugins') }}"><span class="nav-icon">◇</span><span>{{ 'nav.plugins'|trans }}</span><b>→</b></a>
+            <a class="quick-action quick-action-system" href="{{ path('admin_settings') }}"><span class="nav-icon">⚙</span><span>{{ 'nav.settings'|trans }}</span><b>→</b></a>
+        </div>
+    </section>
+    {% endblock %}
+
+    {% block dashboard_widgets %}
+    <section class="dashboard-section">
+        <div class="dashboard-section-head"><h2>{{ 'dashboard.overview'|trans }}</h2><p>{{ 'dashboard.overview_hint'|trans }}</p></div>
+        <div class="dashboard-grid" data-dashboard-zone="widgets">
+            {{ plugin_slot('dashboard.widgets', {admin: admin, plugins: plugins}) }}
+        </div>
+    </section>
+    {% endblock %}
+
+    {% block dashboard_activity %}
+    <section class="dashboard-section">
+        <div class="dashboard-section-head"><div><h2>{{ 'dashboard.activity'|trans }}</h2><p>{{ 'dashboard.activity_hint'|trans }}</p></div></div>
+        <div class="dashboard-activity" data-dashboard-zone="activity">
+            {% if activity_items|trim is not empty %}{{ activity_items|raw }}{% else %}<div class="dashboard-placeholder">{{ 'dashboard.activity_empty'|trans }}</div>{% endif %}
+        </div>
+    </section>
+    {% endblock %}
+
+    {{ plugin_slot('dashboard.content.after', {admin: admin, plugins: plugins}) }}
 </div>
-{% endblock %}
-
-{{ plugin_slot('dashboard.content.before', {admin: admin, plugins: plugins}) }}
-
-{% block dashboard_quick_actions %}
-<section class="dashboard-section">
-    <div class="dashboard-section-head"><h2>{{ 'dashboard.quick_actions'|trans }}</h2></div>
-    <div class="quick-actions">
-        <a class="quick-action" href="{{ path('admin_plugins') }}"><span class="nav-icon">◇</span><span>{{ 'nav.plugins'|trans }}</span><b>→</b></a>
-        <a class="quick-action" href="{{ path('admin_settings') }}"><span class="nav-icon">⚙</span><span>{{ 'nav.settings'|trans }}</span><b>→</b></a>
-        {{ plugin_slot('dashboard.quick_actions', {admin: admin, plugins: plugins}) }}
-    </div>
-</section>
-{% endblock %}
-
-{% block dashboard_widgets %}
-<section class="dashboard-section">
-    <div class="dashboard-section-head"><h2>{{ 'dashboard.overview'|trans }}</h2><p>{{ 'dashboard.overview_hint'|trans }}</p></div>
-    <div class="dashboard-grid">
-        <article class="panel dashboard-widget dashboard-system-widget">
-            <div class="dashboard-widget-head"><span class="widget-icon">✓</span><div><h3>{{ 'dashboard.system_status'|trans }}</h3><p>{{ 'layout.ready'|trans }}</p></div></div>
-            <div class="dashboard-metrics">
-                <div><strong>{{ activePluginCount }}</strong><span>{{ 'dashboard.active_plugins'|trans }}</span></div>
-                <div><strong>{{ plugins|length }}</strong><span>{{ 'dashboard.installed_plugins'|trans }}</span></div>
-                <div><strong>0</strong><span>{{ 'plugins.updates'|trans }}</span></div>
-            </div>
-        </article>
-        {{ plugin_slot('dashboard.widgets', {admin: admin, plugins: plugins}) }}
-    </div>
-</section>
-{% endblock %}
-
-{{ plugin_slot('dashboard.content.after', {admin: admin, plugins: plugins}) }}
 {% endblock %}

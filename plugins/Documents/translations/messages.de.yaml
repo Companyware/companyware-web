@@ -24,3 +24,7 @@ documents.settings.max_upload_help: 'Zulässige Größe einzelner Uploads zwisch
 documents.dashboard.title: 'Dokumente'
 documents.dashboard.count: '%count% Dokumente im sicheren Dateispeicher.'
 documents.dashboard.open: 'Dokumente öffnen'
+documents.dashboard.upload: 'Dokument hochladen'
+documents.dashboard.total: 'Dokumente insgesamt'
+documents.dashboard.continue_eyebrow: 'ZULETZT BEARBEITET'
+documents.dashboard.activity_uploaded: 'Dokument abgelegt'

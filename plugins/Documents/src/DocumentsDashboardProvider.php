@@ -20,7 +20,7 @@ final class DocumentsDashboardProvider implements SlotProviderInterface
 
     public function supports(string $slot): bool
     {
-        return in_array($slot, ['dashboard.quick_actions', 'dashboard.widgets'], true);
+        return in_array($slot, ['dashboard.quick_actions', 'dashboard.widgets', 'dashboard.continue', 'dashboard.activity'], true);
     }
 
     public function render(string $slot, array $context = []): string
@@ -31,8 +31,19 @@ final class DocumentsDashboardProvider implements SlotProviderInterface
 
         $documents = $this->storage->all();
 
+        if ($slot === 'dashboard.continue') {
+            return $documents === [] ? '' : $this->view->render('@Documents/dashboard/continue.html.twig', [
+                'document' => $documents[0],
+            ]);
+        }
+
+        if ($slot === 'dashboard.activity') {
+            return $documents === [] ? '' : $this->view->render('@Documents/dashboard/activity.html.twig', [
+                'documents' => array_slice($documents, 0, 5),
+            ]);
+        }
+
         return $this->view->render('@Documents/dashboard/widget.html.twig', [
-            'documents' => array_slice($documents, 0, 3),
             'documentCount' => count($documents),
         ]);
     }

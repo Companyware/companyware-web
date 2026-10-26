@@ -1,0 +1,5 @@
+<article class="dashboard-continue-card" data-dashboard-widget="documents.continue" data-dashboard-size="wide">
+    <span class="dashboard-flow-icon">▤</span>
+    <div><span class="eyebrow">{{ 'documents.dashboard.continue_eyebrow'|trans }}</span><h3>{{ document.title }}</h3><p>{{ document.original_name }} · {{ document.created_at }}</p></div>
+    <a class="primary" href="{{ path('documents_download', {id: document.id}) }}">{{ 'documents.download'|trans }}</a>
+</article>
