@@ -45,7 +45,7 @@ final class PluginPackageInstaller
                 $filesystem=new Filesystem();
                 $filesystem->remove($stage);
                 if(is_dir($target)) {
-                    try { if (isset($manifest)) $this->migrations->rollback($manifest); }
+                    try { if (isset($manifest)) $this->migrations->rollback($manifest, true); }
                     catch (\Throwable $rollbackError) { throw new PluginPackageException('plugins.error.install_recovery', 0, $rollbackError); }
                     $filesystem->remove($target);
                 }
@@ -62,7 +62,7 @@ final class PluginPackageInstaller
         $this->lifecycle->deactivate($plugin->name);
         $inactive=$this->database->connection()->prepare('UPDATE plugin SET active=0 WHERE name=:name'); $inactive->execute(['name'=>$plugin->name]);
         $this->migrations->rollback($plugin); $this->lifecycle->uninstall($plugin->name);
-        $this->configuration->delete($plugin->name);
+        if ($plugin->uninstallData === 'remove') $this->configuration->delete($plugin->name);
         $delete=$this->database->connection()->prepare('DELETE FROM plugin WHERE name=:name'); $delete->execute(['name'=>$plugin->name]);
         (new Filesystem())->remove($target);
         $this->events->after($plugin->name,PluginLifecycleOperation::Uninstall);

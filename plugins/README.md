@@ -63,6 +63,7 @@ The optional `official` flag identifies packages maintained by Companyware and e
   "conflict": {"legacy-documents": "<2.0"},
   "provide": {"acme.example": "1.0.0"},
   "replace": {"acme.example-legacy": "1.0.0"},
+  "uninstall": {"data": "remove"},
   "settings": [
     {
       "key": "page_size",
@@ -244,7 +245,16 @@ Templates, services, navigation, routes, slots and assets are extensible. Authen
 
 ## Migrations
 
-Migration classes implement `Companyware\\Core\\Framework\\Plugin\\Contract\\Migration\\PluginMigrationInterface` with a stable version plus `up()` and `down()` methods. Versions are recorded as `<plugin-name>:<version>`. `up()` runs during installation/activation; complete uninstall calls `down()` in reverse order. Migrations must be idempotent because MySQL and MariaDB can implicitly commit DDL statements.
+Migration classes implement `Companyware\\Core\\Framework\\Plugin\\Contract\\Migration\\PluginMigrationInterface` with a stable version plus `up()` and `down()` methods. Versions are recorded as `<plugin-name>:<version>` and must never be edited after successful application: Companyware checksums the class, version and source. A failed migration may be repaired and retried under its version. `up()` runs in lexical order during deployment, installation or activation. A database-level named lock serializes concurrent batches per owner; persistent `running`, `completed` and `failed` states make interrupted work visible and retryable. Transactions are used when supported, but migrations must remain idempotent because MySQL and MariaDB can implicitly commit DDL statements.
+
+Every package declares one explicit uninstall policy:
+
+- `"uninstall": {"data": "remove"}` calls `down()` in reverse order, then removes migration and plugin-configuration records;
+- `"uninstall": {"data": "retain"}` removes the package while retaining its database data, settings and migration records for reinstall.
+
+Installation recovery always attempts `down()` for migrations from the failed installation, independent of that policy. Use `app:migrations:migrate --env=prod` during deployment and inspect state with `app:migrations:status --env=prod` or `--json`.
+
+If a migration cannot safely reverse its changes, additionally implement `IrreversibleMigrationInterface` and return a concise operator-facing reason. Destructive rollback is then blocked. A plugin containing such a migration should declare `retain`; if installation fails after that migration ran, Companyware keeps the inactive package and recorded failure for manual recovery rather than pretending that cleanup succeeded.
 
 ## ZIP packages
 

@@ -2,13 +2,14 @@
   "name": "documents",
   "label": "documents.plugin_label",
   "description": "documents.plugin_description",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "compatibility": {
     "companyware": "^0.1",
     "php": "~8.3.0",
     "extensions": {"zip": "*"}
   },
   "provide": {"companyware.documents": "1.0.0"},
+  "uninstall": {"data": "remove"},
   "settings": [
     {
       "key": "max_upload_mb",
