@@ -1,0 +1,21 @@
+{
+  "name": "companyware/documents",
+  "description": "Companyware reference plugin for document management.",
+  "type": "companyware-plugin",
+  "version": "1.0.0",
+  "license": "MIT",
+  "require": {
+    "php": "~8.3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Plugins\\Documents\\": "src/"
+    }
+  },
+  "extra": {
+    "companyware-plugin": {
+      "manifest": "plugin.json",
+      "official": true
+    }
+  }
+}

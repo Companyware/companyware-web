@@ -55,6 +55,10 @@ services:
             $projectDir: '%kernel.project_dir%'
             $cacheDir: '%kernel.cache_dir%'
 
+    App\Plugin\PluginPackageLocator:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     App\Localization\LocaleSubscriber:
         arguments:
             $translator: '@translator.default'

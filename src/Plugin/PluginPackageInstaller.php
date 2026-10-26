@@ -9,7 +9,7 @@ final class PluginPackageInstaller
 {
     private const MAX_ARCHIVE=20_000_000; private const MAX_EXPANDED=100_000_000; private const MAX_FILES=1000;
     private readonly string $pluginRoot;
-    public function __construct(string $projectDir, private readonly string $cacheDir, private readonly MigrationManager $migrations, private readonly Database $database, private readonly PluginLifecycleManager $lifecycle)
+    public function __construct(string $projectDir, private readonly string $cacheDir, private readonly MigrationManager $migrations, private readonly Database $database, private readonly PluginLifecycleManager $lifecycle, private readonly PluginPackageValidator $validator)
     { $this->pluginRoot=$projectDir.'/plugins'; }
     public function install(UploadedFile $upload): PluginManifest
     {
@@ -23,15 +23,35 @@ final class PluginPackageInstaller
             $directory=str_replace(' ','',ucwords(str_replace('-',' ',$data['name']))); $target=$this->pluginRoot.'/'.$directory;
             if (file_exists($target)) throw new PluginPackageException('plugins.error.already_installed');
             $stage=$this->pluginRoot.'/.install-'.bin2hex(random_bytes(8)); (new Filesystem())->mkdir($stage,0750);
-            try { $this->extract($zip,$prefix,$stage); $manifest=PluginManifest::fromFile($stage.'/plugin.json'); if (!$manifest) throw new PluginPackageException('plugins.error.manifest_validation'); if(!rename($stage,$target))throw new PluginPackageException('plugins.error.atomic_install'); $manifest=PluginManifest::fromFile($target.'/plugin.json'); if(!$manifest)throw new PluginPackageException('plugins.error.installed_manifest_invalid'); $this->migrations->migrate($manifest); $this->invalidateContainer(); return $manifest; }
-            catch (\Throwable $e) { $filesystem=new Filesystem();$filesystem->remove($stage);if(is_dir($target))$filesystem->remove($target);throw $e; }
+            try {
+                $this->extract($zip,$prefix,$stage);
+                $manifest=$this->validator->validate($stage);
+                if(!rename($stage,$target))throw new PluginPackageException('plugins.error.atomic_install');
+                $manifest=$this->validator->validate($target);
+                $this->migrations->migrate($manifest);
+                $this->lifecycle->install($manifest->name);
+                $this->invalidateContainer();
+                return $manifest;
+            }
+            catch (\Throwable $e) {
+                $filesystem=new Filesystem();
+                $filesystem->remove($stage);
+                if(is_dir($target)) {
+                    try { if (isset($manifest)) $this->migrations->rollback($manifest); }
+                    catch (\Throwable $rollbackError) { throw new PluginPackageException('plugins.error.install_recovery', 0, $rollbackError); }
+                    $filesystem->remove($target);
+                }
+                throw $e;
+            }
         } finally { $zip->close(); }
     }
     public function uninstall(PluginManifest $plugin): void
     {
         $root=realpath($this->pluginRoot); $target=realpath($plugin->path);
         if (!$root || !$target || !str_starts_with($target,$root.DIRECTORY_SEPARATOR) || $plugin->core) throw new PluginPackageException('plugins.error.unsafe_path');
-        $this->lifecycle->deactivate($plugin->name); $this->migrations->rollback($plugin); $this->lifecycle->uninstall($plugin->name);
+        $this->lifecycle->deactivate($plugin->name);
+        $inactive=$this->database->connection()->prepare('UPDATE plugin SET active=0 WHERE name=:name'); $inactive->execute(['name'=>$plugin->name]);
+        $this->migrations->rollback($plugin); $this->lifecycle->uninstall($plugin->name);
         $delete=$this->database->connection()->prepare('DELETE FROM plugin WHERE name=:name'); $delete->execute(['name'=>$plugin->name]);
         (new Filesystem())->remove($target);
         $this->invalidateContainer();

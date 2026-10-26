@@ -5,6 +5,7 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 ## Stable contracts
 
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\PluginLifecycleInterface`
+- `Companyware\\Core\\Framework\\Plugin\\Plugin`
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\NavigationProviderInterface`
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\SlotProviderInterface`
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\Migration\\PluginMigrationInterface`
@@ -14,7 +15,8 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 
 | Surface | Identifiers | Status |
 | --- | --- | --- |
-| PHP contracts | the four `Plugin\\Contract` interfaces listed above | stable in API 1.x |
+| PHP contracts | the four `Plugin\\Contract` interfaces and the `Plugin` base class listed above | stable in API 1.x |
+| Composer package | package type `companyware-plugin` and `extra.companyware-plugin.manifest` | stable in API 1.x |
 | Runtime manifest | `name`, `label`, `description`, `version`, `navigation`, `migrations`, `assets`, optional `locales` | stable in API 1.x |
 | Translation catalogs | plugin-owned `translations/messages.<locale>.yaml` catalogs using stable message keys | stable in API 1.x |
 | Twig slots | `document.stylesheets`, `document.javascripts`, `login.form.before`, `login.form.after`, `admin.navigation.after`, `admin.content.before`, `admin.content.after`, `admin.profile.form.before`, `admin.profile.form.after`, `admin.settings.fields`, `admin.settings.sections` | stable in API 1.x |
@@ -40,6 +42,12 @@ The `App\\` namespace is internal application implementation. Plugins must not i
 ## Ownership and isolation
 
 Core owns platform bootstrapping, security and recovery. A plugin owns its domain code, data, templates and assets and communicates with Core through the contracts above. Cross-plugin integration requires an explicit dependency and a public contract owned by the providing plugin. A plugin must not read another plugin's private classes, files, tables or container services.
+
+## Package and lifecycle baseline
+
+Each plugin is a Composer package of type `companyware-plugin`. Its Composer metadata points to `plugin.json` through `extra.companyware-plugin.manifest`. The Composer version, when present, must equal the runtime-manifest version. Path repositories are supported for development; ordinary Composer repositories can distribute the same package unchanged.
+
+Lifecycle services should extend `Companyware\\Core\\Framework\\Plugin\\Plugin`. Its no-op lifecycle methods allow a plugin to override only required hooks. Activation state is persisted only after migrations and the activation hook succeed. Failed ZIP installation rolls back applied plugin migrations and removes the staged package.
 
 ## Supported platform
 

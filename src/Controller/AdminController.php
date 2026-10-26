@@ -38,7 +38,12 @@ final class AdminController
                 } else {
                     $name=(string)$request->request->get('plugin'); $plugin=$registry->manifest($name); if(!$plugin) throw new PluginPackageException($this->translator->trans('plugins.message.not_found'));
                     if ($action==='uninstall') { $installer->uninstall($plugin); $request->getSession()->set('plugin_message',$this->translator->trans('plugins.message.uninstalled',['%plugin%'=>$this->translator->trans($plugin->label)])); }
-                    elseif ($name!=='core-administration') { $active=$registry->toggle($name); if($active){$migrations->migrate($plugin);$lifecycle->activate($name);}else{$lifecycle->deactivate($name);} $request->getSession()->set('plugin_message',$this->translator->trans($active?'plugins.message.activated':'plugins.message.deactivated',['%plugin%'=>$this->translator->trans($plugin->label)])); }
+                    elseif ($name!=='core-administration') {
+                        $active=!$registry->isActive($name);
+                        if($active){$migrations->migrate($plugin);$lifecycle->activate($name);$registry->setActive($name,true);}
+                        else{$lifecycle->deactivate($name);$registry->setActive($name,false);}
+                        $request->getSession()->set('plugin_message',$this->translator->trans($active?'plugins.message.activated':'plugins.message.deactivated',['%plugin%'=>$this->translator->trans($plugin->label)]));
+                    }
                 }
             } catch (\Throwable $e) {
                 $message = $e->getMessage();
