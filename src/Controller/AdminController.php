@@ -24,6 +24,7 @@ use App\Plugin\PluginEventBus;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Companyware\Core\Framework\Security\RequiresPrivilege;
 use App\Security\SecurityAuditLogger;
+use App\Security\AccessRepository;
 
 final class AdminController
 {
@@ -134,7 +135,7 @@ final class AdminController
 
     #[Route('/admin/profile', name: 'admin_profile', methods: ['GET', 'POST'])]
     #[RequiresPrivilege('core.profile.edit')]
-    public function profile(Request $request, AdminRepository $admins): Response
+    public function profile(Request $request, AdminRepository $admins, AccessRepository $access): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;
         $admin = $request->getSession()->get('admin');
@@ -146,7 +147,7 @@ final class AdminController
             $request->getSession()->set('admin', $admin);
             $saved = true;
         }
-        return $this->page($request, 'profile', 'profile.title', ['saved' => $saved]);
+        return $this->page($request, 'profile', 'profile.title', ['saved' => $saved, 'accessSummary' => $access->accessSummary((int) $admin['id'])]);
     }
 
     #[Route('/admin/settings', name: 'admin_settings', methods: ['GET', 'POST'])]

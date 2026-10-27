@@ -17,6 +17,15 @@ final class AccessRepository
     public function assignments(): array { $this->schema->ensure(); $rows=$this->database->connection()->query('SELECT admin_user_id, role_id FROM admin_user_role')->fetchAll(PDO::FETCH_ASSOC);$result=[];foreach($rows as $row)$result[(int)$row['admin_user_id']][]=(int)$row['role_id'];return $result; }
     public function rolePrivileges(): array { $this->schema->ensure();$rows=$this->database->connection()->query('SELECT role_id, privilege_key FROM admin_role_privilege')->fetchAll(PDO::FETCH_ASSOC);$result=[];foreach($rows as $row)$result[(int)$row['role_id']][]=$row['privilege_key'];return $result; }
     public function auditLog():array{$this->schema->ensure();return $this->database->connection()->query('SELECT a.*,u.display_name AS actor_name FROM security_audit a LEFT JOIN admin_user u ON u.id=a.actor_admin_id ORDER BY a.created_at DESC,a.id DESC LIMIT 50')->fetchAll(PDO::FETCH_ASSOC);}
+    public function accessSummary(int $adminId): array
+    {
+        $this->schema->ensure();$db=$this->database->connection();
+        $roles=$db->prepare('SELECT r.role_name,r.system_name FROM admin_role r JOIN admin_user_role ur ON ur.role_id=r.id WHERE ur.admin_user_id=:admin ORDER BY r.protected DESC,r.role_name');$roles->execute(['admin'=>$adminId]);$roleRows=$roles->fetchAll(PDO::FETCH_ASSOC);
+        $system=(bool)array_filter($roleRows,static fn(array $role):bool=>$role['system_name']==='system-administrator');
+        if($system)$privileges=$db->query('SELECT privilege_key,label,owner,privilege_group FROM privilege ORDER BY owner,privilege_group,privilege_key')->fetchAll(PDO::FETCH_ASSOC);
+        else{$statement=$db->prepare('SELECT DISTINCT p.privilege_key,p.label,p.owner,p.privilege_group FROM privilege p JOIN admin_role_privilege rp ON rp.privilege_key=p.privilege_key JOIN admin_user_role ur ON ur.role_id=rp.role_id WHERE ur.admin_user_id=:admin ORDER BY p.owner,p.privilege_group,p.privilege_key');$statement->execute(['admin'=>$adminId]);$privileges=$statement->fetchAll(PDO::FETCH_ASSOC);}
+        return ['roles'=>$roleRows,'privileges'=>$privileges,'systemAdministrator'=>$system];
+    }
 
     public function createRole(string $name, array $privileges): int
     {
