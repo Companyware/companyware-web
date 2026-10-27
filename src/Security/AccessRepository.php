@@ -39,6 +39,18 @@ final class AccessRepository
         $insert=$db->prepare('INSERT INTO admin_role_privilege (role_id, privilege_key) SELECT :role, privilege_key FROM privilege WHERE privilege_key=:privilege AND protected=0');
         foreach(array_unique(array_filter($privileges,'is_string')) as $privilege)$insert->execute(['role'=>$roleId,'privilege'=>$privilege]);$db->commit();}catch(\Throwable $exception){if($db->inTransaction())$db->rollBack();throw $exception;}
     }
+    public function deleteRole(int $roleId): void
+    {
+        $db=$this->database->connection();$db->beginTransaction();
+        try{
+            $statement=$db->prepare('SELECT protected FROM admin_role WHERE id=:id');$statement->execute(['id'=>$roleId]);$protected=$statement->fetchColumn();
+            if($protected===false)throw new \LogicException('security.error.role_missing');
+            if((bool)$protected)throw new \LogicException('security.error.protected_role');
+            $assigned=$db->prepare('SELECT COUNT(*) FROM admin_user_role WHERE role_id=:id');$assigned->execute(['id'=>$roleId]);
+            if((int)$assigned->fetchColumn()>0)throw new \LogicException('security.error.role_in_use');
+            $db->prepare('DELETE FROM admin_role WHERE id=:id AND protected=0')->execute(['id'=>$roleId]);$db->commit();
+        }catch(\Throwable $exception){if($db->inTransaction())$db->rollBack();throw $exception;}
+    }
     public function setRolePrivilegeMatrix(array $roleIds,array $matrix): void
     {
         $ids=array_values(array_unique(array_filter(array_map('intval',$roleIds),static fn(int $id):bool=>$id>0)));
