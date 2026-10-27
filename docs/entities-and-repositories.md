@@ -10,7 +10,7 @@ Companyware entities use one public model in `Companyware\Core\Framework\Data`.
 
 Domain and application services depend on owner-defined repository interfaces. Concrete persistence adapters remain replaceable services. `EntityQuery` deliberately exposes only filters and sorts interpreted by the owning repository; callers never submit SQL, table names or ORM expressions.
 
-Doctrine ORM/DBAL is the preferred adapter for new packages. The current minimal Core PDO connection remains a supported transition adapter behind `ConnectionProviderInterface`; it is not a domain-service API. This keeps the public contracts independent of a particular Doctrine major version while the existing schema is migrated incrementally.
+Doctrine ORM/DBAL is the standard adapter for new packages. Direct PDO repositories remain fully supported behind `ConnectionProviderInterface`; they do not need to be rewritten merely because Doctrine is available. Both implementations may coexist, while domain services stay independent of either persistence technology. Existing PDO code is migrated only when a separate functional change justifies it.
 
 Cross-plugin entity relations must be listed in `plugin.json` and backed by a required plugin dependency:
 
