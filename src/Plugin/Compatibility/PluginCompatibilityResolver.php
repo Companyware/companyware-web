@@ -67,6 +67,11 @@ final class PluginCompatibilityResolver
         $provided = $this->providedPackages($plugins);
         foreach ($plugins as $plugin) {
             $this->checkPlatform($plugin, $problems);
+            foreach ($plugin->entityReferences as $owner) {
+                if (!array_key_exists($owner, $plugin->requires)) {
+                    $problems[] = $this->problem('entity_dependency_missing', $plugin, sprintf('Plugin "%s" references entities owned by "%s" without a required dependency.', $plugin->name, $owner), ['dependency' => $owner]);
+                }
+            }
             foreach ($plugin->requires as $name => $constraint) {
                 $this->checkRequiredPackage($plugin, $name, $constraint, $provided, false, $problems);
             }

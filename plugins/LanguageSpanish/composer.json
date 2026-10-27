@@ -2,7 +2,7 @@
   "name": "companyware/language-spanish",
   "description": "Official Spanish language pack for Companyware.",
   "type": "companyware-plugin",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "license": "MIT",
   "require": {
     "php": "~8.3.0"

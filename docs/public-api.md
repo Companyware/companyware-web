@@ -1,8 +1,20 @@
 # Companyware public API 1.0
 
+Entity and repository conventions are documented in [entities-and-repositories.md](entities-and-repositories.md).
+
 Companyware plugins may depend only on symbols below the `Companyware\\Core\\` namespace that are explicitly marked `@api`. The current contract version is exposed by `Companyware\\Core\\Framework\\Api\\PublicApi::VERSION` and by `extra.companyware.public-api` in the root `composer.json`.
 
 ## Stable contracts
+
+- `Companyware\Core\Framework\Data\EntityInterface`
+- `Companyware\Core\Framework\Data\EntityMetadata`
+- `Companyware\Core\Framework\Data\EntityQuery`
+- `Companyware\Core\Framework\Data\RepositoryInterface`
+- `Companyware\Core\Framework\Data\WritableRepositoryInterface`
+- `Companyware\Core\Framework\Data\ConnectionProviderInterface`
+- `Companyware\Core\Framework\Data\OptimisticLockException`
+- `Companyware\Core\Test\Data\SchemaTestHelper`
+- `Companyware\Core\Test\Data\RepositoryTestHelper`
 
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\PluginLifecycleInterface`
 - `Companyware\\Core\\Framework\\Plugin\\Plugin`

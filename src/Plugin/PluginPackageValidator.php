@@ -53,6 +53,7 @@ final class PluginPackageValidator
         }
 
         $this->validateCompatibility($manifest);
+        $this->validateEntityReferences($manifest);
 
         return $manifest;
     }
@@ -122,6 +123,23 @@ final class PluginPackageValidator
         $file = $directory.'/translations/messages.'.$locale.'.yaml';
         if (!is_file($file) || filesize($file) === 0) {
             throw new PluginPackageException('plugins.error.translation_missing');
+        }
+    }
+
+    private function validateEntityReferences(PluginManifest $manifest): void
+    {
+        if (!array_is_list($manifest->entityReferences)) {
+            throw new PluginPackageException('plugins.error.entity_references_invalid');
+        }
+        $seen = [];
+        foreach ($manifest->entityReferences as $owner) {
+            if (!is_string($owner) || !preg_match('/^[a-z][a-z0-9-]+$/', $owner) || $owner === $manifest->name || isset($seen[$owner])) {
+                throw new PluginPackageException('plugins.error.entity_references_invalid');
+            }
+            if (!array_key_exists($owner, $manifest->requires)) {
+                throw new PluginPackageException('plugins.error.entity_dependency_missing');
+            }
+            $seen[$owner] = true;
         }
     }
 
