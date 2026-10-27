@@ -77,5 +77,13 @@ final class AccessRepository
         if($wasSystem&&!in_array($system,$ids,true)){ $count=(int)$db->query("SELECT COUNT(DISTINCT admin_user_id) FROM admin_user_role WHERE role_id=$system")->fetchColumn();if($count<=1)throw new \LogicException('security.error.last_system_admin'); }
         $db->beginTransaction();try{$db->prepare('DELETE FROM admin_user_role WHERE admin_user_id=:id')->execute(['id'=>$adminId]);$insert=$db->prepare('INSERT INTO admin_user_role (admin_user_id, role_id) SELECT :admin, id FROM admin_role WHERE id=:role');foreach($ids as $id)$insert->execute(['admin'=>$adminId,'role'=>$id]);$verify=$db->prepare('SELECT COUNT(*) FROM admin_user_role WHERE admin_user_id=:id');$verify->execute(['id'=>$adminId]);if((int)$verify->fetchColumn()<1)throw new \LogicException('security.error.role_required');$db->commit();}catch(\Throwable $exception){if($db->inTransaction())$db->rollBack();throw $exception;}
     }
+    public function deleteUser(int $adminId,int $currentAdminId,bool $allowProtected=false):void
+    {
+        if($adminId===$currentAdminId)throw new \LogicException('security.error.delete_self');
+        $db=$this->database->connection();$system=(int)$db->query("SELECT id FROM admin_role WHERE system_name='system-administrator'")->fetchColumn();
+        $check=$db->prepare('SELECT 1 FROM admin_user_role WHERE admin_user_id=:admin AND role_id=:role');$check->execute(['admin'=>$adminId,'role'=>$system]);
+        if($check->fetchColumn()){if(!$allowProtected)throw new \LogicException('security.error.protected_role');$count=(int)$db->query("SELECT COUNT(DISTINCT admin_user_id) FROM admin_user_role WHERE role_id=$system")->fetchColumn();if($count<=1)throw new \LogicException('security.error.last_system_admin');}
+        $delete=$db->prepare('DELETE FROM admin_user WHERE id=:id');$delete->execute(['id'=>$adminId]);if($delete->rowCount()!==1)throw new \LogicException('security.error.user_missing');
+    }
     private function role(int $id): ?array{$statement=$this->database->connection()->prepare('SELECT * FROM admin_role WHERE id=:id');$statement->execute(['id'=>$id]);return $statement->fetch(PDO::FETCH_ASSOC)?:null;}
 }

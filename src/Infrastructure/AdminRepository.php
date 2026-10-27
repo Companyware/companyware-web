@@ -46,6 +46,13 @@ final class AdminRepository
 
     public function deleteUnassignedUser(int $id):void{$statement=$this->database->connection()->prepare('DELETE u FROM admin_user u LEFT JOIN admin_user_role ur ON ur.admin_user_id=u.id WHERE u.id=:id AND ur.admin_user_id IS NULL');$statement->execute(['id'=>$id]);}
 
+    public function updateUser(int $id,string $displayName,?string $email,string $password=''):void
+    {
+        $displayName=trim($displayName);if($displayName===''||($password!==''&&strlen($password)<10))throw new \InvalidArgumentException('security.error.user_invalid');
+        if($password===''){$statement=$this->database->connection()->prepare('UPDATE admin_user SET display_name=:display_name,email=:email WHERE id=:id');$statement->execute(['id'=>$id,'display_name'=>$displayName,'email'=>$email]);return;}
+        $statement=$this->database->connection()->prepare('UPDATE admin_user SET display_name=:display_name,email=:email,password_hash=:password WHERE id=:id');$statement->execute(['id'=>$id,'display_name'=>$displayName,'email'=>$email,'password'=>password_hash($password,PASSWORD_DEFAULT)]);
+    }
+
     public function updateProfile(int $id, string $displayName, ?string $email): void
     {
         $statement = $this->database->connection()->prepare('UPDATE admin_user SET display_name = :display_name, email = :email WHERE id = :id');
