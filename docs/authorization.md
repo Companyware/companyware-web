@@ -8,7 +8,7 @@ Controller actions use `#[RequiresPrivilege('owner.action')]` when one privilege
 
 Roles group privileges and are assigned many-to-many to administrators. The protected `system-administrator` role grants every current and future privilege. Deploying the initial authorization migration assigns every existing administrator to that role, preventing rollout lockout. The final system administrator cannot be removed, protected privileges cannot be delegated to ordinary roles and the recovery capability remains Core-owned.
 
-The administration renders registered privileges as a matrix: rows are grouped by package owner and privilege group, while roles form the columns. Administrators edit assignments in the matrix but cannot create free-form privilege keys. Packages must translate both each declared label and `security.group.<group>` for their group heading.
+The administration renders every ordinary role as a compact editor. Permissions are grouped by package owner and area, while technical keys remain available only as hover context. Administrators select registered permissions for one role and save that role directly; they cannot create free-form privilege keys. Packages must translate both each declared label and `security.group.<group>` for their group heading.
 
 Record scopes such as `own`, `department` and `all` are deliberately not encoded as additional ad-hoc privilege keys. They require a separate policy and context contract so repositories and application services can enforce the same data boundary; this is tracked as a follow-up work package.
 
