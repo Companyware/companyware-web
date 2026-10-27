@@ -30,6 +30,22 @@ final class AccessRepository
         $insert=$db->prepare('INSERT INTO admin_role_privilege (role_id, privilege_key) SELECT :role, privilege_key FROM privilege WHERE privilege_key=:privilege AND protected=0');
         foreach(array_unique(array_filter($privileges,'is_string')) as $privilege)$insert->execute(['role'=>$roleId,'privilege'=>$privilege]);$db->commit();}catch(\Throwable $exception){if($db->inTransaction())$db->rollBack();throw $exception;}
     }
+    public function setRolePrivilegeMatrix(array $roleIds,array $matrix): void
+    {
+        $ids=array_values(array_unique(array_filter(array_map('intval',$roleIds),static fn(int $id):bool=>$id>0)));
+        if($ids===[])return;
+        $db=$this->database->connection();
+        $placeholders=implode(',',array_fill(0,count($ids),'?'));
+        $statement=$db->prepare("SELECT id, protected FROM admin_role WHERE id IN ($placeholders)");$statement->execute($ids);$roles=$statement->fetchAll(PDO::FETCH_KEY_PAIR);
+        if(count($roles)!==count($ids)||array_filter($roles,static fn(mixed $protected):bool=>(bool)$protected))throw new \LogicException('security.error.protected_role');
+        $db->beginTransaction();
+        try{
+            $delete=$db->prepare('DELETE FROM admin_role_privilege WHERE role_id=:id');
+            $insert=$db->prepare('INSERT INTO admin_role_privilege (role_id, privilege_key) SELECT :role, privilege_key FROM privilege WHERE privilege_key=:privilege AND protected=0');
+            foreach($ids as $id){$delete->execute(['id'=>$id]);foreach(array_unique(array_filter($matrix[(string)$id]??$matrix[$id]??[],'is_string')) as $privilege)$insert->execute(['role'=>$id,'privilege'=>$privilege]);}
+            $db->commit();
+        }catch(\Throwable $exception){if($db->inTransaction())$db->rollBack();throw $exception;}
+    }
     public function assignRoles(int $adminId,array $roleIds,bool $allowProtected=false): void
     {
         $ids=array_values(array_unique(array_map('intval',$roleIds)));

@@ -106,6 +106,8 @@ Every cross-plugin entity relation is listed in `entities.references`. Each refe
 
 Declare plugin-owned privileges in the runtime manifest and reference them from navigation with `"privilege": "acme-example.read"`. Enforce the same privilege in PHP through the public `AuthorizationInterface` or `RequiresPrivilege` attribute. Navigation and slot filtering improve usability but do not replace server-side checks. `PrivilegeAwareInterface` lets a slot provider name the privilege required for each extension point. See [`docs/authorization.md`](../docs/authorization.md).
 
+The role editor renders registered privileges as a grouped matrix. Core and plugins remain the exclusive privilege registry: administrators combine declared privileges into roles but cannot create arbitrary privilege keys. Each package supplies translations for the privilege label and for `security.group.<group>` in every supported catalog.
+
 Validate the currently installed graph through the same resolver used by administration:
 
 ```bash
