@@ -64,6 +64,10 @@ The optional `official` flag identifies packages maintained by Companyware and e
   "provide": {"acme.example": "1.0.0"},
   "replace": {"acme.example-legacy": "1.0.0"},
   "entities": {"references": ["documents"]},
+  "privileges": [
+    {"key": "acme-example.read", "label": "acme.privilege.read", "group": "example"},
+    {"key": "acme-example.write", "label": "acme.privilege.write", "group": "example"}
+  ],
   "uninstall": {"data": "remove"},
   "settings": [
     {
@@ -83,7 +87,7 @@ The optional `official` flag identifies packages maintained by Companyware and e
     "scripts": [{"handle": "acme-js", "path": "example.js", "priority": 100, "defer": true}]
   },
   "navigation": [
-    {"section": "PLUGINS", "label": "Example", "route": "acme_example_index", "icon": "E", "position": 100}
+    {"section": "PLUGINS", "label": "Example", "route": "acme_example_index", "icon": "E", "position": 100, "privilege": "acme-example.read"}
   ]
 }
 ```
@@ -97,6 +101,10 @@ The canonical compatibility resolver validates the complete prospective graph be
 Entities implement the public `EntityInterface`, declare their owner through `EntityMetadata` and expose opaque string IDs, immutable UTC timestamps, an optimistic-lock version and an optional soft-delete timestamp. Domain services depend on plugin-owned repository interfaces; concrete PDO or Doctrine adapters remain replaceable infrastructure. See [`docs/entities-and-repositories.md`](../docs/entities-and-repositories.md).
 
 Every cross-plugin entity relation is listed in `entities.references`. Each referenced owner must also be a key in `require`; package and graph validation reject the relation otherwise. Consumers integrate through a public contract of the owning plugin, never through its table or concrete repository.
+
+## Roles and privileges
+
+Declare plugin-owned privileges in the runtime manifest and reference them from navigation with `"privilege": "acme-example.read"`. Enforce the same privilege in PHP through the public `AuthorizationInterface` or `RequiresPrivilege` attribute. Navigation and slot filtering improve usability but do not replace server-side checks. `PrivilegeAwareInterface` lets a slot provider name the privilege required for each extension point. See [`docs/authorization.md`](../docs/authorization.md).
 
 Validate the currently installed graph through the same resolver used by administration:
 

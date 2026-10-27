@@ -314,3 +314,4 @@ input:focus, select:focus { border-color: var(--violet); box-shadow: 0 0 0 4px r
     .login-form-wrap { padding: 38px 0; }
     .login-options > span { display: none; }
 }
+.security-checks{display:flex;flex-wrap:wrap;align-items:center;gap:.65rem 1rem;max-width:760px}.security-checks label{display:inline-flex;align-items:center;gap:.4rem;color:var(--muted);font-size:.9rem}.security-checks input[type="text"],.security-checks input:not([type]){min-width:220px}

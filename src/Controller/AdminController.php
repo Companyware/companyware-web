@@ -22,6 +22,8 @@ use App\Plugin\Migration\MigrationManager;
 use Companyware\Core\Framework\Plugin\Event\PluginLifecycleOperation;
 use App\Plugin\PluginEventBus;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Companyware\Core\Framework\Security\RequiresPrivilege;
+use App\Security\SecurityAuditLogger;
 
 final class AdminController
 {
@@ -43,6 +45,7 @@ final class AdminController
     }
 
     #[Route('/admin/dashboard/layout', name: 'admin_dashboard_layout', methods: ['POST'])]
+    #[RequiresPrivilege('core.dashboard.customize')]
     public function dashboardLayout(Request $request, AdminRepository $admins): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;
@@ -61,7 +64,8 @@ final class AdminController
     }
 
     #[Route('/admin/plugins', name: 'admin_plugins', methods: ['GET', 'POST'])]
-    public function plugins(Request $request, PluginRegistry $registry, PluginLifecycleManager $lifecycle, PluginPackageInstaller $installer, MigrationManager $migrations, PluginCompatibilityResolver $compatibility, PluginEventBus $events): Response
+    #[RequiresPrivilege('core.plugins.manage')]
+    public function plugins(Request $request, PluginRegistry $registry, PluginLifecycleManager $lifecycle, PluginPackageInstaller $installer, MigrationManager $migrations, PluginCompatibilityResolver $compatibility, PluginEventBus $events, SecurityAuditLogger $audit): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;
         if ($request->isMethod('POST')) {
@@ -70,15 +74,15 @@ final class AdminController
                 $action=(string)$request->request->get('action','toggle');
                 if ($action==='install') {
                     $file=$request->files->get('plugin_package'); if(!$file) throw new PluginPackageException($this->translator->trans('plugins.message.choose_zip'));
-                    $plugin=$installer->install($file); $request->getSession()->set('plugin_message',$this->translator->trans('plugins.message.installed',['%plugin%'=>$this->translator->trans($plugin->label)]));
+                    $plugin=$installer->install($file); $audit->log('plugin.installed','plugin',$plugin->name); $request->getSession()->set('plugin_message',$this->translator->trans('plugins.message.installed',['%plugin%'=>$this->translator->trans($plugin->label)]));
                 } else {
                     $name=(string)$request->request->get('plugin'); $plugin=$registry->manifest($name); if(!$plugin) throw new PluginPackageException($this->translator->trans('plugins.message.not_found'));
-                    if ($action==='uninstall') { $installer->uninstall($plugin); $request->getSession()->set('plugin_message',$this->translator->trans('plugins.message.uninstalled',['%plugin%'=>$this->translator->trans($plugin->label)])); }
+                    if ($action==='uninstall') { $installer->uninstall($plugin); $audit->log('plugin.uninstalled','plugin',$plugin->name); $request->getSession()->set('plugin_message',$this->translator->trans('plugins.message.uninstalled',['%plugin%'=>$this->translator->trans($plugin->label)])); }
                     elseif ($name!=='core-administration') {
                         $active=!$registry->isActive($name);
                         if($active){$compatibility->assertActivatable($plugin,$registry->manifests(),$registry->activeManifests());$events->before($name,PluginLifecycleOperation::Activate);$migrations->migrate($plugin);$lifecycle->activate($name);$registry->setActive($name,true);$events->after($name,PluginLifecycleOperation::Activate);}
                         else{$compatibility->assertDeactivatable($plugin,$registry->activeManifests());$events->before($name,PluginLifecycleOperation::Deactivate);$lifecycle->deactivate($name);$registry->setActive($name,false);$events->after($name,PluginLifecycleOperation::Deactivate);}
-                        $request->getSession()->set('plugin_message',$this->translator->trans($active?'plugins.message.activated':'plugins.message.deactivated',['%plugin%'=>$this->translator->trans($plugin->label)]));
+                        $audit->log($active?'plugin.activated':'plugin.deactivated','plugin',$name);$request->getSession()->set('plugin_message',$this->translator->trans($active?'plugins.message.activated':'plugins.message.deactivated',['%plugin%'=>$this->translator->trans($plugin->label)]));
                     }
                 }
             } catch (\Throwable $e) {
@@ -92,6 +96,7 @@ final class AdminController
     }
 
     #[Route('/admin/api/migrations', name: 'admin_api_migrations', methods: ['GET'])]
+    #[RequiresPrivilege('core.plugins.manage')]
     public function migrationState(Request $request, Schema $schema, MigrationManager $migrations): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;
@@ -101,6 +106,7 @@ final class AdminController
     }
 
     #[Route('/admin/plugins/{name}/settings', name: 'admin_plugin_settings', requirements: ['name' => '[a-z][a-z0-9-]+'], methods: ['GET', 'POST'])]
+    #[RequiresPrivilege('core.plugins.manage')]
     public function pluginSettings(string $name, Request $request, PluginRegistry $registry, PluginConfiguration $configuration): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;
@@ -127,6 +133,7 @@ final class AdminController
     }
 
     #[Route('/admin/profile', name: 'admin_profile', methods: ['GET', 'POST'])]
+    #[RequiresPrivilege('core.profile.edit')]
     public function profile(Request $request, AdminRepository $admins): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;
@@ -143,6 +150,7 @@ final class AdminController
     }
 
     #[Route('/admin/settings', name: 'admin_settings', methods: ['GET', 'POST'])]
+    #[RequiresPrivilege('core.settings.manage')]
     public function settings(Request $request, Database $database, Schema $schema, LocaleRegistry $locales): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;

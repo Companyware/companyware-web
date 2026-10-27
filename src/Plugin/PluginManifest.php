@@ -4,7 +4,7 @@ namespace App\Plugin;
 
 final readonly class PluginManifest
 {
-    public function __construct(public string $name, public string $label, public string $version, public string $description, public string $path, public array $navigation = [], public array $migrations = [], public array $assets = [], public array $locales = [], public bool $core = false, public string $companyware = '*', public string $php = '*', public array $extensions = [], public array $requires = [], public array $optional = [], public array $conflicts = [], public array $provides = [], public array $replaces = [], public array $settings = [], public string $uninstallData = 'remove', public array $entityReferences = [])
+    public function __construct(public string $name, public string $label, public string $version, public string $description, public string $path, public array $navigation = [], public array $migrations = [], public array $assets = [], public array $locales = [], public bool $core = false, public string $companyware = '*', public string $php = '*', public array $extensions = [], public array $requires = [], public array $optional = [], public array $conflicts = [], public array $provides = [], public array $replaces = [], public array $settings = [], public string $uninstallData = 'remove', public array $entityReferences = [], public array $privileges = [])
     {
     }
 
@@ -26,6 +26,7 @@ final readonly class PluginManifest
         if (isset($data['uninstall']) && !is_array($data['uninstall'])) return null;
         if (isset($data['entities']) && !is_array($data['entities'])) return null;
         if (isset($data['entities']['references']) && !is_array($data['entities']['references'])) return null;
+        if (isset($data['privileges']) && !is_array($data['privileges'])) return null;
         $uninstallData = $data['uninstall']['data'] ?? 'remove';
         if (!is_string($uninstallData) || !in_array($uninstallData, ['remove', 'retain'], true)) return null;
         $compatibility = is_array($data['compatibility'] ?? null) ? $data['compatibility'] : [];
@@ -50,6 +51,7 @@ final readonly class PluginManifest
             is_array($data['settings'] ?? null) ? $data['settings'] : [],
             $uninstallData,
             is_array($data['entities']['references'] ?? null) ? $data['entities']['references'] : [],
+            is_array($data['privileges'] ?? null) ? $data['privileges'] : [],
         );
     }
 
