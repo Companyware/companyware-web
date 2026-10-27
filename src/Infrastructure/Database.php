@@ -2,10 +2,11 @@
 
 namespace App\Infrastructure;
 
+use Companyware\Core\Framework\Data\ConnectionProviderInterface;
 use PDO;
 use RuntimeException;
 
-final class Database
+final class Database implements ConnectionProviderInterface
 {
     private ?PDO $connection = null;
 

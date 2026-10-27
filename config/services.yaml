@@ -68,5 +68,8 @@ services:
     Companyware\Core\Framework\File\FileNameNormalizerInterface:
         alias: App\Framework\File\FileNameNormalizer
 
+    Companyware\Core\Framework\Data\ConnectionProviderInterface:
+        alias: App\Infrastructure\Database
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

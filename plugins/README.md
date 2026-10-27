@@ -63,6 +63,7 @@ The optional `official` flag identifies packages maintained by Companyware and e
   "conflict": {"legacy-documents": "<2.0"},
   "provide": {"acme.example": "1.0.0"},
   "replace": {"acme.example-legacy": "1.0.0"},
+  "entities": {"references": ["documents"]},
   "uninstall": {"data": "remove"},
   "settings": [
     {
@@ -90,6 +91,12 @@ The optional `official` flag identifies packages maintained by Companyware and e
 All runtime versions are semantic versions. Constraints support exact versions, comparison operators, caret and tilde ranges, wildcards, AND expressions separated by spaces or commas, and `||` alternatives. `require` dependencies must be present during installation and active during activation. An installed optional integration is version-checked, while an absent one is accepted. `provide` and `replace` expose a virtual package at one concrete semantic version.
 
 The canonical compatibility resolver validates the complete prospective graph before installation, activation, deactivation or uninstall changes files, migrations, lifecycle state or the database. It checks Companyware and PHP versions, extensions, dependencies, conflicts, replacements and cycles and returns the same structured diagnostics for administration and future CLI or Store consumers.
+
+## Entities and repositories
+
+Entities implement the public `EntityInterface`, declare their owner through `EntityMetadata` and expose opaque string IDs, immutable UTC timestamps, an optimistic-lock version and an optional soft-delete timestamp. Domain services depend on plugin-owned repository interfaces; concrete PDO or Doctrine adapters remain replaceable infrastructure. See [`docs/entities-and-repositories.md`](../docs/entities-and-repositories.md).
+
+Every cross-plugin entity relation is listed in `entities.references`. Each referenced owner must also be a key in `require`; package and graph validation reject the relation otherwise. Consumers integrate through a public contract of the owning plugin, never through its table or concrete repository.
 
 Validate the currently installed graph through the same resolver used by administration:
 
