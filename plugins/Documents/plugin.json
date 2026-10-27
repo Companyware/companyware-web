@@ -2,7 +2,7 @@
   "name": "documents",
   "label": "documents.plugin_label",
   "description": "documents.plugin_description",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "compatibility": {
     "companyware": "^0.1",
     "php": "~8.3.0",
@@ -23,6 +23,11 @@
     }
   ],
   "entities": {"references": []},
+  "privileges": [
+    {"key": "documents.read", "label": "documents.privilege.read", "group": "documents"},
+    {"key": "documents.create", "label": "documents.privilege.create", "group": "documents"},
+    {"key": "documents.delete", "label": "documents.privilege.delete", "group": "documents"}
+  ],
   "migrations": ["Plugins\\Documents\\Migration\\Version202608150001", "Plugins\\Documents\\Migration\\Version202610270001"],
   "assets": {
     "styles": [
@@ -33,6 +38,6 @@
     ]
   },
   "navigation": [
-    {"section": "nav.section.plugins", "label": "documents.nav", "route": "documents_index", "icon": "▤", "position": 100}
+    {"section": "nav.section.plugins", "label": "documents.nav", "route": "documents_index", "icon": "▤", "position": 100, "privilege": "documents.read"}
   ]
 }

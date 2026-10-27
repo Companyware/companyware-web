@@ -71,5 +71,8 @@ services:
     Companyware\Core\Framework\Data\ConnectionProviderInterface:
         alias: App\Infrastructure\Database
 
+    Companyware\Core\Framework\Security\AuthorizationInterface:
+        alias: App\Security\AuthorizationService
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

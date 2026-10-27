@@ -71,7 +71,7 @@
         {% block topbar %}
         <button class="mobile-menu" data-admin-menu>☰</button>
         <div class="breadcrumb"><strong>Companyware</strong><span>›</span>{{ title|trans }}</div>
-        <div class="top-actions"><span class="status-dot"></span><span>{{ 'layout.ready'|trans }}</span><a href="{{ path('admin_profile') }}" class="mini-avatar">{{ admin.display_name|slice(0,2)|upper }}</a></div>
+        <div class="top-actions"><span class="status-dot"></span><span>{{ 'layout.ready'|trans }}</span>{% if is_granted('core.profile.edit') %}<a href="{{ path('admin_profile') }}" class="mini-avatar">{{ admin.display_name|slice(0,2)|upper }}</a>{% else %}<span class="mini-avatar">{{ admin.display_name|slice(0,2)|upper }}</span>{% endif %}</div>
         {% endblock %}
     </header>
     <main class="admin-content">

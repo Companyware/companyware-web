@@ -14,9 +14,9 @@
             <p>{{ 'dashboard.intro'|trans }}</p>
         </div>
         <div class="dashboard-header-actions">
-            <button class="secondary dashboard-customize" type="button" data-dashboard-customize>{{ 'dashboard.customize'|trans }}</button>
+            {% if is_granted('core.dashboard.customize') %}<button class="secondary dashboard-customize" type="button" data-dashboard-customize>{{ 'dashboard.customize'|trans }}</button>
             <button class="secondary dashboard-add" type="button" data-dashboard-add hidden aria-expanded="false" aria-label="{{ 'dashboard.add_widgets'|trans }}">+ {{ 'dashboard.add_widgets'|trans }}</button>
-            <button class="secondary dashboard-reset" type="button" data-dashboard-reset hidden>{{ 'dashboard.reset'|trans }}</button>
+            <button class="secondary dashboard-reset" type="button" data-dashboard-reset hidden>{{ 'dashboard.reset'|trans }}</button>{% endif %}
         </div>
         <div class="dashboard-mark" aria-hidden="true"><img src="/assets/brand/companyware-mark.svg?v=20260817" alt=""></div>
     </div>
@@ -29,7 +29,7 @@
     <div class="dashboard-status-strip">
         <span class="status-dot"></span><strong>{{ 'layout.ready'|trans }}</strong>
         <span>{{ 'dashboard.status_summary'|trans({'%active%': activePluginCount, '%installed%': plugins|length}) }}</span>
-        <a href="{{ path('admin_plugins') }}">{{ 'dashboard.manage_system'|trans }} →</a>
+        {% if is_granted('core.plugins.manage') %}<a href="{{ path('admin_plugins') }}">{{ 'dashboard.manage_system'|trans }} →</a>{% endif %}
     </div>
 
     {{ plugin_slot('dashboard.content.before', {admin: admin, plugins: plugins}) }}
@@ -48,8 +48,8 @@
         <div class="dashboard-section-head"><h2>{{ 'dashboard.quick_actions'|trans }}</h2></div>
         <div class="quick-actions">
             {{ plugin_slot('dashboard.quick_actions', {admin: admin, plugins: plugins}) }}
-            <a class="quick-action quick-action-system" href="{{ path('admin_plugins') }}"><span class="nav-icon">◇</span><span>{{ 'nav.plugins'|trans }}</span><b>→</b></a>
-            <a class="quick-action quick-action-system" href="{{ path('admin_settings') }}"><span class="nav-icon">⚙</span><span>{{ 'nav.settings'|trans }}</span><b>→</b></a>
+            {% if is_granted('core.plugins.manage') %}<a class="quick-action quick-action-system" href="{{ path('admin_plugins') }}"><span class="nav-icon">◇</span><span>{{ 'nav.plugins'|trans }}</span><b>→</b></a>{% endif %}
+            {% if is_granted('core.settings.manage') %}<a class="quick-action quick-action-system" href="{{ path('admin_settings') }}"><span class="nav-icon">⚙</span><span>{{ 'nav.settings'|trans }}</span><b>→</b></a>{% endif %}
         </div>
     </section>
     {% endblock %}

@@ -54,6 +54,7 @@ final class PluginPackageValidator
 
         $this->validateCompatibility($manifest);
         $this->validateEntityReferences($manifest);
+        $this->validatePrivileges($manifest);
 
         return $manifest;
     }
@@ -141,6 +142,17 @@ final class PluginPackageValidator
             }
             $seen[$owner] = true;
         }
+    }
+
+    private function validatePrivileges(PluginManifest $manifest): void
+    {
+        if (!array_is_list($manifest->privileges)) throw new PluginPackageException('plugins.error.privileges_invalid');
+        $keys=[];
+        foreach($manifest->privileges as $privilege){
+            if(!is_array($privilege)||!is_string($privilege['key']??null)||!preg_match('/^'.preg_quote($manifest->name,'/').'\.[a-z][a-z0-9._-]*$/',$privilege['key'])||isset($keys[$privilege['key']])||!is_string($privilege['label']??null)||!is_string($privilege['group']??null))throw new PluginPackageException('plugins.error.privileges_invalid');
+            $keys[$privilege['key']]=true;
+        }
+        foreach($manifest->navigation as $item){$required=$item['privilege']??null;if($required!==null&&(!is_string($required)||!isset($keys[$required])))throw new PluginPackageException('plugins.error.navigation_privilege_invalid');}
     }
 
     private function readJson(string $file, string $missingError, string $invalidError): array

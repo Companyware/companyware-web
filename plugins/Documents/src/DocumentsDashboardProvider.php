@@ -3,9 +3,10 @@
 namespace Plugins\Documents;
 
 use Companyware\Core\Framework\Plugin\Contract\SlotProviderInterface;
+use Companyware\Core\Framework\Security\PrivilegeAwareInterface;
 use Twig\Environment;
 
-final class DocumentsDashboardProvider implements SlotProviderInterface
+final class DocumentsDashboardProvider implements SlotProviderInterface, PrivilegeAwareInterface
 {
     public function __construct(
         private readonly Environment $view,
@@ -17,6 +18,8 @@ final class DocumentsDashboardProvider implements SlotProviderInterface
     {
         return 'documents';
     }
+
+    public function requiredPrivilege(string $extensionPoint): string { return $extensionPoint === 'dashboard.quick_actions' ? 'documents.create' : 'documents.read'; }
 
     public function supports(string $slot): bool
     {

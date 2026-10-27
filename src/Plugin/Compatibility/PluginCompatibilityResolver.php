@@ -67,6 +67,7 @@ final class PluginCompatibilityResolver
         $provided = $this->providedPackages($plugins);
         foreach ($plugins as $plugin) {
             $this->checkPlatform($plugin, $problems);
+            $this->checkPrivileges($plugin, $problems);
             foreach ($plugin->entityReferences as $owner) {
                 if (!array_key_exists($owner, $plugin->requires)) {
                     $problems[] = $this->problem('entity_dependency_missing', $plugin, sprintf('Plugin "%s" references entities owned by "%s" without a required dependency.', $plugin->name, $owner), ['dependency' => $owner]);
@@ -116,6 +117,13 @@ final class PluginCompatibilityResolver
                 $problems[] = $this->problem('extension_version', $plugin, sprintf('Plugin "%s" requires PHP extension "%s" %s; installed is %s.', $plugin->name, $extension, $constraint, $version), ['extension'=>$extension,'constraint'=>$constraint,'version'=>$version]);
             }
         }
+    }
+
+    private function checkPrivileges(PluginManifest $plugin,array &$problems):void
+    {
+        $keys=[];
+        foreach($plugin->privileges as $privilege){$key=is_array($privilege)?($privilege['key']??null):null;if(!is_string($key)||!preg_match('/^'.preg_quote($plugin->name,'/').'\.[a-z][a-z0-9._-]*$/',$key)||isset($keys[$key])||!is_string($privilege['label']??null)||!is_string($privilege['group']??null)){$problems[]=$this->problem('privileges_invalid',$plugin,sprintf('Plugin "%s" contains an invalid or duplicate privilege definition.',$plugin->name));continue;}$keys[$key]=true;}
+        foreach($plugin->navigation as $item){$required=$item['privilege']??null;if($required!==null&&(!is_string($required)||!isset($keys[$required])))$problems[]=$this->problem('navigation_privilege_invalid',$plugin,sprintf('Plugin "%s" navigation references undeclared privilege "%s".',$plugin->name,(string)$required));}
     }
 
     private function checkRequiredPackage(PluginManifest $plugin, string $name, string $constraint, array $provided, bool $optional, array &$problems): void

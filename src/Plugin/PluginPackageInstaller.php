@@ -8,11 +8,12 @@ use App\Plugin\Migration\MigrationManager;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ZipArchive;
+use App\Security\PrivilegeSynchronizer;
 final class PluginPackageInstaller
 {
     private const MAX_ARCHIVE=20_000_000; private const MAX_EXPANDED=100_000_000; private const MAX_FILES=1000;
     private readonly string $pluginRoot;
-    public function __construct(string $projectDir, private readonly string $cacheDir, private readonly MigrationManager $migrations, private readonly Database $database, private readonly PluginLifecycleManager $lifecycle, private readonly PluginPackageValidator $validator, private readonly PluginCompatibilityResolver $compatibility, private readonly PluginRegistry $registry, private readonly PluginConfiguration $configuration, private readonly PluginEventBus $events)
+    public function __construct(string $projectDir, private readonly string $cacheDir, private readonly MigrationManager $migrations, private readonly Database $database, private readonly PluginLifecycleManager $lifecycle, private readonly PluginPackageValidator $validator, private readonly PluginCompatibilityResolver $compatibility, private readonly PluginRegistry $registry, private readonly PluginConfiguration $configuration, private readonly PluginEventBus $events, private readonly PrivilegeSynchronizer $privileges)
     { $this->pluginRoot=$projectDir.'/plugins'; }
     public function install(UploadedFile $upload): PluginManifest
     {
@@ -37,6 +38,7 @@ final class PluginPackageInstaller
                 $manifest=$this->validator->validate($target);
                 $this->migrations->migrate($manifest);
                 $this->lifecycle->install($manifest->name);
+                $this->privileges->syncManifest($manifest);
                 $this->events->after($manifest->name,PluginLifecycleOperation::Install);
                 $this->invalidateContainer();
                 return $manifest;
@@ -63,6 +65,7 @@ final class PluginPackageInstaller
         $inactive=$this->database->connection()->prepare('UPDATE plugin SET active=0 WHERE name=:name'); $inactive->execute(['name'=>$plugin->name]);
         $this->migrations->rollback($plugin); $this->lifecycle->uninstall($plugin->name);
         if ($plugin->uninstallData === 'remove') $this->configuration->delete($plugin->name);
+        $this->privileges->remove($plugin->name);
         $delete=$this->database->connection()->prepare('DELETE FROM plugin WHERE name=:name'); $delete->execute(['name'=>$plugin->name]);
         (new Filesystem())->remove($target);
         $this->events->after($plugin->name,PluginLifecycleOperation::Uninstall);

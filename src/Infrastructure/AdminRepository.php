@@ -28,7 +28,20 @@ final class AdminRepository
             'display_name' => $displayName,
             'email' => $email,
         ]);
+        $assign = $this->database->connection()->prepare("INSERT IGNORE INTO admin_user_role (admin_user_id, role_id) SELECT u.id, r.id FROM admin_user u CROSS JOIN admin_role r WHERE u.username = :username AND r.system_name = 'system-administrator'");
+        $assign->execute(['username' => $username]);
     }
+
+    public function createUser(string $username,string $password,string $displayName,?string $email=null):int
+    {
+        $this->schema->ensure();$username=trim($username);$displayName=trim($displayName);
+        if($username===''||$displayName===''||strlen($password)<10)throw new \InvalidArgumentException('security.error.user_invalid');
+        $statement=$this->database->connection()->prepare('INSERT INTO admin_user (username,password_hash,display_name,email) VALUES (:username,:password,:display_name,:email)');
+        $statement->execute(['username'=>$username,'password'=>password_hash($password,PASSWORD_DEFAULT),'display_name'=>$displayName,'email'=>$email]);
+        return (int)$this->database->connection()->lastInsertId();
+    }
+
+    public function deleteUnassignedUser(int $id):void{$statement=$this->database->connection()->prepare('DELETE u FROM admin_user u LEFT JOIN admin_user_role ur ON ur.admin_user_id=u.id WHERE u.id=:id AND ur.admin_user_id IS NULL');$statement->execute(['id'=>$id]);}
 
     public function updateProfile(int $id, string $displayName, ?string $email): void
     {

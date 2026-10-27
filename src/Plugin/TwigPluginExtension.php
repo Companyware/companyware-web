@@ -2,9 +2,10 @@
 namespace App\Plugin;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
+use Companyware\Core\Framework\Security\AuthorizationInterface;
 final class TwigPluginExtension extends AbstractExtension
 {
-    public function __construct(private readonly SlotRenderer $slots, private readonly NavigationRegistry $navigation, private readonly AssetRegistry $assets) {}
+    public function __construct(private readonly SlotRenderer $slots, private readonly NavigationRegistry $navigation, private readonly AssetRegistry $assets, private readonly AuthorizationInterface $authorization) {}
     public function getFunctions(): array
     {
         return [
@@ -13,6 +14,7 @@ final class TwigPluginExtension extends AbstractExtension
             new TwigFunction('plugin_asset', fn(string $plugin,string $path)=>'/plugin-assets/'.rawurlencode($plugin).'?path='.rawurlencode(ltrim($path,'/'))),
             new TwigFunction('admin_stylesheets', fn()=>$this->assets->stylesheets()),
             new TwigFunction('admin_javascripts', fn()=>$this->assets->javascripts()),
+            new TwigFunction('is_granted', fn(string $privilege)=>$this->authorization->isGranted($privilege)),
         ];
     }
 }
