@@ -19,6 +19,7 @@ final class AdminRepository
     public function save(string $username, string $password, string $displayName, ?string $email = null): void
     {
         $this->schema->ensure();
+        $firstAdministrator = (int) $this->database->connection()->query('SELECT COUNT(*) FROM admin_user')->fetchColumn() === 0;
         $statement = $this->database->connection()->prepare('INSERT INTO admin_user (username, password_hash, display_name, email)
             VALUES (:username, :password, :display_name, :email)
             ON DUPLICATE KEY UPDATE password_hash = VALUES(password_hash), display_name = VALUES(display_name), email = VALUES(email)');
@@ -28,8 +29,10 @@ final class AdminRepository
             'display_name' => $displayName,
             'email' => $email,
         ]);
-        $assign = $this->database->connection()->prepare("INSERT IGNORE INTO admin_user_role (admin_user_id, role_id) SELECT u.id, r.id FROM admin_user u CROSS JOIN admin_role r WHERE u.username = :username AND r.system_name = 'system-administrator'");
-        $assign->execute(['username' => $username]);
+        if ($firstAdministrator) {
+            $assign = $this->database->connection()->prepare("INSERT IGNORE INTO admin_user_role (admin_user_id, role_id) SELECT u.id, r.id FROM admin_user u CROSS JOIN admin_role r WHERE u.username = :username AND r.system_name = 'system-administrator'");
+            $assign->execute(['username' => $username]);
+        }
     }
 
     public function createUser(string $username,string $password,string $displayName,?string $email=null):int
