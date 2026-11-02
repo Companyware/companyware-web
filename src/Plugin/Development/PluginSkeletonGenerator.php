@@ -19,7 +19,7 @@ final class PluginSkeletonGenerator
         $namespace = 'Plugins\\'.$class;
         $route = str_replace('-', '_', $name);
         $year = gmdate('Ymd').'0001';
-        $replacements = ['{{name}}' => $name, '{{vendor}}' => $vendor, '{{class}}' => $class, '{{namespace}}' => $namespace, '{{route}}' => $route, '{{migration}}' => $year];
+        $replacements = ['{{name}}' => $name, '{{vendor}}' => $vendor, '{{class}}' => $class, '{{namespace}}' => $namespace, '{{namespace_json}}' => str_replace('\\', '\\\\', $namespace), '{{route}}' => $route, '{{migration}}' => $year];
         $files = $this->templates();
         $generated = [];
         $filesystem = new Filesystem();
@@ -51,7 +51,7 @@ final class PluginSkeletonGenerator
   "version": "0.1.0",
   "license": "MIT",
   "require": {"php": "~8.3.0"},
-  "autoload": {"psr-4": {"{{namespace}}\\": "src/"}},
+  "autoload": {"psr-4": {"{{namespace_json}}\\": "src/"}},
   "scripts": {"test": "@php tests/smoke.php"},
   "extra": {"companyware-plugin": {"manifest": "plugin.json", "official": false}}
 }
@@ -66,7 +66,7 @@ JSON,
   "uninstall": {"data": "remove"},
   "entities": {"references": []},
   "privileges": [{"key": "{{name}}.read", "label": "{{name}}.privilege.read", "group": "{{name}}"}],
-  "migrations": ["{{namespace}}\\Migration\\Version{{migration}}"],
+  "migrations": ["{{namespace_json}}\\Migration\\Version{{migration}}"],
   "assets": {
     "styles": [{"handle": "{{name}}-css", "path": "admin.css", "priority": 100}],
     "scripts": [{"handle": "{{name}}-js", "path": "admin.js", "priority": 100, "defer": true}]
