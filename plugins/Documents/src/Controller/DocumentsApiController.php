@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace Plugins\Documents\Controller;
-use Companyware\Core\Framework\Application\PageRequest;use Plugins\Documents\Application\DocumentApplicationService;use Symfony\Component\HttpFoundation\JsonResponse;use Symfony\Component\HttpFoundation\Request;use Symfony\Component\HttpKernel\Attribute\AsController;use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;use Symfony\Component\Routing\Attribute\Route;
+use Companyware\Core\Framework\Application\PageRequest;use Plugins\Documents\Application\DocumentApplicationService;use Symfony\Component\HttpFoundation\BinaryFileResponse;use Symfony\Component\HttpFoundation\HeaderUtils;use Symfony\Component\HttpFoundation\JsonResponse;use Symfony\Component\HttpFoundation\Request;use Symfony\Component\HttpFoundation\Response;use Symfony\Component\HttpKernel\Attribute\AsController;use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;use Symfony\Component\Routing\Attribute\Route;
 #[AsController]
 final class DocumentsApiController
 {
@@ -9,4 +9,10 @@ final class DocumentsApiController
     public function list(Request $request,DocumentApplicationService $documents):JsonResponse{$page=$documents->search(new PageRequest(max(1,min(100,(int)$request->query->get('limit',50))),max(0,(int)$request->query->get('offset',0))));$items=array_map(static function(array $document):array{unset($document['stored_name']);return $document;},$page->items);return new JsonResponse(['data'=>$items,'meta'=>['total'=>$page->total,'limit'=>$page->limit,'offset'=>$page->offset]]);}
     #[Route('/{id}',name:'api_v1_documents_get',requirements:['id'=>'\d+'],methods:['GET'])]
     public function get(int $id,DocumentApplicationService $documents):JsonResponse{$document=$documents->find($id);if(!$document)throw new NotFoundHttpException('Document not found.');unset($document['stored_name']);return new JsonResponse(['data'=>$document]);}
+    #[Route('',name:'api_v1_documents_create',methods:['POST'])]
+    public function create(Request $request,DocumentApplicationService $documents):JsonResponse{$file=$request->files->get('document');if(!$file)throw new BadRequestHttpException('Multipart field "document" is required.');$document=$documents->add($file,trim((string)$request->request->get('title')));unset($document['stored_name']);return new JsonResponse(['data'=>$document],201);}
+    #[Route('/{id}',name:'api_v1_documents_delete',requirements:['id'=>'\d+'],methods:['DELETE'])]
+    public function delete(int $id,DocumentApplicationService $documents):Response{if(!$documents->find($id))throw new NotFoundHttpException('Document not found.');$documents->delete($id);return new Response('',204);}
+    #[Route('/{id}/content',name:'api_v1_documents_content',requirements:['id'=>'\d+'],methods:['GET'])]
+    public function content(int $id,DocumentApplicationService $documents):BinaryFileResponse{$document=$documents->find($id);if(!$document||!is_file($documents->path($document)))throw new NotFoundHttpException('Document content not found.');$response=new BinaryFileResponse($documents->path($document));$response->headers->set('Content-Type',$document['mime_type']);$response->setContentDisposition(HeaderUtils::DISPOSITION_ATTACHMENT,$document['original_name']);return $response;}
 }

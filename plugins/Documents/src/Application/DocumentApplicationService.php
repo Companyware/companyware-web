@@ -43,12 +43,12 @@ final class DocumentApplicationService
         return $this->storage->find($id);
     }
 
-    public function add(UploadedFile $file, string $title): void
+    public function add(UploadedFile $file, string $title): array
     {
         $this->authorization->denyUnlessGranted('documents.create');
         $actorId = $this->actors->actorId();
         if ($actorId === null) throw new AccessDeniedHttpException('An authenticated actor is required.');
-        $this->storage->add($file, $title, $actorId);
+        return $this->storage->add($file, $title, $actorId);
     }
 
     /** @param array<string, mixed> $document */
