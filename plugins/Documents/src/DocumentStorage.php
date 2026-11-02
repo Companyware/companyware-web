@@ -15,14 +15,14 @@ final class DocumentStorage
     public function search(EntityQuery $query): array { return array_map($this->toArray(...),$this->documents->search($query)); }
     public function count(EntityQuery $query): int { return $this->documents->count($query); }
     public function find(int $id): ?array { $document=$this->documents->find((string)$id);return $document instanceof Document?$this->toArray($document):null; }
-    public function add(UploadedFile $file,string $title,int $adminId): void
+    public function add(UploadedFile $file,string $title,int $adminId): array
     {
         if(!$file->isValid()||$file->getSize()>$this->maxUploadMb()*1_000_000) throw new \RuntimeException('documents.error.invalid');
         $allowed=['application/pdf','text/plain','image/jpeg','image/png','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
         $mime=$file->getMimeType()?:'application/octet-stream'; if(!in_array($mime,$allowed,true)) throw new \RuntimeException('documents.error.type');
         $original=$this->fileNames->normalize($file->getClientOriginalName());
         (new Filesystem())->mkdir($this->directory,0750); $stored=bin2hex(random_bytes(24)); $file->move($this->directory,$stored);
-        try{$this->documents->create($title?:$original,$original,$stored,$mime,(int)filesize($this->directory.'/'.$stored),$adminId);}catch(\Throwable $e){@unlink($this->directory.'/'.$stored);throw $e;}
+        try{return $this->toArray($this->documents->create($title?:$original,$original,$stored,$mime,(int)filesize($this->directory.'/'.$stored),$adminId));}catch(\Throwable $e){@unlink($this->directory.'/'.$stored);throw $e;}
     }
     public function path(array $document): string { return $this->directory.'/'.$document['stored_name']; }
     public function maxUploadMb(): int { return max(1,min(100,(int)$this->configuration->get('documents','max_upload_mb',15))); }
