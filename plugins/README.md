@@ -114,6 +114,21 @@ Validate the currently installed graph through the same resolver used by adminis
 php bin/console app:plugins:validate --env=prod
 ```
 
+Generate a complete development package and validate it with the same package validator intended for CI and future Store ingestion:
+
+```bash
+php bin/console app:plugins:create acme-example --vendor=acme --no-interaction --json
+php bin/console app:plugins:validate-package plugins/AcmeExample --json
+php bin/console app:plugins:list --json
+php bin/console app:plugins:inspect acme-example --json
+php bin/console app:plugins:install build/acme-example.zip --no-interaction --json
+php bin/console app:plugins:activate acme-example --no-interaction --json
+php bin/console app:plugins:deactivate acme-example --no-interaction --json
+php bin/console app:plugins:uninstall acme-example --yes --no-interaction --json
+```
+
+The generator includes Composer/runtime metadata, services, guarded routes, a migration, domain and controller examples, translations, assets, a test placeholder and a CI workflow. It never overwrites an existing target. Package validation checks metadata, compatibility, entity references, privileges, declared asset files, YAML configuration and imports of the internal `App\\` namespace.
+
 ## Plugin settings
 
 Plugins optionally declare a non-empty `settings` list in their runtime manifest. Supported field types are `text`, `number`, `checkbox` and `select`; every field has a stable plugin-owned key and translated label, and may define a translated help text and default value. Number fields support `min`, `max` and `step`; select fields declare `options` with `value` and translated `label`.
