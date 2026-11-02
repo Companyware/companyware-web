@@ -16,6 +16,9 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 - `Companyware\Core\Test\Data\SchemaTestHelper`
 - `Companyware\Core\Test\Data\RepositoryTestHelper`
 - `Companyware\Core\Test\Plugin\PackageStructureTestHelper`
+- `Companyware\Core\Framework\Application\ActorContextInterface`
+- `Companyware\Core\Framework\Application\PageRequest`
+- `Companyware\Core\Framework\Application\PageResult`
 - `Companyware\Core\Framework\Security\AuthorizationInterface`
 - `Companyware\Core\Framework\Security\RequiresPrivilege`
 - `Companyware\Core\Framework\Security\PrivilegeAwareInterface`

@@ -78,5 +78,8 @@ services:
     Companyware\Core\Framework\Security\AuthorizationInterface:
         alias: App\Security\AuthorizationService
 
+    Companyware\Core\Framework\Application\ActorContextInterface:
+        alias: App\Application\RequestActorContext
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
