@@ -5,12 +5,13 @@ namespace Plugins\Documents;
 use Companyware\Core\Framework\Plugin\Contract\SlotProviderInterface;
 use Companyware\Core\Framework\Security\PrivilegeAwareInterface;
 use Twig\Environment;
+use Plugins\Documents\Application\DocumentApplicationService;
 
 final class DocumentsDashboardProvider implements SlotProviderInterface, PrivilegeAwareInterface
 {
     public function __construct(
         private readonly Environment $view,
-        private readonly DocumentStorage $storage,
+        private readonly DocumentApplicationService $documents,
     ) {
     }
 
@@ -32,7 +33,7 @@ final class DocumentsDashboardProvider implements SlotProviderInterface, Privile
             return $this->view->render('@Documents/dashboard/quick-action.html.twig');
         }
 
-        $documents = $this->storage->all();
+        $documents = $this->documents->list();
 
         if ($slot === 'dashboard.continue') {
             return $documents === [] ? '' : $this->view->render('@Documents/dashboard/continue.html.twig', [
