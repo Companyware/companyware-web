@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Plugin;
 
 use App\Plugin\Compatibility\VersionConstraint;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 
 final class PluginPackageValidator
 {
@@ -55,6 +57,9 @@ final class PluginPackageValidator
         $this->validateCompatibility($manifest);
         $this->validateEntityReferences($manifest);
         $this->validatePrivileges($manifest);
+        $this->validateAssets($directory, $manifest);
+        $this->validateYamlConfiguration($directory, $manifest);
+        $this->validatePublicApiUsage($directory);
 
         return $manifest;
     }
@@ -153,6 +158,79 @@ final class PluginPackageValidator
             $keys[$privilege['key']]=true;
         }
         foreach($manifest->navigation as $item){$required=$item['privilege']??null;if($required!==null&&(!is_string($required)||!isset($keys[$required])))throw new PluginPackageException('plugins.error.navigation_privilege_invalid');}
+    }
+
+    private function validateAssets(string $directory, PluginManifest $manifest): void
+    {
+        $handles = [];
+        foreach (['styles', 'scripts'] as $kind) {
+            $assets = $manifest->assets[$kind] ?? [];
+            if (!is_array($assets) || !array_is_list($assets)) {
+                throw new PluginPackageException('plugins.error.assets_invalid');
+            }
+            foreach ($assets as $asset) {
+                if (!is_array($asset)) {
+                    throw new PluginPackageException('plugins.error.assets_invalid');
+                }
+                $handle = $asset['handle'] ?? null;
+                $path = $asset['path'] ?? null;
+                if (!is_string($handle) || !preg_match('/^[a-z][a-z0-9._-]*$/', $handle) || isset($handles[$handle])) {
+                    throw new PluginPackageException('plugins.error.assets_invalid');
+                }
+                if (!is_string($path) || $path === '' || str_contains($path, '..') || str_starts_with($path, '/') || str_contains($path, '\\') || !is_file($directory.'/public/'.$path)) {
+                    throw new PluginPackageException('plugins.error.asset_missing');
+                }
+                if (isset($asset['priority']) && !is_int($asset['priority'])) {
+                    throw new PluginPackageException('plugins.error.assets_invalid');
+                }
+                if (isset($asset['replaces']) && (!is_array($asset['replaces']) || array_filter($asset['replaces'], static fn (mixed $value): bool => !is_string($value)))) {
+                    throw new PluginPackageException('plugins.error.assets_invalid');
+                }
+                $handles[$handle] = true;
+            }
+        }
+    }
+
+    private function validateYamlConfiguration(string $directory, PluginManifest $manifest): void
+    {
+        foreach (['services', 'routes'] as $name) {
+            $file = $directory.'/config/'.$name.'.yaml';
+            if (!is_file($file)) continue;
+            try {
+                $config = Yaml::parseFile($file);
+            } catch (ParseException) {
+                throw new PluginPackageException('plugins.error.'.$name.'_invalid');
+            }
+            if (!is_array($config) || $config === []) {
+                throw new PluginPackageException('plugins.error.'.$name.'_invalid');
+            }
+            if ($name === 'routes') {
+                $guarded = false;
+                foreach ($config as $route) {
+                    if (!is_array($route)) continue;
+                    $defaults = $route['defaults'] ?? [];
+                    if (is_array($defaults) && isset($defaults['_plugin']) && $defaults['_plugin'] !== $manifest->name) {
+                        throw new PluginPackageException('plugins.error.routes_plugin_mismatch');
+                    }
+                    if (is_array($defaults) && ($defaults['_plugin'] ?? null) === $manifest->name) $guarded = true;
+                }
+                if ($manifest->navigation !== [] && !$guarded) throw new PluginPackageException('plugins.error.routes_plugin_guard_missing');
+            }
+        }
+    }
+
+    private function validatePublicApiUsage(string $directory): void
+    {
+        $source = $directory.'/src';
+        if (!is_dir($source)) return;
+        $files = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($source, \FilesystemIterator::SKIP_DOTS));
+        foreach ($files as $file) {
+            if (!$file->isFile() || $file->getExtension() !== 'php') continue;
+            $contents = (string) file_get_contents($file->getPathname());
+            if (str_contains($contents, 'use App\\') || str_contains($contents, '\\App\\')) {
+                throw new PluginPackageException('plugins.error.internal_api');
+            }
+        }
     }
 
     private function readJson(string $file, string $missingError, string $invalidError): array
