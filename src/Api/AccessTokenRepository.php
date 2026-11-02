@@ -9,7 +9,12 @@ final class AccessTokenRepository
     public function issue(string $username,string $name,?\DateTimeImmutable $expiresAt):string
     {
         $this->schema->ensure();$find=$this->database->connection()->prepare('SELECT id FROM admin_user WHERE username=:username');$find->execute(['username'=>$username]);$userId=(int)$find->fetchColumn();if($userId<1)throw new \InvalidArgumentException('Administrator not found.');
-        $secret=rtrim(strtr(base64_encode(random_bytes(32)),'+/','-_'),'=');$token='cw_pat_'.$secret;
+        return $this->issueForActor($userId,$name,$expiresAt,'cw_pat_');
+    }
+    public function issueForActor(int $userId,string $name,?\DateTimeImmutable $expiresAt,string $prefix='cw_pat_'):string
+    {
+        $this->schema->ensure();if($userId<1)throw new \InvalidArgumentException('Administrator not found.');
+        $secret=rtrim(strtr(base64_encode(random_bytes(32)),'+/','-_'),'=');$token=$prefix.$secret;
         $insert=$this->database->connection()->prepare('INSERT INTO api_access_token (admin_user_id,token_name,token_hash,expires_at) VALUES (:user,:name,:hash,:expires)');$insert->execute(['user'=>$userId,'name'=>trim($name)?:'API token','hash'=>hash('sha256',$token),'expires'=>$expiresAt?->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d H:i:s')]);return $token;
     }
     public function resolve(string $token):?int

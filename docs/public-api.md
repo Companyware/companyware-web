@@ -19,6 +19,7 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 - `Companyware\Core\Framework\Application\ActorContextInterface`
 - `Companyware\Core\Framework\Application\PageRequest`
 - `Companyware\Core\Framework\Application\PageResult`
+- `Companyware\Core\Framework\Api\ApiOperationProviderInterface`
 - `Companyware\Core\Framework\Security\AuthorizationInterface`
 - `Companyware\Core\Framework\Security\RequiresPrivilege`
 - `Companyware\Core\Framework\Security\PrivilegeAwareInterface`
@@ -54,6 +55,7 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 | Theme registry and semantic theme package contract | planned for the platform foundation | experimental; not yet public API |
 | Core service decoration | `FileNameNormalizerInterface`; decorate the public interface service ID | stable in API 1.x |
 | Core events | lifecycle before/after events and configuration-changed event listed above | stable in API 1.x |
+| HTTP API operations | `ApiOperationProviderInterface`; active plugins contribute OpenAPI 3.1 path operations under `/api/v1` | stable in API 1.x |
 
 No other experimental surface is currently published.
 
