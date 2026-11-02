@@ -21,19 +21,22 @@ final class PluginSkeletonGenerator
         $year = gmdate('Ymd').'0001';
         $replacements = ['{{name}}' => $name, '{{vendor}}' => $vendor, '{{class}}' => $class, '{{namespace}}' => $namespace, '{{route}}' => $route, '{{migration}}' => $year];
         $files = $this->templates();
+        $generated = [];
         $filesystem = new Filesystem();
         $filesystem->mkdir($target);
         try {
             foreach ($files as $relative => $contents) {
-                $destination = $target.'/'.strtr($relative, $replacements);
+                $relative = strtr($relative, $replacements);
+                $destination = $target.'/'.$relative;
                 $filesystem->mkdir(dirname($destination));
                 $filesystem->dumpFile($destination, strtr($contents, $replacements));
+                $generated[] = $relative;
             }
         } catch (\Throwable $exception) {
             $filesystem->remove($target);
             throw $exception;
         }
-        return array_keys($files);
+        return $generated;
     }
 
     /** @return array<string, string> */
@@ -49,6 +52,7 @@ final class PluginSkeletonGenerator
   "license": "MIT",
   "require": {"php": "~8.3.0"},
   "autoload": {"psr-4": {"{{namespace}}\\": "src/"}},
+  "scripts": {"test": "@php tests/smoke.php"},
   "extra": {"companyware-plugin": {"manifest": "plugin.json", "official": false}}
 }
 JSON,
@@ -146,11 +150,13 @@ TWIG,
             'translations/messages.de.yaml' => "{{name}}:\n  plugin:\n    label: '{{class}}'\n    description: 'Mein Companyware-Plugin'\n  nav: '{{class}}'\n  title: '{{class}}'\n  privilege:\n    read: 'Lesen'\nsecurity:\n  group:\n    {{name}}: '{{class}}'\n",
             'public/admin.css' => ".{{name}}-root { display: block; }\n",
             'public/admin.js' => "window.AdminFramework?.emit('{{name}}:ready');\n",
-            'tests/PackageTest.php' => <<<'PHP'
+            'tests/smoke.php' => <<<'PHP'
 <?php
 declare(strict_types=1);
-namespace {{namespace}}\Tests;
-// Add PHPUnit or Pest in require-dev and exercise public Companyware test-kit helpers here.
+$required=['composer.json','plugin.json','config/services.yaml','config/routes.yaml','translations/messages.de.yaml'];
+foreach($required as $path)if(!file_exists(dirname(__DIR__).'/'.$path)){fwrite(STDERR,"Missing $path\n");exit(1);}
+foreach(['composer.json','plugin.json'] as $file){json_decode((string)file_get_contents(dirname(__DIR__).'/'.$file),true,512,JSON_THROW_ON_ERROR);}
+echo "Plugin package smoke test passed.\n";
 PHP,
             '.github/workflows/validate.yml' => <<<'YAML'
 name: Validate Companyware plugin
@@ -163,9 +169,15 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with: { php-version: '8.3' }
       - run: composer validate --strict
-      - run: php /path/to/companyware/bin/console app:plugins:validate-package "$GITHUB_WORKSPACE" --json
+      - run: composer test
+      - name: Run the shared Companyware validator
+        env:
+          COMPANYWARE_ROOT: ${{ vars.COMPANYWARE_ROOT }}
+        run: |
+          test -n "$COMPANYWARE_ROOT"
+          php "$COMPANYWARE_ROOT/bin/console" app:plugins:validate-package "$GITHUB_WORKSPACE" --json --no-interaction
 YAML,
-            'README.md' => "# {{class}}\n\nGenerated Companyware plugin. Run `composer dump-autoload`, then validate with `php bin/console app:plugins:validate-package <path> --json`.\n",
+            'README.md' => "# {{class}}\n\nGenerated Companyware plugin. Run `php tests/smoke.php`, then validate with the shared platform validator: `php /path/to/companyware/bin/console app:plugins:validate-package . --json --no-interaction`. Set the CI variable `COMPANYWARE_ROOT` to a prepared Companyware checkout.\n",
         ];
     }
 }

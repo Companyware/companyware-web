@@ -8,6 +8,7 @@ namespace Companyware\Core\Framework\Plugin\Event;
 enum PluginLifecycleOperation: string
 {
     case Install = 'install';
+    case Update = 'update';
     case Activate = 'activate';
     case Deactivate = 'deactivate';
     case Uninstall = 'uninstall';

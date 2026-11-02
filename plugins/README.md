@@ -124,8 +124,11 @@ php bin/console app:plugins:inspect acme-example --json
 php bin/console app:plugins:install build/acme-example.zip --no-interaction --json
 php bin/console app:plugins:activate acme-example --no-interaction --json
 php bin/console app:plugins:deactivate acme-example --no-interaction --json
+php bin/console app:plugins:update build/acme-example-0.2.0.zip --no-interaction --json
 php bin/console app:plugins:uninstall acme-example --yes --no-interaction --json
 ```
+
+See [`docs/plugin-development.md`](../docs/plugin-development.md) for the complete first-plugin, testing, CI and deployment workflow.
 
 The generator includes Composer/runtime metadata, services, guarded routes, a migration, domain and controller examples, translations, assets, a test placeholder and a CI workflow. It never overwrites an existing target. Package validation checks metadata, compatibility, entity references, privileges, declared asset files, YAML configuration and imports of the internal `App\\` namespace.
 

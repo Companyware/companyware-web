@@ -13,7 +13,7 @@ final class PluginPackageInstaller
 {
     private const MAX_ARCHIVE=20_000_000; private const MAX_EXPANDED=100_000_000; private const MAX_FILES=1000;
     private readonly string $pluginRoot;
-    public function __construct(string $projectDir, private readonly string $cacheDir, private readonly MigrationManager $migrations, private readonly Database $database, private readonly PluginLifecycleManager $lifecycle, private readonly PluginPackageValidator $validator, private readonly PluginCompatibilityResolver $compatibility, private readonly PluginRegistry $registry, private readonly PluginConfiguration $configuration, private readonly PluginEventBus $events, private readonly PrivilegeSynchronizer $privileges)
+    public function __construct(private readonly string $projectDir, private readonly string $cacheDir, private readonly MigrationManager $migrations, private readonly Database $database, private readonly PluginLifecycleManager $lifecycle, private readonly PluginPackageValidator $validator, private readonly PluginCompatibilityResolver $compatibility, private readonly PluginRegistry $registry, private readonly PluginConfiguration $configuration, private readonly PluginEventBus $events, private readonly PrivilegeSynchronizer $privileges)
     { $this->pluginRoot=$projectDir.'/plugins'; }
     public function install(UploadedFile $upload): PluginManifest
     {
@@ -54,6 +54,39 @@ final class PluginPackageInstaller
                 throw $e;
             }
         } finally { $zip->close(); }
+    }
+    public function update(UploadedFile $upload): PluginManifest
+    {
+        if (!$upload->isValid() || $upload->getSize()>self::MAX_ARCHIVE || strtolower($upload->getClientOriginalExtension())!=='zip') throw new PluginPackageException('plugins.error.valid_zip');
+        $zip=new ZipArchive(); if ($zip->open($upload->getPathname())!==true) throw new PluginPackageException('plugins.error.unreadable_zip');
+        $filesystem=new Filesystem(); $stage=null; $backup=null; $swapped=false; $data=[];
+        try {
+            if ($zip->numFiles<1 || $zip->numFiles>self::MAX_FILES) throw new PluginPackageException('plugins.error.archive_count');
+            $prefix=$this->packagePrefix($zip); $json=$zip->getFromName($prefix.'plugin.json');
+            $data=is_string($json)?json_decode($json,true):null;
+            if(!is_array($data)||!is_string($data['name']??null)||!is_string($data['version']??null))throw new PluginPackageException('plugins.error.manifest_invalid');
+            $archiveManifest=PluginManifest::fromArray($data,'');if(!$archiveManifest)throw new PluginPackageException('plugins.error.manifest_invalid');
+            $current=$this->registry->manifest($archiveManifest->name); if(!$current)throw new PluginPackageException('plugins.error.not_installed');
+            if($this->registry->isActive($current->name))throw new PluginPackageException('plugins.error.update_requires_inactive');
+            if(!version_compare($archiveManifest->version,$current->version,'>'))throw new PluginPackageException('plugins.error.update_version');
+            $root=realpath($this->pluginRoot);$target=realpath($current->path);
+            if(!$root||!$target||!str_starts_with($target,$root.DIRECTORY_SEPARATOR)||$current->core)throw new PluginPackageException('plugins.error.unsafe_path');
+            $stage=$this->pluginRoot.'/.update-'.bin2hex(random_bytes(8));$filesystem->mkdir($stage,0750);$this->extract($zip,$prefix,$stage);
+            $candidate=$this->validator->validate($stage);
+            if($candidate->name!==$current->name||$candidate->version!==$data['version'])throw new PluginPackageException('plugins.error.update_identity');
+            $this->compatibility->assertInstallable($candidate,$this->registry->manifests());
+            $this->events->before($candidate->name,PluginLifecycleOperation::Update);
+            $backupRoot=$this->projectDir.'/var/plugin-backups';$filesystem->mkdir($backupRoot,0750);$backup=$backupRoot.'/'.$current->namespace().'-'.$current->version.'-'.gmdate('YmdHis').'-'.bin2hex(random_bytes(4));
+            if(!rename($target,$backup))throw new PluginPackageException('plugins.error.update_backup');
+            if(!rename($stage,$target)){rename($backup,$target);throw new PluginPackageException('plugins.error.atomic_install');}
+            $swapped=true;$stage=null;$candidate=$this->validator->validate($target);
+            $this->migrations->migrate($candidate);$this->lifecycle->update($candidate->name,$current->version);$this->privileges->syncManifest($candidate);$this->events->after($candidate->name,PluginLifecycleOperation::Update);
+            $filesystem->remove($backup);$backup=null;$this->invalidateContainer();return $candidate;
+        } catch(\Throwable $exception) {
+            if($stage&&is_dir($stage))$filesystem->remove($stage);
+            if($swapped){$this->registry->setActive((string)($data['name']??''),false);$this->invalidateContainer();throw new PluginPackageException(sprintf('Plugin update requires recovery; the new package remains inactive and the previous package is preserved at %s. Cause: %s',(string)$backup,$exception->getMessage()),0,$exception);}
+            throw $exception;
+        } finally {$zip->close();}
     }
     public function uninstall(PluginManifest $plugin): void
     {
