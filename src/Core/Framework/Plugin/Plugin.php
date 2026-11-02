@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Companyware\Core\Framework\Plugin;
 
 use Companyware\Core\Framework\Plugin\Contract\PluginLifecycleInterface;
+use Companyware\Core\Framework\Plugin\Contract\PluginUpdateInterface;
 
 /**
  * Base class for Companyware plugins.
@@ -14,13 +15,17 @@ use Companyware\Core\Framework\Plugin\Contract\PluginLifecycleInterface;
  *
  * @api since Companyware public API 1.0
  */
-abstract class Plugin implements PluginLifecycleInterface
+abstract class Plugin implements PluginLifecycleInterface, PluginUpdateInterface
 {
     public function install(): void
     {
     }
 
     public function activate(): void
+    {
+    }
+
+    public function update(string $previousVersion): void
     {
     }
 

@@ -1,12 +1,14 @@
 <?php
 namespace App\Plugin;
 use Companyware\Core\Framework\Plugin\Contract\PluginLifecycleInterface;
+use Companyware\Core\Framework\Plugin\Contract\PluginUpdateInterface;
 use Psr\Container\ContainerInterface;
 use RuntimeException;
 final class PluginLifecycleManager
 {
     public function __construct(private readonly ContainerInterface $plugins) {}
     public function install(string $name): void { $this->plugin($name)?->install(); }
+    public function update(string $name, string $previousVersion): void { $plugin=$this->plugin($name); if($plugin instanceof PluginUpdateInterface)$plugin->update($previousVersion); }
     public function activate(string $name): void { $this->plugin($name)?->activate(); }
     public function deactivate(string $name): void { $this->plugin($name)?->deactivate(); }
     public function uninstall(string $name): void { $this->plugin($name)?->uninstall(); }

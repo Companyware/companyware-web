@@ -15,6 +15,7 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 - `Companyware\Core\Framework\Data\OptimisticLockException`
 - `Companyware\Core\Test\Data\SchemaTestHelper`
 - `Companyware\Core\Test\Data\RepositoryTestHelper`
+- `Companyware\Core\Test\Plugin\PackageStructureTestHelper`
 - `Companyware\Core\Framework\Security\AuthorizationInterface`
 - `Companyware\Core\Framework\Security\RequiresPrivilege`
 - `Companyware\Core\Framework\Security\PrivilegeAwareInterface`
