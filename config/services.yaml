@@ -33,6 +33,8 @@ services:
             tags: ['app.plugin.navigation']
         Companyware\Core\Framework\Plugin\Contract\SlotProviderInterface:
             tags: ['app.plugin.slot']
+        Companyware\Core\Framework\Api\ApiOperationProviderInterface:
+            tags: ['app.api.operation_provider']
 
     App\Plugin\NavigationRegistry:
         arguments:
@@ -41,6 +43,10 @@ services:
     App\Plugin\SlotRenderer:
         arguments:
             $providers: !tagged_iterator app.plugin.slot
+
+    App\Api\OpenApiRegistry:
+        arguments:
+            $providers: !tagged_iterator app.api.operation_provider
 
     App\Plugin\PluginTwigLoader:
         arguments:

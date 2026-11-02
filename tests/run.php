@@ -6,10 +6,14 @@ use App\Plugin\Compatibility\VersionConstraint;
 use App\Plugin\Development\PluginSkeletonGenerator;
 use App\Plugin\PluginPackageException;
 use App\Plugin\PluginPackageValidator;
+use App\Plugin\PluginClassLoader;
+use App\Api\OpenApiRegistry;
 use Companyware\Core\Test\Plugin\PackageStructureTestHelper;
+use Plugins\Documents\DocumentsApiOperationProvider;
 use Symfony\Component\Filesystem\Filesystem;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+PluginClassLoader::register(dirname(__DIR__).'/plugins');
 
 $assert = static function (bool $condition, string $message): void {
     if (!$condition) throw new RuntimeException($message);
@@ -34,6 +38,13 @@ try {
         $assert($exception->getMessage() === 'plugins.error.internal_api', 'Unexpected forbidden-API validation error.');
     }
     echo "CW-008 generator and validator tests passed.\n";
+
+    $openApi=(new OpenApiRegistry([new DocumentsApiOperationProvider()]))->document();
+    $assert(isset($openApi['paths']['/oauth/token']['post']),'OpenAPI must expose OAuth2 client credentials.');
+    $assert(isset($openApi['paths']['/documents']['get'],$openApi['paths']['/documents']['post']),'Plugin API provider must expose list and create operations.');
+    $assert(isset($openApi['paths']['/documents/{id}']['delete'],$openApi['paths']['/documents/{id}/content']['get']),'OpenAPI must include plugin delete and content operations.');
+    $assert(isset($openApi['components']['securitySchemes']['oauth2']),'OpenAPI must publish the OAuth2 security scheme.');
+    echo "CW-009 plugin OpenAPI registry tests passed.\n";
 } finally {
     $filesystem->remove($root);
 }
