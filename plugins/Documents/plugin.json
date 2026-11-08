@@ -3,6 +3,7 @@
   "label": "documents.plugin_label",
   "description": "documents.plugin_description",
   "version": "1.8.0",
+  "publisher": {"id": "companyware", "name": "Companyware"},
   "compatibility": {
     "companyware": "^0.1",
     "php": "~8.3.0",

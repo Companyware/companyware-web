@@ -22,6 +22,16 @@ final class PluginPackageValidator
         }
 
         $runtimeManifest = $this->readJson($directory.'/plugin.json', 'plugins.error.manifest_missing', 'plugins.error.manifest_invalid');
+        $publisher = $runtimeManifest['publisher'] ?? null;
+        if (!is_array($publisher)
+            || !is_string($publisher['id'] ?? null)
+            || !preg_match('/^[a-z0-9][a-z0-9._-]{1,99}$/', $publisher['id'])
+            || !is_string($publisher['name'] ?? null)
+            || trim($publisher['name']) === ''
+            || mb_strlen($publisher['name']) > 190
+        ) {
+            throw new PluginPackageException('plugins.error.publisher_invalid');
+        }
         if (!in_array($runtimeManifest['uninstall']['data'] ?? null, ['remove', 'retain'], true)) {
             throw new PluginPackageException('plugins.error.uninstall_policy_invalid');
         }
