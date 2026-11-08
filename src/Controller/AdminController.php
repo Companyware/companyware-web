@@ -24,6 +24,7 @@ use App\Security\AccessRepository;
 use App\Plugin\PluginStateManager;
 use App\Extension\ExtensionUpdateService;
 use Companyware\Core\Framework\Theme\ThemeRegistryInterface;
+use Companyware\Core\Framework\Theme\ColorSchemeInterface;
 
 final class AdminController
 {
@@ -156,7 +157,7 @@ final class AdminController
 
     #[Route('/admin/settings', name: 'admin_settings', methods: ['GET', 'POST'])]
     #[RequiresPrivilege('core.settings.manage')]
-    public function settings(Request $request, Database $database, Schema $schema, LocaleRegistry $locales, ThemeRegistryInterface $themes): Response
+    public function settings(Request $request, Database $database, Schema $schema, LocaleRegistry $locales, ThemeRegistryInterface $themes, ColorSchemeInterface $colorScheme): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;
         $schema->ensure();
@@ -166,12 +167,13 @@ final class AdminController
             $statement->execute(['key' => 'app.name', 'value' => trim((string) $request->request->get('app_name'))]);
             $locales->save((string) $request->request->get('locale'));
             $themes->select((string) $request->request->get('theme', 'core-default'));
+            $colorScheme->selectMode((string) $request->request->get('color_scheme', 'system'));
             $request->getSession()->set('settings_saved', true);
             return new RedirectResponse('/admin/settings');
         }
         $saved = (bool) $request->getSession()->remove('settings_saved');
         $statement = $database->connection()->query("SELECT config_value FROM system_config WHERE config_key = 'app.name'");
-        return $this->page($request, 'settings', 'settings.title', ['appName' => $statement->fetchColumn() ?: 'Companyware', 'saved' => $saved, 'locales' => $locales->available(), 'currentLocale' => $locales->current(), 'themes' => array_values(array_filter($themes->themes(), static fn($theme):bool=>$theme->type==='full')), 'currentTheme' => $themes->selected()->id]);
+        return $this->page($request, 'settings', 'settings.title', ['appName' => $statement->fetchColumn() ?: 'Companyware', 'saved' => $saved, 'locales' => $locales->available(), 'currentLocale' => $locales->current(), 'themes' => array_values(array_filter($themes->themes(), static fn($theme):bool=>$theme->type==='full')), 'currentTheme' => $themes->selected()->id, 'currentColorScheme'=>$colorScheme->mode()]);
     }
 
     private function page(Request $request, string $template, string $title, array $context = []): Response

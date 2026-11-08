@@ -5,7 +5,7 @@ use Twig\TwigFunction;
 use Companyware\Core\Framework\Security\AuthorizationInterface;
 final class TwigPluginExtension extends AbstractExtension
 {
-    public function __construct(private readonly SlotRenderer $slots, private readonly NavigationRegistry $navigation, private readonly AssetRegistry $assets, private readonly AuthorizationInterface $authorization, private readonly \Companyware\Core\Framework\Theme\ThemeRegistryInterface $themes) {}
+    public function __construct(private readonly SlotRenderer $slots, private readonly NavigationRegistry $navigation, private readonly AssetRegistry $assets, private readonly AuthorizationInterface $authorization, private readonly \Companyware\Core\Framework\Theme\ThemeRegistryInterface $themes, private readonly \Companyware\Core\Framework\Theme\ColorSchemeInterface $colorScheme) {}
     public function getFunctions(): array
     {
         return [
@@ -17,6 +17,7 @@ final class TwigPluginExtension extends AbstractExtension
             new TwigFunction('is_granted', fn(string $privilege)=>$this->authorization->isGranted($privilege)),
             new TwigFunction('theme_stylesheets', fn()=> $this->themes->stylesheets()),
             new TwigFunction('active_theme', fn()=> $this->themes->selected()),
+            new TwigFunction('color_scheme', fn()=> $this->colorScheme->mode()),
         ];
     }
 }

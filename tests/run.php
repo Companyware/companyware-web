@@ -80,6 +80,10 @@ try {
     echo "CW-007A scoped permission contract tests passed.\n";
     $assert(is_file(dirname(__DIR__).'/public/assets/theme/core.css'),'Protected Core theme fallback is missing.');
     $assert(str_contains((string)file_get_contents(dirname(__DIR__).'/templates/base.html.twig'),'theme_stylesheets'),'Base template does not expose the stable theme block.');
+    $themeCss=(string)file_get_contents(dirname(__DIR__).'/public/assets/theme/core.css');
+    $assert(str_contains($themeCss,'prefers-color-scheme: dark')&&str_contains($themeCss,'data-color-scheme="dark"'),'Core theme does not provide system and forced dark modes.');
+    $settingsTemplate=(string)file_get_contents(dirname(__DIR__).'/templates/admin/settings/index.html.twig');
+    $assert(str_contains($settingsTemplate,'currentColorScheme')&&str_contains($settingsTemplate,'value="system"')&&str_contains($settingsTemplate,'value="light"')&&str_contains($settingsTemplate,'value="dark"'),'Settings do not expose every color-scheme mode.');
     echo "CW-013 theme contract tests passed.\n";
 } finally {
     $filesystem->remove($root);

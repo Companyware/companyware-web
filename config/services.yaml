@@ -103,6 +103,9 @@ services:
     Companyware\Core\Framework\Theme\ThemeRegistryInterface:
         alias: App\Theme\ThemeRegistry
 
+    Companyware\Core\Framework\Theme\ColorSchemeInterface:
+        alias: App\Theme\ThemeRegistry
+
     Companyware\Core\Framework\Application\ActorContextInterface:
         alias: App\Application\RequestActorContext
 
