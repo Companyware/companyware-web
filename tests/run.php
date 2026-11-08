@@ -10,6 +10,9 @@ use App\Plugin\PluginPackageValidator;
 use App\Plugin\PluginClassLoader;
 use App\Plugin\AdminAccessSubscriber;
 use App\Api\OpenApiRegistry;
+use App\Extension\PublisherTrustStore;
+use App\Extension\PackageSignatureVerifier;
+use App\Extension\ExtensionRegistryClient;
 use Companyware\Core\Test\Plugin\PackageStructureTestHelper;
 use Plugins\Documents\DocumentsApiOperationProvider;
 use Symfony\Component\Filesystem\Filesystem;
@@ -63,6 +66,9 @@ try {
     $assert(AdminAccessSubscriber::isProtectedAdminPath('/admin/plugins'), 'Administration child routes must remain protected.');
     $assert(!AdminAccessSubscriber::isProtectedAdminPath('/admin-sdk/companyware-admin-sdk.js'), 'Public SDK assets must not be captured by the administration guard.');
     echo "Administration route boundary tests passed.\n";
+    $trust=new PublisherTrustStore($root);if(PackageSignatureVerifier::available()){$keyPair=sodium_crypto_sign_keypair();$public=base64_encode(sodium_crypto_sign_publickey($keyPair));$secret=sodium_crypto_sign_secretkey($keyPair);$trust->trust('acme-publisher','release-1',$public);$archive=$root.'/signed-package.zip';file_put_contents($archive,'signed extension payload');$hash=hash_file('sha256',$archive);$release=['name'=>'acme-example','version'=>'0.2.0','sha256'=>$hash,'signature'=>['publisher'=>'acme-publisher','keyId'=>'release-1','value'=>base64_encode(sodium_crypto_sign_detached(PackageSignatureVerifier::payload('acme-example','0.2.0',$hash),$secret))]];(new PackageSignatureVerifier($trust))->verify($archive,$release);file_put_contents($archive,'tampered payload');try{(new PackageSignatureVerifier($trust))->verify($archive,$release);throw new RuntimeException('Verifier accepted a tampered package.');}catch(RuntimeException $exception){$assert($exception->getMessage()==='Package checksum verification failed.','Unexpected tamper diagnostic.');}$trust->revoke('acme-publisher','release-1');}
+    $registryFile=$root.'/registry.json';file_put_contents($registryFile,json_encode(['format'=>'companyware-extension-registry-1','packages'=>[],'advisories'=>[]],JSON_THROW_ON_ERROR));$assert((new ExtensionRegistryClient())->registry($registryFile)['format']==='companyware-extension-registry-1','Registry protocol must accept its versioned local fixture.');
+    echo "CW-011 registry trust and signature tests passed.\n";
 } finally {
     $filesystem->remove($root);
 }
