@@ -38,8 +38,8 @@ try {
     $assert($manifest->version === '0.1.0', 'Generated manifest version differs.');
     $assert($manifest->publisherId === 'acme' && $manifest->publisherName === 'Acme', 'Generated publisher metadata differs.');
     file_put_contents($root.'/public/theme.css', ':root{--cw-color-primary:#123456}');
-    $themeManifest=json_decode((string)file_get_contents($root.'/plugin.json'),true,512,JSON_THROW_ON_ERROR);$themeManifest['themes']=[['id'=>'acme-example.default','label'=>'acme-example.theme.default','type'=>'full','stylesheets'=>['theme.css'],'priority'=>100]];file_put_contents($root.'/plugin.json',json_encode($themeManifest,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR));
-    $assert($validator->validate($root)->themes[0]['id']==='acme-example.default','Theme manifest validation differs.');
+    $themeManifest=json_decode((string)file_get_contents($root.'/plugin.json'),true,512,JSON_THROW_ON_ERROR);$themeManifest['themes']=[['id'=>'acme-example.default','label'=>'acme-example.theme.default','type'=>'full','stylesheets'=>['theme.css'],'priority'=>100,'settings'=>[['key'=>'density','type'=>'select','label'=>'acme-example.theme.density','default'=>'comfortable','options'=>[['value'=>'comfortable','label'=>'acme-example.theme.comfortable'],['value'=>'compact','label'=>'acme-example.theme.compact']]]]]];file_put_contents($root.'/plugin.json',json_encode($themeManifest,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR));
+    $validatedTheme=$validator->validate($root)->themes[0];$assert($validatedTheme['id']==='acme-example.default'&&$validatedTheme['settings'][0]['key']==='density','Theme manifest validation differs.');
     file_put_contents($root.'/src/Forbidden.php', "<?php\nnamespace Plugins\\AcmeExample;\nuse App\\Internal\\Forbidden;\n");
     try {
         $validator->validate($root);
@@ -83,7 +83,7 @@ try {
     $themeCss=(string)file_get_contents(dirname(__DIR__).'/public/assets/theme/core.css');
     $assert(str_contains($themeCss,'prefers-color-scheme: dark')&&str_contains($themeCss,'data-color-scheme="dark"'),'Core theme does not provide system and forced dark modes.');
     $settingsTemplate=(string)file_get_contents(dirname(__DIR__).'/templates/admin/settings/index.html.twig');
-    $assert(str_contains($settingsTemplate,'currentColorScheme')&&str_contains($settingsTemplate,'value="system"')&&str_contains($settingsTemplate,'value="light"')&&str_contains($settingsTemplate,'value="dark"'),'Settings do not expose every color-scheme mode.');
+    $assert(str_contains($settingsTemplate,'currentTheme.settings|length')&&str_contains($settingsTemplate,'theme-settings-dialog'),'Theme settings modal is not conditional on declared settings.');
     echo "CW-013 theme contract tests passed.\n";
 } finally {
     $filesystem->remove($root);

@@ -19,14 +19,18 @@ final class ThemeRegistry implements ThemeRegistryInterface, ColorSchemeInterfac
 
     public function themes(): array
     {
-        $themes = [new ThemeDefinition(self::CORE, 'theme.core', 'core', 'full', ['/assets/theme/core.css'], 0)];
+        $themes = [new ThemeDefinition(self::CORE, 'theme.core', 'core', 'full', ['/assets/theme/core.css'], 0, [[
+            'key'=>'color_scheme','type'=>'select','label'=>'settings.color_scheme','help'=>'settings.color_scheme_hint','default'=>'system','options'=>[
+                ['value'=>'system','label'=>'settings.color_scheme.system'],['value'=>'light','label'=>'settings.color_scheme.light'],['value'=>'dark','label'=>'settings.color_scheme.dark'],
+            ],
+        ]])];
         $ids = [self::CORE => true];
         foreach ($this->plugins->activeManifests() as $plugin) {
             foreach ($plugin->themes as $theme) {
                 if (isset($ids[$theme['id']])) throw new \LogicException(sprintf('Duplicate theme ID "%s".', $theme['id']));
                 $ids[$theme['id']] = true;
                 $styles = array_map(fn (string $path): string => '/plugin-assets/'.rawurlencode($plugin->name).'?path='.rawurlencode($path).'&v='.rawurlencode((string)(filemtime($plugin->path.'/public/'.$path)?:$plugin->version)), $theme['stylesheets']);
-                $themes[] = new ThemeDefinition($theme['id'], $theme['label'], $plugin->name, $theme['type'], $styles, $theme['priority'] ?? 100);
+                $themes[] = new ThemeDefinition($theme['id'], $theme['label'], $plugin->name, $theme['type'], $styles, $theme['priority'] ?? 100, $theme['settings'] ?? []);
             }
         }
         usort($themes, static fn (ThemeDefinition $a, ThemeDefinition $b): int => [$a->priority, $a->owner, $a->id] <=> [$b->priority, $b->owner, $b->id]);
@@ -61,14 +65,16 @@ final class ThemeRegistry implements ThemeRegistryInterface, ColorSchemeInterfac
     public function mode(): string
     {
         $this->schema->ensure();
-        $mode=$this->database->connection()->query("SELECT config_value FROM system_config WHERE config_key='theme.color_scheme'")->fetchColumn();
-        return is_string($mode)&&in_array($mode,['system','light','dark'],true)?$mode:'system';
+        $theme=$this->selected();$field=current(array_filter($theme->settings,static fn(array $field):bool=>($field['key']??null)==='color_scheme'));
+        if(!$field)return 'light';
+        $statement=$this->database->connection()->prepare('SELECT config_value FROM system_config WHERE config_key=:key');$statement->execute(['key'=>'theme.'.$theme->id.'.color_scheme']);$stored=$statement->fetchColumn();if(!is_string($stored)&&$theme->id===self::CORE){$statement->execute(['key'=>'theme.color_scheme']);$stored=$statement->fetchColumn();}$mode=is_string($stored)?json_decode($stored,true):null;
+        return is_string($mode)&&in_array($mode,['system','light','dark'],true)?$mode:(string)($field['default']??'light');
     }
 
     public function selectMode(string $mode): void
     {
         if(!in_array($mode,['system','light','dark'],true))throw new \InvalidArgumentException('theme.error.color_scheme');
-        $statement=$this->database->connection()->prepare("INSERT INTO system_config (config_key,config_value) VALUES ('theme.color_scheme',:value) ON DUPLICATE KEY UPDATE config_value=VALUES(config_value)");
-        $statement->execute(['value'=>$mode]);
+        $theme=$this->selected();$statement=$this->database->connection()->prepare('INSERT INTO system_config (config_key,config_value) VALUES (:key,:value) ON DUPLICATE KEY UPDATE config_value=VALUES(config_value)');
+        $statement->execute(['key'=>'theme.'.$theme->id.'.color_scheme','value'=>json_encode($mode,JSON_THROW_ON_ERROR)]);
     }
 }

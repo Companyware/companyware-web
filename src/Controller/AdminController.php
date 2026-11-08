@@ -24,7 +24,7 @@ use App\Security\AccessRepository;
 use App\Plugin\PluginStateManager;
 use App\Extension\ExtensionUpdateService;
 use Companyware\Core\Framework\Theme\ThemeRegistryInterface;
-use Companyware\Core\Framework\Theme\ColorSchemeInterface;
+use Companyware\Core\Framework\Theme\ThemeConfigurationInterface;
 
 final class AdminController
 {
@@ -157,23 +157,28 @@ final class AdminController
 
     #[Route('/admin/settings', name: 'admin_settings', methods: ['GET', 'POST'])]
     #[RequiresPrivilege('core.settings.manage')]
-    public function settings(Request $request, Database $database, Schema $schema, LocaleRegistry $locales, ThemeRegistryInterface $themes, ColorSchemeInterface $colorScheme): Response
+    public function settings(Request $request, Database $database, Schema $schema, LocaleRegistry $locales, ThemeRegistryInterface $themes, ThemeConfigurationInterface $themeConfiguration): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;
         $schema->ensure();
         $saved = false;
         if ($request->isMethod('POST') && $this->validToken($request)) {
+            if($request->request->get('action')==='theme_settings'){
+                $themeConfiguration->save($themes->selected(),$request->request->all('theme_settings'));
+                $request->getSession()->set('settings_saved',true);
+                return new RedirectResponse('/admin/settings');
+            }
             $statement = $database->connection()->prepare('INSERT INTO system_config (config_key, config_value) VALUES (:key, :value) ON DUPLICATE KEY UPDATE config_value = VALUES(config_value)');
             $statement->execute(['key' => 'app.name', 'value' => trim((string) $request->request->get('app_name'))]);
             $locales->save((string) $request->request->get('locale'));
             $themes->select((string) $request->request->get('theme', 'core-default'));
-            $colorScheme->selectMode((string) $request->request->get('color_scheme', 'system'));
             $request->getSession()->set('settings_saved', true);
             return new RedirectResponse('/admin/settings');
         }
         $saved = (bool) $request->getSession()->remove('settings_saved');
         $statement = $database->connection()->query("SELECT config_value FROM system_config WHERE config_key = 'app.name'");
-        return $this->page($request, 'settings', 'settings.title', ['appName' => $statement->fetchColumn() ?: 'Companyware', 'saved' => $saved, 'locales' => $locales->available(), 'currentLocale' => $locales->current(), 'themes' => array_values(array_filter($themes->themes(), static fn($theme):bool=>$theme->type==='full')), 'currentTheme' => $themes->selected()->id, 'currentColorScheme'=>$colorScheme->mode()]);
+        $activeTheme=$themes->selected();
+        return $this->page($request, 'settings', 'settings.title', ['appName' => $statement->fetchColumn() ?: 'Companyware', 'saved' => $saved, 'locales' => $locales->available(), 'currentLocale' => $locales->current(), 'themes' => array_values(array_filter($themes->themes(), static fn($theme):bool=>$theme->type==='full')), 'currentTheme' => $activeTheme, 'themeValues'=>$themeConfiguration->values($activeTheme)]);
     }
 
     private function page(Request $request, string $template, string $title, array $context = []): Response
