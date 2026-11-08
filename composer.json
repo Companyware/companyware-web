@@ -51,6 +51,12 @@
     },
     "scripts": {
         "test": "@php tests/run.php",
+        "release-check": [
+            "@composer validate --strict --no-check-publish",
+            "@php tools/release-check.php",
+            "@test",
+            "node --test admin-sdk/tests/*.test.cjs"
+        ],
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd"
