@@ -9,8 +9,9 @@ use App\Infrastructure\PluginRegistry;
 use App\Infrastructure\Schema;
 use Companyware\Core\Framework\Theme\ThemeDefinition;
 use Companyware\Core\Framework\Theme\ThemeRegistryInterface;
+use Companyware\Core\Framework\Theme\ColorSchemeInterface;
 
-final class ThemeRegistry implements ThemeRegistryInterface
+final class ThemeRegistry implements ThemeRegistryInterface, ColorSchemeInterface
 {
     public const CORE = 'core-default';
 
@@ -55,5 +56,19 @@ final class ThemeRegistry implements ThemeRegistryInterface
         if (!$theme) throw new \InvalidArgumentException('theme.error.unavailable');
         $statement = $this->database->connection()->prepare("INSERT INTO system_config (config_key,config_value) VALUES ('theme.selected',:value) ON DUPLICATE KEY UPDATE config_value=VALUES(config_value)");
         $statement->execute(['value' => $theme->id]);
+    }
+
+    public function mode(): string
+    {
+        $this->schema->ensure();
+        $mode=$this->database->connection()->query("SELECT config_value FROM system_config WHERE config_key='theme.color_scheme'")->fetchColumn();
+        return is_string($mode)&&in_array($mode,['system','light','dark'],true)?$mode:'system';
+    }
+
+    public function selectMode(string $mode): void
+    {
+        if(!in_array($mode,['system','light','dark'],true))throw new \InvalidArgumentException('theme.error.color_scheme');
+        $statement=$this->database->connection()->prepare("INSERT INTO system_config (config_key,config_value) VALUES ('theme.color_scheme',:value) ON DUPLICATE KEY UPDATE config_value=VALUES(config_value)");
+        $statement->execute(['value'=>$mode]);
     }
 }

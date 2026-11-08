@@ -25,3 +25,7 @@ IDs are plugin-owned. `full` themes can be selected in system settings. Active `
 Only the selected full theme may supply `templates/overrides/`. This prevents several plugins from silently competing for the same Twig template. If the selected plugin is unavailable or inactive, Companyware selects `core-default`. Core assets and recovery behavior therefore remain usable.
 
 Theme packages should prefer tokens, blocks and slots over copying complete Core templates. Validate them with `app:plugins:validate-package`.
+
+## Light and dark appearance
+
+Theme identity and color scheme are separate. The persisted modes are `system`, `light` and `dark`; `system` follows the browser through `prefers-color-scheme`. Themes should provide both light and dark semantic token values with the stable selectors `html[data-color-scheme="light"]`, `html[data-color-scheme="dark"]` and `html[data-color-scheme="system"]` inside a dark-color media query. A theme does not need separate light/dark package identities.
