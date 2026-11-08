@@ -29,3 +29,5 @@ Theme packages should prefer tokens, blocks and slots over copying complete Core
 ## Light and dark appearance
 
 Theme identity and color scheme are separate. The persisted modes are `system`, `light` and `dark`; `system` follows the browser through `prefers-color-scheme`. Themes should provide both light and dark semantic token values with the stable selectors `html[data-color-scheme="light"]`, `html[data-color-scheme="dark"]` and `html[data-color-scheme="system"]` inside a dark-color media query. A theme does not need separate light/dark package identities.
+
+Theme settings are optional and belong to the selected full theme, not to Companyware globally. A theme may declare `text`, `number`, `checkbox` and `select` fields using the same schema conventions as plugin settings. The administration renders **Edit theme** and its modal only when the selected theme declares at least one field. Core declares `color_scheme`; another theme may expose different controls or none at all.
