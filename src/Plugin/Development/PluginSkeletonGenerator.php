@@ -87,15 +87,15 @@ services:
         autowire: true
         autoconfigure: true
 
-    {{namespace}}\:
+    '{{namespace}}\':
         resource: '../src/'
         exclude: ['../src/Domain/', '../src/Migration/']
 
-    {{namespace}}\Controller\:
+    '{{namespace}}\Controller\':
         resource: '../src/Controller/'
         tags: ['controller.service_arguments']
 
-    {{namespace}}\{{class}}Plugin:
+    '{{namespace}}\{{class}}Plugin':
         tags:
             - { name: 'app.plugin.lifecycle', plugin: '{{name}}' }
 YAML,
@@ -149,7 +149,52 @@ PHP,
 TWIG,
             'translations/messages.de.yaml' => "{{name}}:\n  plugin:\n    label: '{{class}}'\n    description: 'Mein Companyware-Plugin'\n  nav: '{{class}}'\n  title: '{{class}}'\n  privilege:\n    read: 'Lesen'\nsecurity:\n  group:\n    {{name}}: '{{class}}'\n",
             'public/admin.css' => ".{{name}}-root { display: block; }\n",
-            'public/admin.js' => "window.AdminFramework?.emit('{{name}}:ready');\n",
+            'public/admin.js' => "window.CompanywareAdmin?.hooks.emit('{{name}}:ready');\n",
+            'src/Resources/app/administration/package.json' => <<<'JSON'
+{
+  "name": "@{{vendor}}/{{name}}-admin",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {"dev": "vite", "build": "vue-tsc --noEmit && vite build"},
+  "dependencies": {"vue": "^3.5.0"},
+  "devDependencies": {"@vitejs/plugin-vue": "^6.0.0", "typescript": "^5.9.0", "vite": "^7.0.0", "vue-tsc": "^3.0.0"}
+}
+JSON,
+            'src/Resources/app/administration/tsconfig.json' => <<<'JSON'
+{"compilerOptions":{"target":"ES2022","module":"ESNext","moduleResolution":"Bundler","strict":true,"lib":["ES2022","DOM"],"types":[]},"include":["src/**/*.ts","src/**/*.vue"]}
+JSON,
+            'src/Resources/app/administration/vite.config.ts' => <<<'TS'
+import {defineConfig} from 'vite';
+import vue from '@vitejs/plugin-vue';
+import {resolve} from 'node:path';
+export default defineConfig({plugins:[vue()],build:{emptyOutDir:false,outDir:'../../../../public',lib:{entry:resolve(__dirname,'src/main.ts'),formats:['iife'],name:'{{class}}Admin',fileName:()=> 'admin.js'}}});
+TS,
+            'src/Resources/app/administration/src/main.ts' => <<<'TS'
+import {createApp} from 'vue';
+import App from './module/{{name}}/page/{{name}}-index/App.vue';
+
+const sdk = window.CompanywareAdmin;
+sdk.modules.register({
+    id: '{{name}}.admin', owner: '{{name}}', version: '1.0.0', replaceable: true,
+    mount(target: Element, props: Record<string, unknown> = {}) {
+        const app = createApp(App, props);
+        app.provide('companyware.admin', sdk);
+        return app.mount(target);
+    }
+});
+sdk.hooks.emit('{{name}}:ready', {module: sdk.modules.get('{{name}}.admin')});
+TS,
+            'src/Resources/app/administration/src/module/{{name}}/page/{{name}}-index/App.vue' => <<<'VUE'
+<script setup lang="ts">
+defineProps<{title?: string}>();
+</script>
+<template><section class="{{name}}-root"><h1>{{ title ?? '{{class}}' }}</h1></section></template>
+VUE,
+            'src/Resources/app/administration/src/companyware.d.ts' => <<<'TS'
+type CompanywareModule = {id:string;owner:string;version:string;replaceable?:boolean;mount?:(target:Element,props?:Record<string,unknown>)=>unknown};
+interface Window { CompanywareAdmin: {version:string;modules:{register<T extends CompanywareModule>(module:T):T;get(id:string):CompanywareModule|undefined};hooks:{on(name:string,listener:(detail:unknown)=>void):()=>void;emit(name:string,detail?:unknown):void}} }
+TS,
             'tests/smoke.php' => <<<'PHP'
 <?php
 declare(strict_types=1);
@@ -177,7 +222,7 @@ jobs:
           test -n "$COMPANYWARE_ROOT"
           php "$COMPANYWARE_ROOT/bin/console" app:plugins:validate-package "$GITHUB_WORKSPACE" --json --no-interaction
 YAML,
-            'README.md' => "# {{class}}\n\nGenerated Companyware plugin. Run `php tests/smoke.php`, then validate with the shared platform validator: `php /path/to/companyware/bin/console app:plugins:validate-package . --json --no-interaction`. Set the CI variable `COMPANYWARE_ROOT` to a prepared Companyware checkout.\n",
+            'README.md' => "# {{class}}\n\nGenerated Companyware plugin. The backend and Twig page work without a JavaScript build. The interactive Vue 3 + TypeScript administration follows Shopware's familiar `src/Resources/app/administration/src` layout; run `npm install` and `npm run build` there and Vite writes `public/admin.js`. Stable `Shopware.Module.register()` and `Shopware.Component.register()` patterns are supported by the compatibility facade, while Companyware-native code uses `window.CompanywareAdmin`. Run `php tests/smoke.php`, then validate with `php /path/to/companyware/bin/console app:plugins:validate-package . --json --no-interaction`. Public frontend pages are optional: implement `FrontendProviderInterface` for `/`, or add guarded public routes with `_plugin: '{{name}}'`. Without an active homepage provider Companyware redirects `/` to `/admin`.\n",
         ];
     }
 }

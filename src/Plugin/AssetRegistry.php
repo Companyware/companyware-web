@@ -15,6 +15,7 @@ final class AssetRegistry
     public function stylesheets(): array
     {
         return $this->resolve('styles', [
+            ['handle' => 'core-admin-tokens', 'url' => $this->sdkAsset('companyware-admin-tokens.css'), 'priority' => -100],
             ['handle' => 'core-admin', 'url' => $this->versioned('/assets/admin.css'), 'priority' => 0],
             ['handle' => 'core-plugin-manager', 'url' => $this->versioned('/assets/plugin-manager.css'), 'priority' => 10],
         ]);
@@ -23,6 +24,7 @@ final class AssetRegistry
     public function javascripts(): array
     {
         return $this->resolve('scripts', [
+            ['handle' => 'core-admin-sdk', 'url' => $this->sdkAsset('companyware-admin-sdk.js'), 'priority' => -100, 'defer' => true],
             ['handle' => 'core-admin-js', 'url' => $this->versioned('/assets/admin.js'), 'priority' => 0, 'defer' => true],
         ]);
     }
@@ -33,6 +35,14 @@ final class AssetRegistry
         $version = is_file($path) ? substr((string) sha1_file($path), 0, 12) : '1';
 
         return $url.'?v='.$version;
+    }
+
+    private function sdkAsset(string $asset): string
+    {
+        $file = dirname(__DIR__, 2).'/admin-sdk/dist/'.$asset;
+        $version = is_file($file) ? substr((string) sha1_file($file), 0, 12) : '1';
+
+        return '/admin-sdk/'.$asset.'?v='.$version;
     }
 
     private function resolve(string $type, array $assets): array

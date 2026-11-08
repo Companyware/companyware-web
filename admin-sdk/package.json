@@ -1,0 +1,18 @@
+{
+  "name": "@companyware/admin-sdk",
+  "version": "1.0.0",
+  "description": "Public, framework-independent Companyware administration SDK",
+  "license": "MIT",
+  "main": "dist/companyware-admin-sdk.js",
+  "types": "dist/companyware-admin-sdk.d.ts",
+  "peerDependencies": {
+    "vue": "^3.5.0"
+  },
+  "peerDependenciesMeta": {
+    "vue": {"optional": true}
+  },
+  "files": ["dist", "src", "README.md"],
+  "scripts": {
+    "test": "node --test tests/*.test.cjs"
+  }
+}
