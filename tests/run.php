@@ -14,6 +14,7 @@ use App\Extension\PublisherTrustStore;
 use App\Extension\PackageSignatureVerifier;
 use App\Extension\ExtensionRegistryClient;
 use Companyware\Core\Test\Plugin\PackageStructureTestHelper;
+use Companyware\Core\Framework\Security\DataScope;
 use Plugins\Documents\DocumentsApiOperationProvider;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -72,6 +73,8 @@ try {
     echo "CW-011 registry trust and signature tests passed.\n";
     $command=escapeshellarg(PHP_BINARY).' '.escapeshellarg(dirname(__DIR__).'/plugins/Documents/tests/reference.php');passthru($command,$documentsExit);$assert($documentsExit===0,'Documents reference plugin tests failed.');
     echo "CW-012 reference package tests passed.\n";
+    $assert(DataScope::Own->rank()<DataScope::Department->rank()&&DataScope::Department->rank()<DataScope::All->rank(),'Scoped permission precedence differs.');
+    echo "CW-007A scoped permission contract tests passed.\n";
 } finally {
     $filesystem->remove($root);
 }

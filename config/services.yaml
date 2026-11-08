@@ -94,6 +94,12 @@ services:
     Companyware\Core\Framework\Security\AuthorizationInterface:
         alias: App\Security\AuthorizationService
 
+    Companyware\Core\Framework\Security\ScopedAuthorizationInterface:
+        alias: App\Security\AuthorizationService
+
+    Companyware\Core\Framework\Security\ScopeContextInterface:
+        alias: App\Security\DatabaseScopeContext
+
     Companyware\Core\Framework\Application\ActorContextInterface:
         alias: App\Application\RequestActorContext
 

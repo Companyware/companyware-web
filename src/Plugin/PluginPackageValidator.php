@@ -165,6 +165,7 @@ final class PluginPackageValidator
         $keys=[];
         foreach($manifest->privileges as $privilege){
             if(!is_array($privilege)||!is_string($privilege['key']??null)||!preg_match('/^'.preg_quote($manifest->name,'/').'\.[a-z][a-z0-9._-]*$/',$privilege['key'])||isset($keys[$privilege['key']])||!is_string($privilege['label']??null)||!is_string($privilege['group']??null))throw new PluginPackageException('plugins.error.privileges_invalid');
+            $scopes=$privilege['scopes']??['all'];if(!is_array($scopes)||!array_is_list($scopes)||$scopes===[]||array_diff($scopes,['own','department','all']))throw new PluginPackageException('plugins.error.privileges_invalid');
             $keys[$privilege['key']]=true;
         }
         foreach($manifest->navigation as $item){$required=$item['privilege']??null;if($required!==null&&(!is_string($required)||!isset($keys[$required])))throw new PluginPackageException('plugins.error.navigation_privilege_invalid');}

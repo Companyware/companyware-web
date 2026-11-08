@@ -122,7 +122,7 @@ final class PluginCompatibilityResolver
     private function checkPrivileges(PluginManifest $plugin,array &$problems):void
     {
         $keys=[];
-        foreach($plugin->privileges as $privilege){$key=is_array($privilege)?($privilege['key']??null):null;if(!is_string($key)||!preg_match('/^'.preg_quote($plugin->name,'/').'\.[a-z][a-z0-9._-]*$/',$key)||isset($keys[$key])||!is_string($privilege['label']??null)||!is_string($privilege['group']??null)){$problems[]=$this->problem('privileges_invalid',$plugin,sprintf('Plugin "%s" contains an invalid or duplicate privilege definition.',$plugin->name));continue;}$keys[$key]=true;}
+        foreach($plugin->privileges as $privilege){$key=is_array($privilege)?($privilege['key']??null):null;$scopes=is_array($privilege)?($privilege['scopes']??['all']):[];if(!is_string($key)||!preg_match('/^'.preg_quote($plugin->name,'/').'\.[a-z][a-z0-9._-]*$/',$key)||isset($keys[$key])||!is_string($privilege['label']??null)||!is_string($privilege['group']??null)||!is_array($scopes)||!array_is_list($scopes)||$scopes===[]||array_diff($scopes,['own','department','all'])){$problems[]=$this->problem('privileges_invalid',$plugin,sprintf('Plugin "%s" contains an invalid or duplicate privilege definition.',$plugin->name));continue;}$keys[$key]=true;}
         foreach($plugin->navigation as $item){$required=$item['privilege']??null;if($required!==null&&(!is_string($required)||!isset($keys[$required])))$problems[]=$this->problem('navigation_privilege_invalid',$plugin,sprintf('Plugin "%s" navigation references undeclared privilege "%s".',$plugin->name,(string)$required));}
     }
 
