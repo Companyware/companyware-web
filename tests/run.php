@@ -8,6 +8,7 @@ use App\Plugin\Development\PluginPortabilityAnalyzer;
 use App\Plugin\PluginPackageException;
 use App\Plugin\PluginPackageValidator;
 use App\Plugin\PluginClassLoader;
+use App\Plugin\AdminAccessSubscriber;
 use App\Api\OpenApiRegistry;
 use Companyware\Core\Test\Plugin\PackageStructureTestHelper;
 use Plugins\Documents\DocumentsApiOperationProvider;
@@ -58,6 +59,10 @@ try {
     $assert($portability['summary']['transformable'] === 1, 'External administration registration must be recognized as transformable.');
     $assert(count(array_filter($portability['manualMappings'], static fn (array $finding): bool => str_starts_with($finding['pattern'], 'ExternalCommerce\\'))) === 1, 'External PHP runtime use must be reported for manual mapping.');
     echo "CW-010 administration SDK and Vue generator tests passed.\n";
+    $assert(AdminAccessSubscriber::isProtectedAdminPath('/admin'), 'Administration root must remain protected.');
+    $assert(AdminAccessSubscriber::isProtectedAdminPath('/admin/plugins'), 'Administration child routes must remain protected.');
+    $assert(!AdminAccessSubscriber::isProtectedAdminPath('/admin-sdk/companyware-admin-sdk.js'), 'Public SDK assets must not be captured by the administration guard.');
+    echo "Administration route boundary tests passed.\n";
 } finally {
     $filesystem->remove($root);
 }

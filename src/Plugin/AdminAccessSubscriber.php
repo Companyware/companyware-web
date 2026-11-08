@@ -9,6 +9,8 @@ final class AdminAccessSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array { return [KernelEvents::REQUEST=>['guard',50]]; }
     public function guard(RequestEvent $event): void
     {
-        $request=$event->getRequest(); if($event->isMainRequest() && str_starts_with($request->getPathInfo(),'/admin') && !$request->getSession()->has('admin')) $event->setResponse(new RedirectResponse('/login'));
+        $request=$event->getRequest();$protected=self::isProtectedAdminPath($request->getPathInfo());
+        if($event->isMainRequest()&&$protected&&!$request->getSession()->has('admin'))$event->setResponse(new RedirectResponse('/login'));
     }
+    public static function isProtectedAdminPath(string $path):bool{return $path==='/admin'||str_starts_with($path,'/admin/');}
 }
