@@ -29,14 +29,9 @@ test('applies permissions and table helpers', () => {
     assert.deepEqual(table.sort('name').map(row => row.name), ['A', 'B']);
 });
 
-test('maps the stable Shopware administration registration pattern', () => {
-    globalThis.Shopware.Component.register('swag-example-list', {template: '<div>Example</div>'});
-    globalThis.Shopware.Module.register('swag-example', {
-        title: 'Example',
-        routes: {list: {component: 'swag-example-list', path: 'swag/example/index'}},
-        navigation: [{id: 'swag-example-menu', label: 'Example', path: 'swag.example.list', position: 100}]
-    });
-    assert.equal(sdk.routes.resolve('/admin/swag/example/index').id, 'swag-example.list');
-    assert.equal(sdk.navigation.all().some(item => item.id === 'swag-example-menu'), true);
-    assert.equal(globalThis.Shopware.__companywareCompatibility.scope, 'administration-registration');
+test('registers only native Companyware components and services', () => {
+    sdk.components.register({id: 'test.component', owner: 'test', version: '1.0.0', definition: {template: '<div>Example</div>'}});
+    sdk.services.register('test.service', {ready: true});
+    assert.equal(sdk.components.get('test.component').definition.template, '<div>Example</div>');
+    assert.equal(sdk.services.get('test.service').ready, true);
 });

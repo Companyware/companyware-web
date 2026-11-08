@@ -4,9 +4,9 @@ Companyware's administration SDK is a public TypeScript contract independent fro
 
 ## Technology direction
 
-Vue 3 with TypeScript is the official default for interactive administration pages. It gives plugin developers a familiar component model and fast Vite feedback without making Vue a requirement for backend-only plugins. The SDK itself remains framework-independent: backend-only packages, Twig pages and small progressive enhancements do not need a Node build. The plugin generator creates both a working backend/Twig slice and optional ready-to-build Vue sources in the Shopware-familiar `src/Resources/app/administration/src` layout.
+Vue 3 with TypeScript is the official default for interactive administration pages. It gives plugin developers a familiar component model and fast Vite feedback without making Vue a requirement for backend-only plugins. The SDK itself remains framework-independent: backend-only packages, Twig pages and small progressive enhancements do not need a Node build. The plugin generator creates both a working backend/Twig slice and optional ready-to-build Vue sources below `resources/administration/`.
 
-For Shopware plugin ports, Companyware also exposes a deliberately bounded `window.Shopware` compatibility facade for familiar module, component and administration-service registration. This is a porting aid, not a claim that Shopware's DAL or commerce runtime is present; see `shopware-plugin-porting.md` and the `app:plugins:analyze-shopware` command.
+External plugins are ported through the neutral `app:plugins:analyze-portability` workflow. Companyware exposes no foreign-named runtime globals, namespace aliases or compatibility facade. Transformable registrations target native `window.CompanywareAdmin` modules, components and services; unresolved domain dependencies require explicit adapters. See `plugin-portability.md`.
 
 ## Stable SDK surfaces
 
@@ -25,6 +25,6 @@ Plugins must use the `--cw-*` semantic tokens rather than private Core selectors
 
 Plugins may provide a public website on the main domain independently from the administration at `/admin`. An active plugin can implement `FrontendProviderInterface` to render `/`; other public routes are declared in its normal route file and retain the `_plugin` guard. When no active frontend provider supports `/`, Core redirects it to `/admin`, whose existing authentication guard then sends anonymous users to `/login`.
 
-Twig is the default public frontend template system. It provides server rendering, SEO-friendly output and a Symfony/Shopware-familiar extension model. Public plugins contribute Twig templates, slots, assets and semantic theme tokens. Vue is used as an optional island for focused interactions such as cart state, variant selection or live search; a fully headless client may consume `/api/v1`, but is not required for a normal plugin frontend.
+Twig is the default public frontend template system. It provides server rendering, SEO-friendly output and a Symfony-native extension model. Public plugins contribute Twig templates, slots, assets and semantic theme tokens. Vue is used as an optional island for focused interactions such as cart state, variant selection or live search; a fully headless client may consume `/api/v1`, but is not required for a normal plugin frontend.
 
 Frontend providers never shadow `/admin`, `/login`, `/logout`, `/api`, `/plugin-assets` or `/admin-sdk`. Public controllers choose their own authentication model and must use application services rather than bypassing authorization or persistence contracts.

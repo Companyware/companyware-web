@@ -17,6 +17,8 @@ export interface CompanywareAdminSdk {
     readonly navigation: {register(item: NavigationRegistration): NavigationRegistration; all(): NavigationRegistration[]};
     readonly slots: {add<T>(name: string, item: SlotRegistration<T>): SlotRegistration<T>; render<T>(name: string, context: T): unknown[]};
     readonly modules: {register<T extends VersionedRegistration>(module: T): T; get<T>(id: string): T | undefined; all<T>(): T[]};
+    readonly components: {register<T extends VersionedRegistration>(component: T): T; get<T>(id: string): T | undefined; all<T>(): T[]};
+    readonly services: {register<T>(name: string, service: T): T; get<T>(name: string): T | undefined};
     readonly permissions: {configure(privileges: string[]): void; has(privilege: string): boolean; any(privileges: string[]): boolean; all(privileges: string[]): boolean};
     readonly api: {configure(options: {baseUrl?: string; csrfToken?: string; accessToken?: string}): void; request(path: string, options?: RequestInit): Promise<unknown>};
     readonly notifications: {push(notification: Notification): Notification & {id: number}; subscribe(listener: (notification: Notification & {id: number}) => void): () => void};
@@ -26,4 +28,4 @@ export interface CompanywareAdminSdk {
     readonly hooks: {on(name: string, listener: (detail: unknown) => void): () => void; emit(name: string, detail?: unknown): void};
 }
 
-declare global { interface Window { CompanywareAdmin: CompanywareAdminSdk; AdminFramework: {version: string; on(name: string, listener: (detail: unknown) => void): () => void; emit(name: string, detail?: unknown): void}; Shopware: {Module: {register(name: string, config: Record<string, unknown>): unknown}; Component: {register(name: string, definition: unknown): unknown; extend(name: string, target: string, definition: unknown): unknown; override(name: string, definition: unknown): unknown}; Service: {register(name: string, service: unknown): unknown; get(name: string): unknown}; Context: {api: {apiPath: string}}}; } }
+declare global { interface Window { CompanywareAdmin: CompanywareAdminSdk; AdminFramework: {version: string; on(name: string, listener: (detail: unknown) => void): () => void; emit(name: string, detail?: unknown): void}; } }

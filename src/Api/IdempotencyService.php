@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 namespace App\Api;
-use App\Infrastructure\Database;use App\Infrastructure\Schema;use Companyware\Core\Framework\Application\ActorContextInterface;use Symfony\Component\HttpFoundation\Request;use Symfony\Component\HttpFoundation\Response;use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
-final class IdempotencyService
+use App\Infrastructure\Database;use App\Infrastructure\Schema;use Companyware\Core\Framework\Api\IdempotencyServiceInterface;use Companyware\Core\Framework\Application\ActorContextInterface;use Symfony\Component\HttpFoundation\Request;use Symfony\Component\HttpFoundation\Response;use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+final class IdempotencyService implements IdempotencyServiceInterface
 {
     public function __construct(private readonly Database $database,private readonly Schema $schema,private readonly ActorContextInterface $actors){}
     public function execute(Request $request,callable $operation):Response
