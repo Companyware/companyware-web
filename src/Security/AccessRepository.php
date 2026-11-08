@@ -11,11 +11,12 @@ use PDO;
 final class AccessRepository
 {
     public function __construct(private readonly Database $database, private readonly Schema $schema) {}
-    public function users(): array { $this->schema->ensure(); return $this->database->connection()->query('SELECT id, username, display_name, email FROM admin_user ORDER BY display_name')->fetchAll(PDO::FETCH_ASSOC); }
+    public function users(): array { $this->schema->ensure(); return $this->database->connection()->query('SELECT id, username, display_name, email, department_key FROM admin_user ORDER BY display_name')->fetchAll(PDO::FETCH_ASSOC); }
     public function roles(): array { $this->schema->ensure(); return $this->database->connection()->query('SELECT * FROM admin_role ORDER BY protected DESC, role_name')->fetchAll(PDO::FETCH_ASSOC); }
     public function privileges(): array { $this->schema->ensure(); return $this->database->connection()->query('SELECT * FROM privilege ORDER BY owner, privilege_group, privilege_key')->fetchAll(PDO::FETCH_ASSOC); }
     public function assignments(): array { $this->schema->ensure(); $rows=$this->database->connection()->query('SELECT admin_user_id, role_id FROM admin_user_role')->fetchAll(PDO::FETCH_ASSOC);$result=[];foreach($rows as $row)$result[(int)$row['admin_user_id']][]=(int)$row['role_id'];return $result; }
     public function rolePrivileges(): array { $this->schema->ensure();$rows=$this->database->connection()->query('SELECT role_id, privilege_key FROM admin_role_privilege')->fetchAll(PDO::FETCH_ASSOC);$result=[];foreach($rows as $row)$result[(int)$row['role_id']][]=$row['privilege_key'];return $result; }
+    public function rolePrivilegeScopes(): array { $this->schema->ensure();$rows=$this->database->connection()->query('SELECT role_id, privilege_key, data_scope FROM admin_role_privilege')->fetchAll(PDO::FETCH_ASSOC);$result=[];foreach($rows as $row)$result[(int)$row['role_id']][$row['privilege_key']]=$row['data_scope'];return $result; }
     public function auditLog():array{$this->schema->ensure();return $this->database->connection()->query('SELECT a.*,u.display_name AS actor_name FROM security_audit a LEFT JOIN admin_user u ON u.id=a.actor_admin_id ORDER BY a.created_at DESC,a.id DESC LIMIT 50')->fetchAll(PDO::FETCH_ASSOC);}
     public function accessSummary(int $adminId): array
     {
@@ -32,12 +33,12 @@ final class AccessRepository
         $name=trim($name);if($name==='')throw new \InvalidArgumentException('security.error.role_name');
         $statement=$this->database->connection()->prepare('INSERT INTO admin_role (role_name) VALUES (:name)');$statement->execute(['name'=>$name]);$id=(int)$this->database->connection()->lastInsertId();$this->setRolePrivileges($id,$privileges);return $id;
     }
-    public function setRolePrivileges(int $roleId,array $privileges): void
+    public function setRolePrivileges(int $roleId,array $privileges,array $scopes=[]): void
     {
         $role=$this->role($roleId);if(!$role||$role['protected'])throw new \LogicException('security.error.protected_role');
         $db=$this->database->connection();$db->beginTransaction();try{$db->prepare('DELETE FROM admin_role_privilege WHERE role_id=:id')->execute(['id'=>$roleId]);
-        $insert=$db->prepare('INSERT INTO admin_role_privilege (role_id, privilege_key) SELECT :role, privilege_key FROM privilege WHERE privilege_key=:privilege AND protected=0');
-        foreach(array_unique(array_filter($privileges,'is_string')) as $privilege)$insert->execute(['role'=>$roleId,'privilege'=>$privilege]);$db->commit();}catch(\Throwable $exception){if($db->inTransaction())$db->rollBack();throw $exception;}
+        $insert=$db->prepare("INSERT INTO admin_role_privilege (role_id, privilege_key, data_scope) SELECT :role, privilege_key, :scope FROM privilege WHERE privilege_key=:privilege AND protected=0 AND FIND_IN_SET(:scope_check,supported_scopes)>0");
+        foreach(array_unique(array_filter($privileges,'is_string')) as $privilege){$scope=is_string($scopes[$privilege]??null)?$scopes[$privilege]:'all';if(!in_array($scope,['own','department','all'],true))$scope='all';$insert->execute(['role'=>$roleId,'privilege'=>$privilege,'scope'=>$scope,'scope_check'=>$scope]);}$db->commit();}catch(\Throwable $exception){if($db->inTransaction())$db->rollBack();throw $exception;}
     }
     public function deleteRole(int $roleId): void
     {

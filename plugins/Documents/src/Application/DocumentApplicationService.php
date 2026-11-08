@@ -8,7 +8,9 @@ use Companyware\Core\Framework\Application\ActorContextInterface;
 use Companyware\Core\Framework\Application\PageRequest;
 use Companyware\Core\Framework\Application\PageResult;
 use Companyware\Core\Framework\Data\EntityQuery;
-use Companyware\Core\Framework\Security\AuthorizationInterface;
+use Companyware\Core\Framework\Security\DataScope;
+use Companyware\Core\Framework\Security\ScopedAuthorizationInterface;
+use Companyware\Core\Framework\Security\ScopeContextInterface;
 use Plugins\Documents\DocumentStorage;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -18,21 +20,22 @@ final class DocumentApplicationService
 {
     public function __construct(
         private readonly DocumentStorage $storage,
-        private readonly AuthorizationInterface $authorization,
+        private readonly ScopedAuthorizationInterface $authorization,
         private readonly ActorContextInterface $actors,
+        private readonly ScopeContextInterface $scopeContext,
     ) {}
 
     /** @return list<array<string, mixed>> */
     public function list(): array
     {
         $this->authorization->denyUnlessGranted('documents.read');
-        return $this->storage->all();
+        return $this->storage->search(new EntityQuery($this->scopeFilters('documents.read'), ['created_at' => 'desc'], 500));
     }
 
     public function search(PageRequest $page, array $filters = [], array $orderBy = ['created_at' => 'desc']): PageResult
     {
         $this->authorization->denyUnlessGranted('documents.read');
-        $query = new EntityQuery($filters, $orderBy, $page->limit, $page->offset);
+        $query = new EntityQuery(array_merge($filters, $this->scopeFilters('documents.read')), $orderBy, $page->limit, $page->offset);
         return new PageResult($this->storage->search($query), $this->storage->count($query), $page->limit, $page->offset);
     }
 
@@ -40,7 +43,7 @@ final class DocumentApplicationService
     public function find(int $id): ?array
     {
         $this->authorization->denyUnlessGranted('documents.read');
-        return $this->storage->find($id);
+        return $this->storage->findScoped($id, $this->scopeFilters('documents.read'));
     }
 
     public function add(UploadedFile $file, string $title): array
@@ -61,11 +64,24 @@ final class DocumentApplicationService
     public function delete(int $id): void
     {
         $this->authorization->denyUnlessGranted('documents.delete');
-        $this->storage->delete($id);
+        $this->storage->deleteScoped($id, $this->scopeFilters('documents.delete'));
     }
 
     public function maxUploadMb(): int
     {
         return $this->storage->maxUploadMb();
+    }
+
+    /** @return array<string, scalar|null> */
+    private function scopeFilters(string $privilege): array
+    {
+        $scope = $this->authorization->scope($privilege);
+        $context = $this->scopeContext->current();
+        if (!$scope || !$context) throw new AccessDeniedHttpException('A scoped actor is required.');
+        return match ($scope) {
+            DataScope::All => [],
+            DataScope::Own => ['uploaded_by' => $context->actorId],
+            DataScope::Department => $context->department !== null ? ['uploaded_by_department' => $context->department] : ['uploaded_by' => $context->actorId],
+        };
     }
 }

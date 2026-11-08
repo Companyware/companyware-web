@@ -18,6 +18,6 @@ final class PrivilegeSynchronizer
         $this->schema->ensure();
         foreach($this->plugins->manifests() as $plugin)$this->syncManifest($plugin);
     }
-    public function syncManifest(PluginManifest $plugin):void{$this->schema->ensure();$statement=$this->database->connection()->prepare('INSERT INTO privilege (privilege_key, owner, label, privilege_group, protected) VALUES (:key,:owner,:label,:group,0) ON DUPLICATE KEY UPDATE owner=VALUES(owner),label=VALUES(label),privilege_group=VALUES(privilege_group)');foreach($plugin->privileges as $privilege)$statement->execute(['key'=>$privilege['key'],'owner'=>$plugin->name,'label'=>$privilege['label'],'group'=>$privilege['group']]);}
+    public function syncManifest(PluginManifest $plugin):void{$this->schema->ensure();$statement=$this->database->connection()->prepare('INSERT INTO privilege (privilege_key, owner, label, privilege_group, protected, supported_scopes) VALUES (:key,:owner,:label,:group,0,:scopes) ON DUPLICATE KEY UPDATE owner=VALUES(owner),label=VALUES(label),privilege_group=VALUES(privilege_group),supported_scopes=VALUES(supported_scopes)');foreach($plugin->privileges as $privilege)$statement->execute(['key'=>$privilege['key'],'owner'=>$plugin->name,'label'=>$privilege['label'],'group'=>$privilege['group'],'scopes'=>implode(',', $privilege['scopes']??['all'])]);}
     public function remove(string $owner):void{$this->schema->ensure();$statement=$this->database->connection()->prepare('DELETE FROM privilege WHERE owner=:owner AND protected=0');$statement->execute(['owner'=>$owner]);}
 }

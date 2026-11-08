@@ -7,10 +7,11 @@ namespace App\Security;
 use App\Infrastructure\Database;
 use App\Infrastructure\Schema;
 use Companyware\Core\Framework\Application\ActorContextInterface;
-use Companyware\Core\Framework\Security\AuthorizationInterface;
+use Companyware\Core\Framework\Security\DataScope;
+use Companyware\Core\Framework\Security\ScopedAuthorizationInterface;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
-final class AuthorizationService implements AuthorizationInterface
+final class AuthorizationService implements ScopedAuthorizationInterface
 {
     /** @var array<string, bool> */
     private array $decisions = [];
@@ -33,5 +34,15 @@ final class AuthorizationService implements AuthorizationInterface
     public function denyUnlessGranted(string $privilege): void
     {
         if (!$this->isGranted($privilege)) throw new AccessDeniedHttpException('Missing privilege: '.$privilege);
+    }
+
+    public function scope(string $privilege): ?DataScope
+    {
+        $id = $this->actors->actorId() ?? 0;
+        if ($id < 1) return null;
+        $this->schema->ensure();
+        $statement = $this->database->connection()->prepare("SELECT MAX(CASE WHEN r.system_name='system-administrator' OR rp.data_scope='all' THEN 3 WHEN rp.data_scope='department' THEN 2 WHEN rp.data_scope='own' THEN 1 ELSE 0 END) FROM admin_user_role ur JOIN admin_role r ON r.id=ur.role_id LEFT JOIN admin_role_privilege rp ON rp.role_id=r.id AND rp.privilege_key=:privilege WHERE ur.admin_user_id=:admin");
+        $statement->execute(['admin' => $id, 'privilege' => $privilege]);
+        return match ((int) $statement->fetchColumn()) { 3 => DataScope::All, 2 => DataScope::Department, 1 => DataScope::Own, default => null };
     }
 }

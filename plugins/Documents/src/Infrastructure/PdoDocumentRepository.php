@@ -13,7 +13,7 @@ use Plugins\Documents\Domain\DocumentRepositoryInterface;
 
 final class PdoDocumentRepository implements DocumentRepositoryInterface
 {
-    private const FILTERS = ['uploaded_by' => 'uploaded_by', 'mime_type' => 'mime_type'];
+    private const FILTERS = ['id' => 'id', 'uploaded_by' => 'uploaded_by', 'mime_type' => 'mime_type'];
     private const SORTS = ['created_at' => 'created_at', 'title' => 'title', 'updated_at' => 'updated_at'];
 
     public function __construct(private readonly ConnectionProviderInterface $database) {}
@@ -74,6 +74,11 @@ final class PdoDocumentRepository implements DocumentRepositoryInterface
         $clauses = $query->includeDeleted ? [] : ['deleted_at IS NULL'];
         $parameters = [];
         foreach ($query->filters as $field => $value) {
+            if ($field === 'uploaded_by_department') {
+                $clauses[] = 'uploaded_by IN (SELECT id FROM admin_user WHERE department_key = :uploaded_by_department)';
+                $parameters[$field] = $value;
+                continue;
+            }
             if (!isset(self::FILTERS[$field])) throw new \InvalidArgumentException(sprintf('Unsupported document filter "%s".', $field));
             $clauses[] = self::FILTERS[$field].' = :'.$field;
             $parameters[$field] = $value;
