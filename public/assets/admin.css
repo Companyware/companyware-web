@@ -4,19 +4,19 @@
     --violet: #5c5aa7;
     --violet-dark: #46447f;
     --periwinkle: #7887dc;
-    --accent: #4b91d4;
+    --accent: var(--cw-color-primary, #4b91d4);
     --accent-dark: #5753ae;
-    --ink: #252432;
-    --muted: #737184;
-    --line: #e7e4ea;
-    --bg: #f8f7fa;
-    --paper: #fffefd;
-    --green: #26966d;
-    --shadow: 0 24px 70px rgba(76, 69, 102, .11);
+    --ink: var(--cw-color-text, #252432);
+    --muted: var(--cw-color-text-muted, #737184);
+    --line: var(--cw-border-color, #e7e4ea);
+    --bg: var(--cw-color-surface-muted, #f8f7fa);
+    --paper: var(--cw-color-surface, #fffefd);
+    --green: var(--cw-color-success, #26966d);
+    --shadow: var(--cw-shadow-md, 0 24px 70px rgba(76, 69, 102, .11));
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100%; font-family: Inter, "Segoe UI", Arial, sans-serif; color: var(--ink); }
+html, body { margin: 0; min-height: 100%; font-family: var(--cw-font-family, Inter, "Segoe UI", Arial, sans-serif); color: var(--ink); }
 button, input, select { font: inherit; }
 button, a { transition: .2s ease; }
 

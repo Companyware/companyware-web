@@ -33,6 +33,8 @@ services:
             tags: ['app.plugin.navigation']
         Companyware\Core\Framework\Plugin\Contract\SlotProviderInterface:
             tags: ['app.plugin.slot']
+        Companyware\Core\Framework\Plugin\Contract\FrontendProviderInterface:
+            tags: ['app.plugin.frontend']
         Companyware\Core\Framework\Api\ApiOperationProviderInterface:
             tags: ['app.api.operation_provider']
 
@@ -43,6 +45,10 @@ services:
     App\Plugin\SlotRenderer:
         arguments:
             $providers: !tagged_iterator app.plugin.slot
+
+    App\Plugin\FrontendRegistry:
+        arguments:
+            $providers: !tagged_iterator app.plugin.frontend
 
     App\Api\OpenApiRegistry:
         arguments:

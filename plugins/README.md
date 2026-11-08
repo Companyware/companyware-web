@@ -272,7 +272,13 @@ Every asset has a globally unique handle and numeric priority. Higher numbers lo
 }
 ```
 
-Core handles currently available for replacement are `core-admin`, `core-plugin-manager` and `core-admin-js`. Replacing `core-admin-js` transfers responsibility for menu and password-toggle behavior to the plugin. Prefer extending `window.AdminFramework` hooks unless a complete replacement is intentional.
+Core handles currently available for replacement are `core-admin`, `core-plugin-manager` and `core-admin-js`. The protected `core-admin-tokens` and `core-admin-sdk` handles establish the shared public contract and must be extended through semantic tokens and SDK registrations. Replacing `core-admin-js` transfers responsibility for menu and password-toggle behavior to the plugin. Prefer `window.CompanywareAdmin` registrations and hooks; `window.AdminFramework` remains a compatibility facade in API 1.x.
+
+Interactive administration pages should use the generated Vue 3 + TypeScript source below `src/Resources/app/administration/`. Backend-only plugins and suitable simple pages may stay with PHP/Twig and need no Node toolchain. See `docs/administration-sdk.md` for the complete contract.
+
+When porting a Shopware plugin, run `app:plugins:analyze-shopware <path> --json` first. Companyware maps stable administration registration patterns and the familiar source layout, but deliberately requires Shopware DAL, commerce, SystemConfig and storefront dependencies to be replaced with public Companyware contracts. The binding rules and completion gate are documented in `docs/shopware-plugin-porting.md`.
+
+An active plugin may implement `Companyware\Core\Framework\Plugin\Contract\FrontendProviderInterface` to provide the public `/` page while administration remains under `/admin`. Additional public plugin routes use the normal route import plus `_plugin` guard. If no active plugin owns the homepage, `/` redirects to `/admin`.
 
 ## Override policy
 

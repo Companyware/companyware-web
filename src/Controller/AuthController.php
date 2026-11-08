@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Infrastructure\AdminRepository;
+use App\Plugin\FrontendRegistry;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,9 +15,9 @@ use Twig\Environment;
 final class AuthController
 {
     #[Route('/', name: 'app_home', methods: ['GET'])]
-    public function home(Request $request): Response
+    public function home(Request $request, FrontendRegistry $frontends): Response
     {
-        return new RedirectResponse($request->getSession()->has('admin') ? '/admin' : '/login');
+        return $frontends->render($request) ?? new RedirectResponse('/admin');
     }
 
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]

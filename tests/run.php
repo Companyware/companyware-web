@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Plugin\Compatibility\VersionConstraint;
 use App\Plugin\Development\PluginSkeletonGenerator;
+use App\Plugin\Development\ShopwarePortabilityAnalyzer;
 use App\Plugin\PluginPackageException;
 use App\Plugin\PluginPackageValidator;
 use App\Plugin\PluginClassLoader;
@@ -45,6 +46,25 @@ try {
     $assert(isset($openApi['paths']['/documents/{id}']['delete'],$openApi['paths']['/documents/{id}/content']['get']),'OpenAPI must include plugin delete and content operations.');
     $assert(isset($openApi['components']['securitySchemes']['oauth2']),'OpenAPI must publish the OAuth2 security scheme.');
     echo "CW-009 plugin OpenAPI registry tests passed.\n";
+
+    $assert(is_file(dirname(__DIR__).'/admin-sdk/dist/companyware-admin-sdk.js'), 'Administration SDK browser build is missing.');
+    $assert(is_file(dirname(__DIR__).'/admin-sdk/dist/companyware-admin-tokens.css'), 'Administration SDK semantic tokens are missing.');
+    $assert(is_file($root.'/src/Resources/app/administration/src/module/acme-example/page/acme-example-index/App.vue'), 'Generator must provide the Shopware-familiar Vue administration starter.');
+    $assert(is_file($root.'/src/Resources/app/administration/vite.config.ts'), 'Generator must provide the Vite build configuration.');
+    $assert(str_contains((string) file_get_contents($root.'/README.md'), 'FrontendProviderInterface'), 'Generated documentation must explain optional public frontends.');
+    file_put_contents($root.'/src/ShopwarePortExample.php', "<?php\nuse Shopware\\Core\\Framework\\DataAbstractionLayer\\Entity;\n");
+    file_put_contents($root.'/public/shopware-admin.js', "Shopware.Module.register('acme-example', {});\n");
+    $portability = (new ShopwarePortabilityAnalyzer())->analyze($root);
+    $assert($portability['summary']['direct'] === 1, 'Shopware administration registration must be recognized as directly portable.');
+    $assert($portability['summary']['manual'] === 1, 'Shopware DAL usage must be reported for manual mapping.');
+    file_put_contents($root.'/src/Forbidden.php', "<?php\nnamespace Plugins\\AcmeExample;\n");
+    try {
+        $validator->validate($root);
+        throw new RuntimeException('Validator accepted an unported Shopware PHP import.');
+    } catch (PluginPackageException $exception) {
+        $assert($exception->getMessage() === 'plugins.error.shopware_api_unported', 'Unexpected unported Shopware API validation error.');
+    }
+    echo "CW-010 administration SDK and Vue generator tests passed.\n";
 } finally {
     $filesystem->remove($root);
 }
