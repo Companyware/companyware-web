@@ -25,6 +25,8 @@ final class CreatePluginCommand extends Command
         $this
             ->addArgument('name', InputArgument::REQUIRED, 'Lowercase plugin name')
             ->addOption('vendor', null, InputOption::VALUE_REQUIRED, 'Composer vendor', 'acme')
+            ->addOption('publisher-id', null, InputOption::VALUE_REQUIRED, 'Stable publisher ID (defaults to vendor)')
+            ->addOption('publisher-name', null, InputOption::VALUE_REQUIRED, 'Displayed publisher name (derived from publisher ID by default)')
             ->addOption('directory', 'd', InputOption::VALUE_REQUIRED, 'Target directory')
             ->addOption('json', null, InputOption::VALUE_NONE, 'Emit machine-readable JSON');
     }
@@ -34,7 +36,7 @@ final class CreatePluginCommand extends Command
         $name = (string) $input->getArgument('name');
         $directory = (string) ($input->getOption('directory') ?: $this->projectDir.'/plugins/'.str_replace(' ', '', ucwords(str_replace('-', ' ', $name))));
         try {
-            $files = $this->generator->generate($name, (string) $input->getOption('vendor'), $directory);
+            $files = $this->generator->generate($name, (string) $input->getOption('vendor'), $directory, $input->getOption('publisher-id'), $input->getOption('publisher-name'));
             $result = ['created' => true, 'name' => $name, 'directory' => $directory, 'files' => $files];
             if ($input->getOption('json')) $output->writeln((string) json_encode($result, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
             else $output->writeln(sprintf('<info>Created %s with %d files in %s.</info>', $name, count($files), $directory));

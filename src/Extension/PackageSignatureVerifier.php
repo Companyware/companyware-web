@@ -13,6 +13,7 @@ final class PackageSignatureVerifier
         $actual=hash_file('sha256',$file);if(!hash_equals($expected,$actual))throw new \RuntimeException('Package checksum verification failed.');
         $publisher=$signature['publisher']??null;$keyId=$signature['keyId']??null;$value=$signature['value']??null;
         if(!is_string($publisher)||!is_string($keyId)||!is_string($value))throw new \RuntimeException('Package signature metadata is incomplete.');
+        $manifestPublisher=$release['manifest']['publisher']['id']??null;if(!is_string($manifestPublisher)||!hash_equals($manifestPublisher,$publisher))throw new \RuntimeException('Package publisher does not match the signed release manifest.');
         $key=$this->trust->key($publisher,$keyId);if(!$key||($key['status']??null)!=='trusted')throw new \RuntimeException('Package publisher key is not trusted or has been revoked.');
         $public=base64_decode((string)$key['publicKey'],true);$signed=base64_decode($value,true);if($public===false||$signed===false)throw new \RuntimeException('Package signature encoding is invalid.');
         $payload=self::payload($name,$version,$expected);if(!sodium_crypto_sign_verify_detached($signed,$payload,$public))throw new \RuntimeException('Package signature verification failed.');

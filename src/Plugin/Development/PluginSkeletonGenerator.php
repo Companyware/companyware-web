@@ -9,17 +9,22 @@ use Symfony\Component\Filesystem\Filesystem;
 final class PluginSkeletonGenerator
 {
     /** @return list<string> */
-    public function generate(string $name, string $vendor, string $target): array
+    public function generate(string $name, string $vendor, string $target, ?string $publisherId = null, ?string $publisherName = null): array
     {
         if (!preg_match('/^[a-z][a-z0-9-]+$/', $name)) throw new \InvalidArgumentException('Plugin name must use lowercase letters, numbers and hyphens.');
         if (!preg_match('/^[a-z][a-z0-9_.-]+$/', $vendor)) throw new \InvalidArgumentException('Composer vendor must use lowercase letters, numbers, dots, underscores or hyphens.');
+        $publisherId ??= $vendor;
+        $publisherName ??= ucwords(str_replace(['-', '_', '.'], ' ', $publisherId));
+        if (!preg_match('/^[a-z0-9][a-z0-9._-]{1,99}$/', $publisherId)) throw new \InvalidArgumentException('Publisher ID must use lowercase letters, numbers, dots, underscores or hyphens.');
+        if (trim($publisherName) === '' || mb_strlen($publisherName) > 190) throw new \InvalidArgumentException('Publisher name must contain between 1 and 190 characters.');
         if (file_exists($target)) throw new \RuntimeException(sprintf('Target already exists: %s', $target));
 
         $class = str_replace(' ', '', ucwords(str_replace('-', ' ', $name)));
         $namespace = 'Plugins\\'.$class;
         $route = str_replace('-', '_', $name);
         $year = gmdate('Ymd').'0001';
-        $replacements = ['{{name}}' => $name, '{{vendor}}' => $vendor, '{{class}}' => $class, '{{namespace}}' => $namespace, '{{namespace_json}}' => str_replace('\\', '\\\\', $namespace), '{{route}}' => $route, '{{migration}}' => $year];
+        $publisherNameJson = substr((string) json_encode($publisherName, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE), 1, -1);
+        $replacements = ['{{name}}' => $name, '{{vendor}}' => $vendor, '{{publisher_id}}' => $publisherId, '{{publisher_name}}' => $publisherNameJson, '{{class}}' => $class, '{{namespace}}' => $namespace, '{{namespace_json}}' => str_replace('\\', '\\\\', $namespace), '{{route}}' => $route, '{{migration}}' => $year];
         $files = $this->templates();
         $generated = [];
         $filesystem = new Filesystem();
@@ -62,6 +67,7 @@ JSON,
   "label": "{{name}}.plugin.label",
   "description": "{{name}}.plugin.description",
   "version": "0.1.0",
+  "publisher": {"id": "{{publisher_id}}", "name": "{{publisher_name}}"},
   "compatibility": {"companyware": "^0.1", "php": "~8.3.0"},
   "uninstall": {"data": "remove"},
   "entities": {"references": []},

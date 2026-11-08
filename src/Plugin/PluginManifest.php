@@ -4,7 +4,7 @@ namespace App\Plugin;
 
 final readonly class PluginManifest
 {
-    public function __construct(public string $name, public string $label, public string $version, public string $description, public string $path, public array $navigation = [], public array $migrations = [], public array $assets = [], public array $locales = [], public bool $core = false, public string $companyware = '*', public string $php = '*', public array $extensions = [], public array $requires = [], public array $optional = [], public array $conflicts = [], public array $provides = [], public array $replaces = [], public array $settings = [], public string $uninstallData = 'remove', public array $entityReferences = [], public array $privileges = [])
+    public function __construct(public string $name, public string $label, public string $version, public string $description, public string $path, public string $publisherId = 'unknown', public string $publisherName = 'Unknown publisher', public array $navigation = [], public array $migrations = [], public array $assets = [], public array $locales = [], public bool $core = false, public string $companyware = '*', public string $php = '*', public array $extensions = [], public array $requires = [], public array $optional = [], public array $conflicts = [], public array $provides = [], public array $replaces = [], public array $settings = [], public string $uninstallData = 'remove', public array $entityReferences = [], public array $privileges = [])
     {
     }
 
@@ -27,6 +27,13 @@ final readonly class PluginManifest
         if (isset($data['entities']) && !is_array($data['entities'])) return null;
         if (isset($data['entities']['references']) && !is_array($data['entities']['references'])) return null;
         if (isset($data['privileges']) && !is_array($data['privileges'])) return null;
+        if (isset($data['publisher']) && (!is_array($data['publisher'])
+            || !is_string($data['publisher']['id'] ?? null)
+            || !preg_match('/^[a-z0-9][a-z0-9._-]{1,99}$/', $data['publisher']['id'])
+            || !is_string($data['publisher']['name'] ?? null)
+            || trim($data['publisher']['name']) === ''
+            || mb_strlen($data['publisher']['name']) > 190
+        )) return null;
         $uninstallData = $data['uninstall']['data'] ?? 'remove';
         if (!is_string($uninstallData) || !in_array($uninstallData, ['remove', 'retain'], true)) return null;
         $compatibility = is_array($data['compatibility'] ?? null) ? $data['compatibility'] : [];
@@ -35,6 +42,7 @@ final readonly class PluginManifest
         if (isset($compatibility['extensions']) && !is_array($compatibility['extensions'])) return null;
         return new self(
             $data['name'], $data['label'], $data['version'], $data['description'] ?? '', $path,
+            $data['publisher']['id'] ?? 'unknown', $data['publisher']['name'] ?? 'Unknown publisher',
             is_array($data['navigation'] ?? null) ? $data['navigation'] : [],
             is_array($data['migrations'] ?? null) ? $data['migrations'] : [],
             is_array($data['assets'] ?? null) ? $data['assets'] : [],
