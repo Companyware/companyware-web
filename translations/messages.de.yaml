@@ -155,7 +155,6 @@ plugins.error.entity_references_invalid: 'Die Liste der referenzierten Plugin-En
 plugins.error.entity_dependency_missing: 'Eine Plugin-Entitätsreferenz erfordert eine passende Pflichtabhängigkeit.'
 plugins.error.privileges_invalid: 'Das Plugin enthält eine ungültige Privilegdefinition.'
 plugins.error.navigation_privilege_invalid: 'Ein Navigationspunkt verweist auf ein nicht deklariertes Pluginprivileg.'
-plugins.error.shopware_api_unported: 'Das Plugin importiert noch Shopware-PHP-Laufzeit-APIs. Führe die Shopware-Portierungsanalyse aus und ordne sie öffentlichen Companyware-Verträgen zu.'
 security.nav: 'Rollen und Rechte'
 security.users_nav: 'Benutzerübersicht'
 security.users_title: 'Benutzerübersicht'

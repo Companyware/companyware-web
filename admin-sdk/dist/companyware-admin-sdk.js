@@ -97,6 +97,8 @@
         routes: Object.freeze({register: routeRegistry.register, all: routeRegistry.all, resolve: function (path) { return routeRegistry.all().find(function (route) { return route.path === path; }); }}),
         navigation: Object.freeze({register: navigationRegistry.register, all: navigationRegistry.all}),
         modules: Object.freeze({register: moduleRegistry.register, get: moduleRegistry.get, all: moduleRegistry.all}),
+        components: Object.freeze({register: componentRegistry.register, get: componentRegistry.get, all: componentRegistry.all}),
+        services: Object.freeze({register: function (name, service) { if (services.has(name)) throw new Error('Service "' + name + '" is already registered.'); services.set(name, service); return service; }, get: function (name) { return services.get(name); }}),
         slots: Object.freeze({
             add: function (name, item) { if (!slotRegistries.has(name)) slotRegistries.set(name, createRegistry(function (slot) { if (typeof slot.render !== 'function') throw new TypeError('A slot contribution requires render().'); })); return slotRegistries.get(name).register(item); },
             render: function (name, context) { return (slotRegistries.has(name) ? slotRegistries.get(name).all() : []).map(function (item) { return item.render(context); }); }
@@ -123,33 +125,5 @@
         modals: Object.freeze({open: function (options) { var modal = Object.freeze({id: ++sequence, options: options || {}}); modals.set(modal.id, modal); modalListeners.slice().forEach(function (listener) { listener({type: 'open', modal: modal}); }); return modal; }, close: function (id, result) { var modal = modals.get(id); if (!modal) return false; modals.delete(id); modalListeners.slice().forEach(function (listener) { listener({type: 'close', modal: modal, result: result}); }); return true; }, subscribe: function (listener) { return subscribe(modalListeners, listener); }}),
         hooks: Object.freeze(hookApi)
     });
-    function registerShopwareModule(name, config) {
-        config = config || {};
-        var registered = moduleRegistry.register({id: name, owner: name, version: '1.0.0', replaceable: true, config: config});
-        Object.keys(config.routes || {}).forEach(function (key) {
-            var route = config.routes[key] || {};
-            var path = '/admin/' + String(route.path || (name + '/' + key)).replace(/^\//, '');
-            routeRegistry.register({id: name + '.' + key, owner: name, version: '1.0.0', path: path, load: function () { return componentRegistry.get(route.component); }});
-        });
-        (config.navigation || []).forEach(function (item, index) {
-            navigationRegistry.register({id: item.id || name + '.navigation.' + index, owner: name, version: '1.0.0', label: item.label || config.title || name, route: item.path || item.route || name, position: item.position || 100, privilege: item.privilege || undefined});
-        });
-        return registered;
-    }
-    var shopwareFacade = Object.freeze({
-        Module: Object.freeze({register: registerShopwareModule, getModuleRegistry: moduleRegistry.all}),
-        Component: Object.freeze({
-            register: function (name, definition) { return componentRegistry.register({id: name, owner: String(name).split('-')[0] || 'plugin', version: '1.0.0', replaceable: true, definition: definition}); },
-            extend: function (name, target, definition) { var current = componentRegistry.get(target); if (!current) throw new Error('Shopware compatibility target "' + target + '" is unavailable.'); return componentRegistry.register({id: name, owner: String(name).split('-')[0] || 'plugin', version: current.version, replaceable: true, definition: Object.assign({}, current.definition, definition)}); },
-            override: function (name, definition) { var current = componentRegistry.get(name); if (!current) throw new Error('Shopware compatibility target "' + name + '" is unavailable.'); return componentRegistry.register({id: name, owner: String(name).split('-')[0] || 'plugin', version: current.version, replaces: {id: name, version: current.version}, definition: Object.assign({}, current.definition, definition)}); },
-            getComponentRegistry: componentRegistry.all
-        }),
-        Service: Object.freeze({register: function (name, service) { if (services.has(name)) throw new Error('Service "' + name + '" is already registered.'); services.set(name, service); return service; }, get: function (name) { return services.get(name); }}),
-        Application: Object.freeze({addServiceProvider: function (name, provider) { return shopwareFacade.Service.register(name, typeof provider === 'function' ? provider() : provider); }}),
-        Context: Object.freeze({api: Object.freeze({apiPath: '/api/v1'})}),
-        Utils: Object.freeze({createId: function () { if (root.crypto && root.crypto.randomUUID) return root.crypto.randomUUID().replace(/-/g, ''); var value = ''; for (var i = 0; i < 32; i += 1) value += Math.floor(Math.random() * 16).toString(16); return value; }}),
-        __companywareCompatibility: Object.freeze({version: '1.0.0', scope: 'administration-registration'})
-    });
-    if (root && !root.Shopware) root.Shopware = shopwareFacade;
     return sdk;
 });

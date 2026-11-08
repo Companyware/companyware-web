@@ -230,9 +230,6 @@ final class PluginPackageValidator
             if (str_contains($contents, 'use App\\') || str_contains($contents, '\\App\\')) {
                 throw new PluginPackageException('plugins.error.internal_api');
             }
-            if (str_contains($contents, 'use Shopware\\') || str_contains($contents, '\\Shopware\\')) {
-                throw new PluginPackageException('plugins.error.shopware_api_unported');
-            }
         }
     }
 

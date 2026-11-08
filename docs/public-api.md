@@ -20,6 +20,7 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 - `Companyware\Core\Framework\Application\PageRequest`
 - `Companyware\Core\Framework\Application\PageResult`
 - `Companyware\Core\Framework\Api\ApiOperationProviderInterface`
+- `Companyware\Core\Framework\Api\IdempotencyServiceInterface`
 - `Companyware\Core\Framework\Security\AuthorizationInterface`
 - `Companyware\Core\Framework\Security\RequiresPrivilege`
 - `Companyware\Core\Framework\Security\PrivilegeAwareInterface`
@@ -51,7 +52,7 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 | Twig slots | `document.stylesheets`, `document.javascripts`, `login.form.before`, `login.form.after`, `admin.navigation.after`, `admin.content.before`, `admin.content.after`, `admin.profile.form.before`, `admin.profile.form.after`, `admin.settings.fields`, `admin.settings.sections`, `dashboard.content.before`, `dashboard.continue`, `dashboard.quick_actions`, `dashboard.widgets`, `dashboard.activity`, `dashboard.content.after` | stable in API 1.x |
 | Twig blocks | `head`, `title`, `stylesheets`, `body_class`, `body`, `javascripts`, `login_visual`, `login_form`, `sidebar`, `topbar`, `content`, `dashboard_header`, `dashboard_continue`, `dashboard_quick_actions`, `dashboard_widgets`, `dashboard_activity` | stable in API 1.x |
 | Asset handles | `core-admin`, `core-plugin-manager`, `core-admin-js` plus plugin-owned globally unique handles | stable in API 1.x |
-| Administration SDK | `window.CompanywareAdmin` 1.0 routes, navigation, slots, modules, permissions, API, notifications, forms, tables, modals and hooks | stable in API 1.x |
+| Administration SDK | `window.CompanywareAdmin` 1.0 routes, navigation, slots, modules, components, services, permissions, API, notifications, forms, tables, modals and hooks | stable in API 1.x |
 | Browser compatibility facade | `window.AdminFramework.on()`, `emit()` and the `ready`, `dashboard:ready` and `dashboard:storage-error` events | stable in API 1.x |
 | Public plugin frontend | `FrontendProviderInterface` for `/`; guarded plugin routes for additional public paths | stable in API 1.x |
 | Theme registry and semantic theme package contract | planned for the platform foundation | experimental; not yet public API |

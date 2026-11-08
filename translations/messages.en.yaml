@@ -155,7 +155,6 @@ plugins.error.entity_references_invalid: 'The list of referenced plugin entities
 plugins.error.entity_dependency_missing: 'A plugin entity reference requires a matching required dependency.'
 plugins.error.privileges_invalid: 'The plugin contains an invalid privilege definition.'
 plugins.error.navigation_privilege_invalid: 'A navigation item references an undeclared plugin privilege.'
-plugins.error.shopware_api_unported: 'The plugin still imports Shopware PHP runtime APIs. Run the Shopware portability analyzer and map them to public Companyware contracts.'
 security.nav: 'Roles and rights'
 security.users_nav: 'User overview'
 security.users_title: 'User overview'

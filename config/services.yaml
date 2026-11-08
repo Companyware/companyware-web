@@ -93,5 +93,8 @@ services:
     Companyware\Core\Framework\Application\ActorContextInterface:
         alias: App\Application\RequestActorContext
 
+    Companyware\Core\Framework\Api\IdempotencyServiceInterface:
+        alias: App\Api\IdempotencyService
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
