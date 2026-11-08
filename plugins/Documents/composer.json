@@ -2,7 +2,7 @@
   "name": "companyware/documents",
   "description": "Companyware reference plugin for document management.",
   "type": "companyware-plugin",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "license": "MIT",
   "require": {
     "php": "~8.3.0",
@@ -12,6 +12,9 @@
     "psr-4": {
       "Plugins\\Documents\\": "src/"
     }
+  },
+  "scripts": {
+    "test": "@php tests/reference.php"
   },
   "extra": {
     "companyware-plugin": {
