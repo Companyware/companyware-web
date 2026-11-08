@@ -22,6 +22,7 @@ use Companyware\Core\Framework\Security\RequiresPrivilege;
 use App\Security\SecurityAuditLogger;
 use App\Security\AccessRepository;
 use App\Plugin\PluginStateManager;
+use App\Extension\ExtensionUpdateService;
 
 final class AdminController
 {
@@ -63,7 +64,7 @@ final class AdminController
 
     #[Route('/admin/plugins', name: 'admin_plugins', methods: ['GET', 'POST'])]
     #[RequiresPrivilege('core.plugins.manage')]
-    public function plugins(Request $request, PluginRegistry $registry, PluginPackageInstaller $installer, MigrationManager $migrations, PluginStateManager $states, SecurityAuditLogger $audit): Response
+    public function plugins(Request $request, PluginRegistry $registry, PluginPackageInstaller $installer, MigrationManager $migrations, PluginStateManager $states, SecurityAuditLogger $audit, ExtensionUpdateService $updates): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;
         if ($request->isMethod('POST')) {
@@ -89,8 +90,14 @@ final class AdminController
             return new RedirectResponse('/admin/plugins');
         }
         $message=$request->getSession()->remove('plugin_message'); $error=$request->getSession()->remove('plugin_error');
-        return $this->page($request, 'plugins', 'plugins.title', ['plugins' => $registry->all(),'message'=>$message,'error'=>$error,'migrationStates'=>$migrations->states()]);
+        try{$extensionUpdates=$updates->status();}catch(\Throwable){$extensionUpdates=[];}
+        return $this->page($request, 'plugins', 'plugins.title', ['plugins' => $registry->all(),'message'=>$message,'error'=>$error,'migrationStates'=>$migrations->states(),'extensionUpdates'=>$extensionUpdates]);
     }
+
+    #[Route('/admin/api/extensions',name:'admin_api_extensions',methods:['GET'])]
+    #[RequiresPrivilege('core.plugins.manage')]
+    public function extensionUpdates(Request $request,ExtensionUpdateService $updates):Response
+    {if($redirect=$this->requireLogin($request))return $redirect;try{return new JsonResponse(['data'=>$updates->status()]);}catch(\Throwable $e){return new JsonResponse(['error'=>$e->getMessage()],503);}}
 
     #[Route('/admin/api/migrations', name: 'admin_api_migrations', methods: ['GET'])]
     #[RequiresPrivilege('core.plugins.manage')]

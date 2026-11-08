@@ -75,6 +75,10 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    App\Extension\PublisherTrustStore:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
     Companyware\Core\Framework\Plugin\Contract\PluginConfigurationInterface:
         alias: App\Plugin\PluginConfiguration
 
