@@ -228,6 +228,8 @@ Plugins\AcmeExample\Controller\:
 
 ## Twig
 
+Public frontend and simple administration pages use Twig. Theme packages, stable blocks, additive slots, deterministic precedence and Core fallback are documented in `docs/themes.md`. Vue 3 remains optional and consumes the same `--cw-*` semantic design tokens.
+
 Active plugins receive a namespace derived from their name:
 
 ```twig

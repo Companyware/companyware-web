@@ -67,6 +67,7 @@ final class PluginPackageValidator
         $this->validateCompatibility($manifest);
         $this->validateEntityReferences($manifest);
         $this->validatePrivileges($manifest);
+        $this->validateThemes($directory, $manifest);
         $this->validateAssets($directory, $manifest);
         $this->validateYamlConfiguration($directory, $manifest);
         $this->validatePublicApiUsage($directory);
@@ -199,6 +200,18 @@ final class PluginPackageValidator
                 }
                 $handles[$handle] = true;
             }
+        }
+    }
+
+    private function validateThemes(string $directory, PluginManifest $manifest): void
+    {
+        if (!array_is_list($manifest->themes)) throw new PluginPackageException('plugins.error.themes_invalid');
+        $ids=[];
+        foreach($manifest->themes as $theme){
+            if(!is_array($theme)||!is_string($theme['id']??null)||!preg_match('/^'.preg_quote($manifest->name,'/').'\.[a-z][a-z0-9._-]*$/',$theme['id'])||isset($ids[$theme['id']])||!is_string($theme['label']??null)||!in_array($theme['type']??null,['full','partial'],true)||!is_array($theme['stylesheets']??null)||!array_is_list($theme['stylesheets'])||$theme['stylesheets']===[])throw new PluginPackageException('plugins.error.themes_invalid');
+            foreach($theme['stylesheets'] as $path)if(!is_string($path)||$path===''||str_contains($path,'..')||str_starts_with($path,'/')||str_contains($path,'\\')||!is_file($directory.'/public/'.$path))throw new PluginPackageException('plugins.error.themes_invalid');
+            if(isset($theme['priority'])&&!is_int($theme['priority']))throw new PluginPackageException('plugins.error.themes_invalid');
+            $ids[$theme['id']]=true;
         }
     }
 

@@ -37,6 +37,9 @@ try {
     $assert($manifest->name === 'acme-example', 'Generated manifest name differs.');
     $assert($manifest->version === '0.1.0', 'Generated manifest version differs.');
     $assert($manifest->publisherId === 'acme' && $manifest->publisherName === 'Acme', 'Generated publisher metadata differs.');
+    file_put_contents($root.'/public/theme.css', ':root{--cw-color-primary:#123456}');
+    $themeManifest=json_decode((string)file_get_contents($root.'/plugin.json'),true,512,JSON_THROW_ON_ERROR);$themeManifest['themes']=[['id'=>'acme-example.default','label'=>'acme-example.theme.default','type'=>'full','stylesheets'=>['theme.css'],'priority'=>100]];file_put_contents($root.'/plugin.json',json_encode($themeManifest,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR));
+    $assert($validator->validate($root)->themes[0]['id']==='acme-example.default','Theme manifest validation differs.');
     file_put_contents($root.'/src/Forbidden.php', "<?php\nnamespace Plugins\\AcmeExample;\nuse App\\Internal\\Forbidden;\n");
     try {
         $validator->validate($root);
@@ -75,6 +78,9 @@ try {
     echo "CW-012 reference package tests passed.\n";
     $assert(DataScope::Own->rank()<DataScope::Department->rank()&&DataScope::Department->rank()<DataScope::All->rank(),'Scoped permission precedence differs.');
     echo "CW-007A scoped permission contract tests passed.\n";
+    $assert(is_file(dirname(__DIR__).'/public/assets/theme/core.css'),'Protected Core theme fallback is missing.');
+    $assert(str_contains((string)file_get_contents(dirname(__DIR__).'/templates/base.html.twig'),'theme_stylesheets'),'Base template does not expose the stable theme block.');
+    echo "CW-013 theme contract tests passed.\n";
 } finally {
     $filesystem->remove($root);
 }
