@@ -21,6 +21,10 @@ The package contains Composer and runtime manifests, guarded routes, Symfony ser
 
 The generated CI workflow expects a prepared Companyware checkout through the `COMPANYWARE_ROOT` repository variable. This keeps CI on the same validator used by local development, ZIP installation and future Store ingestion.
 
+Generated source files contain the short MIT/SPDX notice and reference the package's full `LICENSE`. Keep the notice at the beginning of new source files. Formats that do not permit comments, including JSON, remain comment-free and use Composer license metadata plus the package `LICENSE`.
+
+Framework maintainers run `composer release-check` before tagging a framework release. The complete release and production-verification gates are documented in [releasing-framework.md](releasing-framework.md).
+
 ## Operator commands
 
 All read and mutation commands support unattended use; add `--json --no-interaction` for automation.

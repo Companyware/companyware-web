@@ -31,6 +31,12 @@ try {
     $files = $generator->generate('acme-example', 'acme', $root);
     $assert(in_array('plugin.json', $files, true), 'Generator result must list plugin.json.');
     $assert(is_file($root.'/src/AcmeExamplePlugin.php'), 'Generator must replace placeholders in file names.');
+    $assert(is_file($root.'/LICENSE'), 'Generator must include the full MIT license.');
+    foreach (array_filter($files, static fn (string $file): bool => preg_match('/\.(?:php|css|js|ts|vue|twig)$/', $file) === 1) as $licensedSource) {
+        $contents = (string) file_get_contents($root.'/'.$licensedSource);
+        $assert(str_contains($contents, 'SPDX-License-Identifier: MIT'), sprintf('Generated source %s must contain the MIT SPDX header.', $licensedSource));
+        $assert(str_contains($contents, 'See LICENSE for license information.'), sprintf('Generated source %s must reference LICENSE.', $licensedSource));
+    }
     PackageStructureTestHelper::assertPackage($root);
     $validator = new PluginPackageValidator(new VersionConstraint());
     $manifest = $validator->validate($root);

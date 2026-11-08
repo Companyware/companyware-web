@@ -1,4 +1,10 @@
 <?php
+/*
+ * Companyware Web plugin skeleton generator
+ * Copyright (c) 2026 Companyware contributors
+ * SPDX-License-Identifier: MIT
+ * See LICENSE for license information.
+ */
 
 declare(strict_types=1);
 
@@ -17,14 +23,16 @@ final class PluginSkeletonGenerator
         $publisherName ??= ucwords(str_replace(['-', '_', '.'], ' ', $publisherId));
         if (!preg_match('/^[a-z0-9][a-z0-9._-]{1,99}$/', $publisherId)) throw new \InvalidArgumentException('Publisher ID must use lowercase letters, numbers, dots, underscores or hyphens.');
         if (trim($publisherName) === '' || mb_strlen($publisherName) > 190) throw new \InvalidArgumentException('Publisher name must contain between 1 and 190 characters.');
+        $publisherNameText = str_replace('*/', '* /', preg_replace('/[\r\n]+/', ' ', trim($publisherName)) ?? trim($publisherName));
         if (file_exists($target)) throw new \RuntimeException(sprintf('Target already exists: %s', $target));
 
         $class = str_replace(' ', '', ucwords(str_replace('-', ' ', $name)));
         $namespace = 'Plugins\\'.$class;
         $route = str_replace('-', '_', $name);
         $year = gmdate('Ymd').'0001';
+        $copyrightYear = gmdate('Y');
         $publisherNameJson = substr((string) json_encode($publisherName, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE), 1, -1);
-        $replacements = ['{{name}}' => $name, '{{vendor}}' => $vendor, '{{publisher_id}}' => $publisherId, '{{publisher_name}}' => $publisherNameJson, '{{class}}' => $class, '{{namespace}}' => $namespace, '{{namespace_json}}' => str_replace('\\', '\\\\', $namespace), '{{route}}' => $route, '{{migration}}' => $year];
+        $replacements = ['{{name}}' => $name, '{{vendor}}' => $vendor, '{{publisher_id}}' => $publisherId, '{{publisher_name}}' => $publisherNameJson, '{{publisher_name_text}}' => $publisherNameText, '{{class}}' => $class, '{{namespace}}' => $namespace, '{{namespace_json}}' => str_replace('\\', '\\\\', $namespace), '{{route}}' => $route, '{{migration}}' => $year, '{{copyright_year}}' => $copyrightYear];
         $files = $this->templates();
         $generated = [];
         $filesystem = new Filesystem();
@@ -48,6 +56,29 @@ final class PluginSkeletonGenerator
     private function templates(): array
     {
         return [
+            'LICENSE' => <<<'TEXT'
+MIT License
+
+Copyright (c) {{copyright_year}} {{publisher_name_text}}
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+TEXT,
             'composer.json' => <<<'JSON'
 {
   "name": "{{vendor}}/companyware-{{name}}",
@@ -107,6 +138,12 @@ services:
 YAML,
             'src/{{class}}Plugin.php' => <<<'PHP'
 <?php
+/*
+ * {{name}} - Companyware plugin
+ * Copyright (c) {{copyright_year}} {{publisher_name_text}}
+ * SPDX-License-Identifier: MIT
+ * See LICENSE for license information.
+ */
 declare(strict_types=1);
 namespace {{namespace}};
 use Companyware\Core\Framework\Plugin\Plugin;
@@ -114,6 +151,12 @@ final class {{class}}Plugin extends Plugin {}
 PHP,
             'src/Controller/AdminController.php' => <<<'PHP'
 <?php
+/*
+ * {{name}} - Companyware plugin
+ * Copyright (c) {{copyright_year}} {{publisher_name_text}}
+ * SPDX-License-Identifier: MIT
+ * See LICENSE for license information.
+ */
 declare(strict_types=1);
 namespace {{namespace}}\Controller;
 use Companyware\Core\Framework\Security\RequiresPrivilege;
@@ -132,12 +175,24 @@ final class AdminController
 PHP,
             'src/Domain/Example.php' => <<<'PHP'
 <?php
+/*
+ * {{name}} - Companyware plugin
+ * Copyright (c) {{copyright_year}} {{publisher_name_text}}
+ * SPDX-License-Identifier: MIT
+ * See LICENSE for license information.
+ */
 declare(strict_types=1);
 namespace {{namespace}}\Domain;
 final readonly class Example { public function __construct(public string $id) {} }
 PHP,
             'src/Migration/Version{{migration}}.php' => <<<'PHP'
 <?php
+/*
+ * {{name}} - Companyware plugin
+ * Copyright (c) {{copyright_year}} {{publisher_name_text}}
+ * SPDX-License-Identifier: MIT
+ * See LICENSE for license information.
+ */
 declare(strict_types=1);
 namespace {{namespace}}\Migration;
 use Companyware\Core\Framework\Plugin\Contract\Migration\PluginMigrationInterface;
@@ -150,12 +205,18 @@ final class Version{{migration}} implements PluginMigrationInterface
 }
 PHP,
             'templates/admin/index.html.twig' => <<<'TWIG'
+{#
+  {{name}} - Companyware plugin
+  Copyright (c) {{copyright_year}} {{publisher_name_text}}
+  SPDX-License-Identifier: MIT
+  See LICENSE for license information.
+#}
 {% extends 'admin/layout.html.twig' %}
 {% block content %}<h1>{{ '{{name}}.title'|trans }}</h1>{% endblock %}
 TWIG,
             'translations/messages.de.yaml' => "{{name}}:\n  plugin:\n    label: '{{class}}'\n    description: 'Mein Companyware-Plugin'\n  nav: '{{class}}'\n  title: '{{class}}'\n  privilege:\n    read: 'Lesen'\nsecurity:\n  group:\n    {{name}}: '{{class}}'\n",
-            'public/admin.css' => ".{{name}}-root { display: block; }\n",
-            'public/admin.js' => "window.CompanywareAdmin?.hooks.emit('{{name}}:ready');\n",
+            'public/admin.css' => "/*\n * {{name}} - Companyware plugin\n * Copyright (c) {{copyright_year}} {{publisher_name_text}}\n * SPDX-License-Identifier: MIT\n * See LICENSE for license information.\n */\n.{{name}}-root { display: block; }\n",
+            'public/admin.js' => "/*\n * {{name}} - Companyware plugin\n * Copyright (c) {{copyright_year}} {{publisher_name_text}}\n * SPDX-License-Identifier: MIT\n * See LICENSE for license information.\n */\nwindow.CompanywareAdmin?.hooks.emit('{{name}}:ready');\n",
             'resources/administration/package.json' => <<<'JSON'
 {
   "name": "@{{vendor}}/{{name}}-admin",
@@ -171,12 +232,24 @@ JSON,
 {"compilerOptions":{"target":"ES2022","module":"ESNext","moduleResolution":"Bundler","strict":true,"lib":["ES2022","DOM"],"types":[]},"include":["src/**/*.ts","src/**/*.vue"]}
 JSON,
             'resources/administration/vite.config.ts' => <<<'TS'
+/*
+ * {{name}} - Companyware plugin
+ * Copyright (c) {{copyright_year}} {{publisher_name_text}}
+ * SPDX-License-Identifier: MIT
+ * See LICENSE for license information.
+ */
 import {defineConfig} from 'vite';
 import vue from '@vitejs/plugin-vue';
 import {resolve} from 'node:path';
 export default defineConfig({plugins:[vue()],build:{emptyOutDir:false,outDir:'../../public',lib:{entry:resolve(__dirname,'src/main.ts'),formats:['iife'],name:'{{class}}Admin',fileName:()=> 'admin.js'}}});
 TS,
             'resources/administration/src/main.ts' => <<<'TS'
+/*
+ * {{name}} - Companyware plugin
+ * Copyright (c) {{copyright_year}} {{publisher_name_text}}
+ * SPDX-License-Identifier: MIT
+ * See LICENSE for license information.
+ */
 import {createApp} from 'vue';
 import App from './pages/index/App.vue';
 
@@ -192,17 +265,35 @@ sdk.modules.register({
 sdk.hooks.emit('{{name}}:ready', {module: sdk.modules.get('{{name}}.admin')});
 TS,
             'resources/administration/src/pages/index/App.vue' => <<<'VUE'
+<!--
+  {{name}} - Companyware plugin
+  Copyright (c) {{copyright_year}} {{publisher_name_text}}
+  SPDX-License-Identifier: MIT
+  See LICENSE for license information.
+-->
 <script setup lang="ts">
 defineProps<{title?: string}>();
 </script>
 <template><section class="{{name}}-root"><h1>{{ title ?? '{{class}}' }}</h1></section></template>
 VUE,
             'resources/administration/src/companyware.d.ts' => <<<'TS'
+/*
+ * {{name}} - Companyware plugin
+ * Copyright (c) {{copyright_year}} {{publisher_name_text}}
+ * SPDX-License-Identifier: MIT
+ * See LICENSE for license information.
+ */
 type CompanywareModule = {id:string;owner:string;version:string;replaceable?:boolean;mount?:(target:Element,props?:Record<string,unknown>)=>unknown};
 interface Window { CompanywareAdmin: {version:string;modules:{register<T extends CompanywareModule>(module:T):T;get(id:string):CompanywareModule|undefined};hooks:{on(name:string,listener:(detail:unknown)=>void):()=>void;emit(name:string,detail?:unknown):void}} }
 TS,
             'tests/smoke.php' => <<<'PHP'
 <?php
+/*
+ * {{name}} - Companyware plugin
+ * Copyright (c) {{copyright_year}} {{publisher_name_text}}
+ * SPDX-License-Identifier: MIT
+ * See LICENSE for license information.
+ */
 declare(strict_types=1);
 $required=['composer.json','plugin.json','config/services.yaml','config/routes.yaml','translations/messages.de.yaml'];
 foreach($required as $path)if(!file_exists(dirname(__DIR__).'/'.$path)){fwrite(STDERR,"Missing $path\n");exit(1);}
