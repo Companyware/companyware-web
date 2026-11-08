@@ -24,6 +24,7 @@ button, a { transition: .2s ease; }
 .theme-settings-dialog { width: min(620px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 0; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); }
 .theme-settings-dialog::backdrop { background: rgba(20, 22, 34, .55); backdrop-filter: blur(3px); }
 .theme-settings-dialog .admin-form { padding: 24px; }
+.theme-settings-dialog .form-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .dialog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
 .dialog-head h2, .dialog-head p { margin: 0; }
 .dialog-head p { margin-top: 5px; color: var(--muted); }
