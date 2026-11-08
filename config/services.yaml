@@ -100,6 +100,9 @@ services:
     Companyware\Core\Framework\Security\ScopeContextInterface:
         alias: App\Security\DatabaseScopeContext
 
+    Companyware\Core\Framework\Theme\ThemeRegistryInterface:
+        alias: App\Theme\ThemeRegistry
+
     Companyware\Core\Framework\Application\ActorContextInterface:
         alias: App\Application\RequestActorContext
 

@@ -4,7 +4,7 @@ namespace App\Plugin;
 
 final readonly class PluginManifest
 {
-    public function __construct(public string $name, public string $label, public string $version, public string $description, public string $path, public string $publisherId = 'unknown', public string $publisherName = 'Unknown publisher', public array $navigation = [], public array $migrations = [], public array $assets = [], public array $locales = [], public bool $core = false, public string $companyware = '*', public string $php = '*', public array $extensions = [], public array $requires = [], public array $optional = [], public array $conflicts = [], public array $provides = [], public array $replaces = [], public array $settings = [], public string $uninstallData = 'remove', public array $entityReferences = [], public array $privileges = [])
+    public function __construct(public string $name, public string $label, public string $version, public string $description, public string $path, public string $publisherId = 'unknown', public string $publisherName = 'Unknown publisher', public array $navigation = [], public array $migrations = [], public array $assets = [], public array $locales = [], public bool $core = false, public string $companyware = '*', public string $php = '*', public array $extensions = [], public array $requires = [], public array $optional = [], public array $conflicts = [], public array $provides = [], public array $replaces = [], public array $settings = [], public string $uninstallData = 'remove', public array $entityReferences = [], public array $privileges = [], public array $themes = [])
     {
     }
 
@@ -27,6 +27,7 @@ final readonly class PluginManifest
         if (isset($data['entities']) && !is_array($data['entities'])) return null;
         if (isset($data['entities']['references']) && !is_array($data['entities']['references'])) return null;
         if (isset($data['privileges']) && !is_array($data['privileges'])) return null;
+        if (isset($data['themes']) && !is_array($data['themes'])) return null;
         if (isset($data['publisher']) && (!is_array($data['publisher'])
             || !is_string($data['publisher']['id'] ?? null)
             || !preg_match('/^[a-z0-9][a-z0-9._-]{1,99}$/', $data['publisher']['id'])
@@ -60,6 +61,7 @@ final readonly class PluginManifest
             $uninstallData,
             is_array($data['entities']['references'] ?? null) ? $data['entities']['references'] : [],
             is_array($data['privileges'] ?? null) ? $data['privileges'] : [],
+            is_array($data['themes'] ?? null) ? $data['themes'] : [],
         );
     }
 
