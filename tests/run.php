@@ -100,6 +100,12 @@ try {
     $recoveryMigration=(string)file_get_contents(dirname(__DIR__).'/src/Migration/Core/Version202611090001.php');
     $assert(str_contains($recoveryMigration,'token_hash')&&!str_contains($recoveryMigration,'token_plain'), 'Recovery migration must persist only token hashes.');
     $assert(str_contains((string)file_get_contents(dirname(__DIR__).'/templates/login/index.html.twig'),'app_account_recovery'), 'Login must link to account recovery.');
+    $recoveryTemplate=(string)file_get_contents(dirname(__DIR__).'/templates/login/recovery.html.twig');
+    $adminCss=(string)file_get_contents(dirname(__DIR__).'/public/assets/admin.css');
+    $assert(str_contains($recoveryTemplate, 'login-body recovery-body'), 'Recovery page must expose its scrollable layout scope.');
+    $assert(str_contains($adminCss, '.recovery-body { overflow-y: auto; }'), 'Recovery page must allow document scrolling below the minimum shell height.');
+    $assert(str_contains($adminCss, '.recovery-body .login-panel { overflow-y: auto;'), 'Recovery form must remain vertically scrollable in constrained viewports.');
+    $assert(str_contains($adminCss, '.login-body { padding: 0; overflow-y: auto; }'), 'Narrow login layouts must allow document scrolling.');
     echo "Account recovery policy and public contract tests passed.\n";
 } finally {
     $filesystem->remove($root);
