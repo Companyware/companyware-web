@@ -17,6 +17,8 @@ use Companyware\Core\Test\Plugin\PackageStructureTestHelper;
 use Companyware\Core\Framework\Security\DataScope;
 use Plugins\Documents\DocumentsApiOperationProvider;
 use Symfony\Component\Filesystem\Filesystem;
+use App\Security\PasswordPolicy;
+use App\Security\AccountRecoveryService;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 PluginClassLoader::register(dirname(__DIR__).'/plugins');
@@ -56,6 +58,7 @@ try {
     echo "CW-008 generator and validator tests passed.\n";
 
     $openApi=(new OpenApiRegistry([new DocumentsApiOperationProvider()]))->document();
+    $assert(isset($openApi['paths']['/account-recovery']['post']), 'OpenAPI must expose one-time account recovery.');
     $assert(isset($openApi['paths']['/oauth/token']['post']),'OpenAPI must expose OAuth2 client credentials.');
     $assert(isset($openApi['paths']['/documents']['get'],$openApi['paths']['/documents']['post']),'Plugin API provider must expose list and create operations.');
     $assert(isset($openApi['paths']['/documents/{id}']['delete'],$openApi['paths']['/documents/{id}/content']['get']),'OpenAPI must include plugin delete and content operations.');
@@ -91,6 +94,13 @@ try {
     $settingsTemplate=(string)file_get_contents(dirname(__DIR__).'/templates/admin/settings/index.html.twig');
     $assert(str_contains($settingsTemplate,'currentTheme.settings|length')&&str_contains($settingsTemplate,'theme-settings-dialog'),'Theme settings modal is not conditional on declared settings.');
     echo "CW-013 theme contract tests passed.\n";
+    $assert(PasswordPolicy::accepts(str_repeat('a', PasswordPolicy::MIN_LENGTH)), 'Central password policy must accept its documented minimum.');
+    $assert(!PasswordPolicy::accepts(str_repeat('a', PasswordPolicy::MIN_LENGTH - 1)), 'Central password policy must reject shorter passwords.');
+    $assert(AccountRecoveryService::normalizeEmail(' Test@Example.COM ') === 'test@example.com', 'Recovery email normalization differs.');
+    $recoveryMigration=(string)file_get_contents(dirname(__DIR__).'/src/Migration/Core/Version202611090001.php');
+    $assert(str_contains($recoveryMigration,'token_hash')&&!str_contains($recoveryMigration,'token_plain'), 'Recovery migration must persist only token hashes.');
+    $assert(str_contains((string)file_get_contents(dirname(__DIR__).'/templates/login/index.html.twig'),'app_account_recovery'), 'Login must link to account recovery.');
+    echo "Account recovery policy and public contract tests passed.\n";
 } finally {
     $filesystem->remove($root);
 }

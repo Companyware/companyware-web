@@ -2,6 +2,8 @@
 
 namespace App\Infrastructure;
 
+use App\Security\PasswordPolicy;
+
 final class AdminRepository
 {
     public function __construct(private readonly Database $database, private readonly Schema $schema)
@@ -11,7 +13,7 @@ final class AdminRepository
     public function findByUsername(string $username): ?array
     {
         $this->schema->ensure();
-        $statement = $this->database->connection()->prepare('SELECT * FROM admin_user WHERE username = :username');
+        $statement = $this->database->connection()->prepare('SELECT * FROM admin_user WHERE username = :username AND active = 1');
         $statement->execute(['username' => $username]);
         return $statement->fetch() ?: null;
     }
@@ -38,7 +40,7 @@ final class AdminRepository
     public function createUser(string $username,string $password,string $displayName,?string $email=null):int
     {
         $this->schema->ensure();$username=trim($username);$displayName=trim($displayName);
-        if($username===''||$displayName===''||strlen($password)<10)throw new \InvalidArgumentException('security.error.user_invalid');
+        if($username===''||$displayName===''||!PasswordPolicy::accepts($password))throw new \InvalidArgumentException('security.error.user_invalid');
         $statement=$this->database->connection()->prepare('INSERT INTO admin_user (username,password_hash,display_name,email) VALUES (:username,:password,:display_name,:email)');
         $statement->execute(['username'=>$username,'password'=>password_hash($password,PASSWORD_DEFAULT),'display_name'=>$displayName,'email'=>$email]);
         return (int)$this->database->connection()->lastInsertId();
@@ -48,15 +50,15 @@ final class AdminRepository
 
     public function updateUser(int $id,string $displayName,?string $email,string $password='',?string $department=null):void
     {
-        $displayName=trim($displayName);if($displayName===''||($password!==''&&strlen($password)<10))throw new \InvalidArgumentException('security.error.user_invalid');
+        $displayName=trim($displayName);if($displayName===''||($password!==''&&!PasswordPolicy::accepts($password)))throw new \InvalidArgumentException('security.error.user_invalid');
         if($password===''){$statement=$this->database->connection()->prepare('UPDATE admin_user SET display_name=:display_name,email=:email,department_key=:department WHERE id=:id');$statement->execute(['id'=>$id,'display_name'=>$displayName,'email'=>$email,'department'=>$department]);return;}
         $statement=$this->database->connection()->prepare('UPDATE admin_user SET display_name=:display_name,email=:email,department_key=:department,password_hash=:password WHERE id=:id');$statement->execute(['id'=>$id,'display_name'=>$displayName,'email'=>$email,'department'=>$department,'password'=>password_hash($password,PASSWORD_DEFAULT)]);
     }
 
     public function updateProfile(int $id, string $displayName, ?string $email): void
     {
-        $statement = $this->database->connection()->prepare('UPDATE admin_user SET display_name = :display_name, email = :email WHERE id = :id');
-        $statement->execute(['id' => $id, 'display_name' => $displayName, 'email' => $email]);
+        $statement = $this->database->connection()->prepare('UPDATE admin_user SET display_name = :display_name, email_normalized = IF(COALESCE(email, "") = COALESCE(:email_compare_normalized, ""), email_normalized, NULL), email_verified_at = IF(COALESCE(email, "") = COALESCE(:email_compare_verified, ""), email_verified_at, NULL), email = :email WHERE id = :id');
+        $statement->execute(['id' => $id, 'display_name' => $displayName, 'email' => $email, 'email_compare_normalized' => $email, 'email_compare_verified' => $email]);
     }
 
     public function preference(int $id, string $key): ?array

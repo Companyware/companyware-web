@@ -7,6 +7,7 @@ imports:
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    env(COMPANYWARE_MAIL_FROM): 'no-reply@localhost'
 
 services:
     # default configuration for services in *this* file
@@ -23,6 +24,10 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    App\Mail\CompanywareMailer:
+        arguments:
+            $fromAddress: '%env(COMPANYWARE_MAIL_FROM)%'
 
     App\Controller\:
         resource: '../src/Controller/'
@@ -111,6 +116,9 @@ services:
 
     Companyware\Core\Framework\Application\ActorContextInterface:
         alias: App\Application\RequestActorContext
+
+    Companyware\Core\Framework\Mail\MailTransportInterface:
+        alias: App\Mail\CompanywareMailer
 
     Companyware\Core\Framework\Api\IdempotencyServiceInterface:
         alias: App\Api\IdempotencyService
