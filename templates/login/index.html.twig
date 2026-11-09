@@ -52,7 +52,7 @@
                 </form>
                 {% endblock %}
 
-                <p class="login-help">{{ 'login.help'|trans }}</p>
+                <p class="login-help"><a href="{{ path('app_account_recovery') }}">{{ 'login.recovery'|trans }}</a><br>{{ 'login.help'|trans }}</p>
                 {{ plugin_slot('login.form.after') }}
             </div>
 

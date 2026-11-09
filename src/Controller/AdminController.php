@@ -20,6 +20,8 @@ use App\Plugin\Migration\MigrationManager;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Companyware\Core\Framework\Security\RequiresPrivilege;
 use App\Security\SecurityAuditLogger;
+use App\Security\AccountRecoveryService;
+use App\Security\AccountEmailVerificationService;
 use App\Security\AccessRepository;
 use App\Plugin\PluginStateManager;
 use App\Extension\ExtensionUpdateService;
@@ -140,11 +142,21 @@ final class AdminController
 
     #[Route('/admin/profile', name: 'admin_profile', methods: ['GET', 'POST'])]
     #[RequiresPrivilege('core.profile.edit')]
-    public function profile(Request $request, AdminRepository $admins, AccessRepository $access): Response
+    public function profile(Request $request, AdminRepository $admins, AccessRepository $access, AccountRecoveryService $recovery, AccountEmailVerificationService $emailVerification): Response
     {
         if ($redirect = $this->requireLogin($request)) return $redirect;
         $admin = $request->getSession()->get('admin');
         $saved = false;
+        $recoveryKey = $request->getSession()->remove('account_recovery_key');
+        $verificationResult = $request->getSession()->remove('email_verification_result');
+        if ($request->isMethod('POST') && $this->validToken($request) && $request->request->get('action') === 'issue_recovery_key') {
+            $request->getSession()->set('account_recovery_key', $recovery->issue((int) $admin['id']));
+            return new RedirectResponse('/admin/profile');
+        }
+        if ($request->isMethod('POST') && $this->validToken($request) && $request->request->get('action') === 'verify_recovery_email') {
+            try { $emailVerification->send((int) $admin['id'], (string) ($admin['email'] ?? ''), $request->getSchemeAndHttpHost().'/email-verification'); $request->getSession()->set('email_verification_result', 'sent'); } catch (\Throwable) { $request->getSession()->set('email_verification_result', false); }
+            return new RedirectResponse('/admin/profile');
+        }
         if ($request->isMethod('POST') && $this->validToken($request)) {
             $admin['display_name'] = trim((string) $request->request->get('display_name'));
             $admin['email'] = trim((string) $request->request->get('email')) ?: null;
@@ -152,7 +164,7 @@ final class AdminController
             $request->getSession()->set('admin', $admin);
             $saved = true;
         }
-        return $this->page($request, 'profile', 'profile.title', ['saved' => $saved, 'accessSummary' => $access->accessSummary((int) $admin['id'])]);
+        return $this->page($request, 'profile', 'profile.title', ['saved' => $saved, 'recoveryKey' => $recoveryKey, 'verificationResult' => $verificationResult, 'accessSummary' => $access->accessSummary((int) $admin['id'])]);
     }
 
     #[Route('/admin/settings', name: 'admin_settings', methods: ['GET', 'POST'])]

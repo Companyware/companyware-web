@@ -81,6 +81,8 @@ input:focus, select:focus { border-color: var(--violet); box-shadow: 0 0 0 4px r
 .primary:disabled { opacity: .5; }
 .wide { width: 100%; display: flex; justify-content: space-between; }
 .login-help { margin-top: 20px; text-align: center; font-size: 12px; }
+.recovery-login-link { display: flex; align-items: center; justify-content: center; text-decoration: none; }
+.recovery-key { display: block; margin: 12px 0; padding: 12px; overflow-wrap: anywhere; user-select: all; background: rgba(255,255,255,.7); border-radius: 8px; }
 .login-footer { color: #9a96a0; font-size: 11px; letter-spacing: .02em; }
 
 .login-visual { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: #f7f3ee; }
