@@ -53,6 +53,7 @@
         "test": "@php tests/run.php",
         "release-check": [
             "@composer validate --strict --no-check-publish",
+            "@composer audit --locked",
             "@php tools/release-check.php",
             "@test",
             "node --test admin-sdk/tests/*.test.cjs"

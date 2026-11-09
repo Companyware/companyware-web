@@ -11,7 +11,7 @@ composer install
 composer release-check
 ```
 
-The gate validates Composer metadata, the pinned dependency lock, MIT licensing, the declared public API version, required developer and operator documentation, generated plugin license headers, the PHP reference tests and the Administration SDK tests. It does not connect to production or mutate a database.
+The gate validates Composer metadata, audits the pinned dependency lock for known security advisories, checks MIT licensing, the declared public API version, required developer and operator documentation, generated plugin license headers, the PHP reference tests and the Administration SDK tests. It does not connect to production or mutate a database.
 
 Every newly generated PHP, JavaScript, TypeScript, Vue and CSS source starts with the short MIT/SPDX notice and references the full generated `LICENSE`. JSON remains comment-free and carries its license through Composer metadata and the containing package license.
 
