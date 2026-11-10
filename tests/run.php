@@ -104,7 +104,8 @@ try {
     $adminCss=(string)file_get_contents(dirname(__DIR__).'/public/assets/admin.css');
     $assert(str_contains($recoveryTemplate, 'login-body recovery-body'), 'Recovery page must expose its scrollable layout scope.');
     $assert(str_contains($adminCss, '.recovery-body { overflow-y: auto; }'), 'Recovery page must allow document scrolling below the minimum shell height.');
-    $assert(str_contains($adminCss, '.recovery-body .login-panel { overflow-y: auto;'), 'Recovery form must remain vertically scrollable in constrained viewports.');
+    $assert(str_contains($adminCss, '.login-panel { min-width: 0; overflow-y: auto;'), 'Login and recovery forms must remain vertically scrollable in constrained viewports.');
+    $assert(str_contains($adminCss, '@media (min-width: 851px) and (max-height: 900px)'), 'Desktop login must compact its vertical layout before content is clipped.');
     $assert(str_contains($adminCss, '.login-body { padding: 0; overflow-y: auto; }'), 'Narrow login layouts must allow document scrolling.');
     echo "Account recovery policy and public contract tests passed.\n";
 } finally {
