@@ -172,6 +172,7 @@ input:focus, select:focus { border-color: var(--violet); box-shadow: 0 0 0 4px r
 .plugin-actions { display: flex; align-items: center; gap: 10px; }
 .plugin-actions .secondary { display: inline-flex; align-items: center; min-height: 47px; padding: 12px 18px; text-decoration: none; }
 .form-panel { max-width: 800px; }
+.form-panel + .form-panel { margin-top: 24px; }
 .profile-header { display: flex; align-items: center; gap: 18px; padding: 28px; border-bottom: 1px solid var(--line); }
 .profile-header h2, .profile-header p { margin: 0; }
 .admin-form { padding: 6px 28px 28px; }
