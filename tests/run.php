@@ -106,7 +106,10 @@ try {
     $assert(str_contains($adminCss, '.recovery-body { overflow-y: auto; }'), 'Recovery page must allow document scrolling below the minimum shell height.');
     $assert(str_contains($adminCss, '.login-panel { min-width: 0; overflow-y: auto;'), 'Login and recovery forms must remain vertically scrollable in constrained viewports.');
     $assert(str_contains($adminCss, '@media (min-width: 851px) and (max-height: 900px)'), 'Desktop login must compact its vertical layout before content is clipped.');
-    $assert(str_contains($adminCss, '.form-panel + .form-panel { margin-top: 24px; }'), 'Adjacent profile form panels must keep the standard section spacing.');
+    $profileTemplate=(string)file_get_contents(dirname(__DIR__).'/templates/admin/profile/index.html.twig');
+    $assert(str_contains($profileTemplate, 'panel form-panel profile-recovery-panel'), 'Recovery key panel must expose its explicit spacing hook.');
+    $assert(str_contains($adminCss, '.profile-recovery-panel { margin-top: 24px !important; }'), 'Recovery key panel must keep the standard section spacing above the box.');
+    $assert(str_contains($adminCss, '.profile-recovery-panel > .alert.success { margin-right: 28px; margin-left: 28px; }'), 'Recovery key result must align with the profile panel content inset.');
     $assert(str_contains($adminCss, '.login-body { padding: 0; overflow-y: auto; }'), 'Narrow login layouts must allow document scrolling.');
     echo "Account recovery policy and public contract tests passed.\n";
 } finally {
