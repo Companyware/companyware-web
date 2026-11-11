@@ -1,6 +1,6 @@
-# Theme contract
+# Companyware Web theme contract
 
-Companyware renders server-side pages with Twig. Vue is optional for interactive islands and consumes the same semantic CSS tokens.
+Companyware Web renders server-side pages with Twig. Vue is optional for interactive islands and consumes the same semantic CSS tokens.
 
 ## Stable composition rules
 

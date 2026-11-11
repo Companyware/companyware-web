@@ -1,6 +1,6 @@
-# Build a first Companyware plugin
+# Build a first Companyware Web plugin
 
-Companyware's generator creates a working backend plugin structure in one command:
+Companyware Web's generator creates a working backend plugin structure in one command:
 
 ```bash
 php bin/console app:plugins:create acme-example --vendor=acme --no-interaction

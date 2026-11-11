@@ -12,6 +12,8 @@ compatibility version documented in `docs/public-api.md`.
 - Public API 1.0, Administration SDK 1.0 and versioned HTTP API.
 - Roles, scoped permissions, signed extension metadata and theme contracts.
 - Documents reference plugin and plugin developer tooling.
+- Visible Companyware Web product naming in login, administration, page titles and
+  public metadata while retaining Companyware as the shared product family.
 
 ### Security
 

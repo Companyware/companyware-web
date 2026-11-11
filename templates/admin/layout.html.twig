@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ title|trans }} · Companyware{% endblock %}
+{% block title %}{{ title|trans }} · {{ 'layout.product_name'|trans }}{% endblock %}
 {% block body_class %}admin-body{% endblock %}
 
 {% block body %}
@@ -8,7 +8,7 @@
 <aside class="sidebar">
     <a class="sidebar-brand brand-lockup" href="{{ path('admin_dashboard') }}">
         <img src="/assets/brand/companyware-mark.svg?v=20260817" alt="">
-        <span><strong>Companyware</strong><small>{{ 'layout.tagline'|trans }}</small></span>
+        <span><span class="brand-product"><strong>Companyware</strong><span class="brand-product-suffix">Web</span></span><small>{{ 'layout.tagline'|trans }}</small></span>
     </a>
     {% set current_route = app.request.attributes.get('_route') %}
     {% set navigation = admin_navigation() %}

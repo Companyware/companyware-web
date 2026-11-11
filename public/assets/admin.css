@@ -32,6 +32,8 @@ button, a { transition: .2s ease; }
 .brand-lockup { display: flex; align-items: center; text-decoration: none; }
 .brand-lockup img { display: block; }
 .brand-lockup strong, .brand-lockup small { display: block; }
+.brand-product { display: flex; align-items: baseline; gap: .42em; white-space: nowrap; }
+.brand-product-suffix { color: var(--accent-dark); font-size: .58em; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
 
 /* Login */
 .login-body {

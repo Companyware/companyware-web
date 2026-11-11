@@ -1,4 +1,4 @@
-# Companyware public API 1.0
+# Companyware Web public API 1.0
 
 Entity and repository conventions are documented in [entities-and-repositories.md](entities-and-repositories.md).
 

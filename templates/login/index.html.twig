@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ 'login.title'|trans }} · Companyware{% endblock %}
+{% block title %}{{ 'login.title'|trans }} · {{ 'layout.product_name'|trans }}{% endblock %}
 {% block body_class %}login-body{% endblock %}
 
 {% block body %}
@@ -10,7 +10,7 @@
         <img src="/assets/brand/companyware-login-hero-cool.png?v=20260817" alt="{{ 'login.visual_alt'|trans }}">
         <div class="login-visual-shade"></div>
         <div class="visual-copy">
-            <span class="eyebrow">Companyware · Open process platform</span>
+            <span class="eyebrow">{{ 'layout.product_name'|trans }} · Open process platform</span>
             <h2>{{ 'login.visual_title'|trans|raw }}</h2>
             <p>{{ 'login.visual_text'|trans }}</p>
         </div>
@@ -19,9 +19,9 @@
 
     <section class="login-panel">
         <div class="login-panel-inner">
-            <a class="brand-lockup brand-lockup-dark" href="{{ path('app_login') }}" aria-label="Companyware">
+            <a class="brand-lockup brand-lockup-dark" href="{{ path('app_login') }}" aria-label="{{ 'layout.product_name'|trans }}">
                 <img src="/assets/brand/companyware-mark.svg?v=20260817" alt="">
-                <span>Companyware</span>
+                <span class="brand-product"><strong>Companyware</strong><span class="brand-product-suffix">Web</span></span>
             </a>
 
             <div class="login-form-wrap">
