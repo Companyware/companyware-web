@@ -110,6 +110,7 @@ try {
     $assert(str_contains($profileTemplate, 'panel form-panel profile-recovery-panel'), 'Recovery key panel must expose its explicit spacing hook.');
     $assert(str_contains($adminCss, '.profile-recovery-panel { margin-top: 24px !important; }'), 'Recovery key panel must keep the standard section spacing above the box.');
     $assert(str_contains($adminCss, '.profile-recovery-panel > .alert.success { margin-right: 28px; margin-left: 28px; }'), 'Recovery key result must align with the profile panel content inset.');
+    $assert(str_contains($adminCss, 'padding: 0 46px; background: rgba(255,254,253,.94);'), 'Desktop topbar and administration content must share the same horizontal inset.');
     $assert(str_contains($adminCss, '.login-body { padding: 0; overflow-y: auto; }'), 'Narrow login layouts must allow document scrolling.');
     echo "Account recovery policy and public contract tests passed.\n";
 } finally {
