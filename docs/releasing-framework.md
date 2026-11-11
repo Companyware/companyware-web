@@ -9,9 +9,10 @@ Use PHP 8.3, Composer 2 and a current Node.js installation, then run:
 ```bash
 composer install
 composer release-check
+php tools/build-release.php 0.1.0-preview.1 --verify-reproducible
 ```
 
-The gate validates Composer metadata, audits the pinned dependency lock for known security advisories, checks MIT licensing, the declared public API version, required developer and operator documentation, generated plugin license headers, the PHP reference tests and the Administration SDK tests. It does not connect to production or mutate a database.
+The gate validates Composer metadata, audits the pinned dependency lock for known security advisories, checks MIT licensing, the declared public API version, required developer and operator documentation, generated plugin license headers, the PHP reference tests and the Administration SDK tests. The archive command refuses a dirty tree, archives the exact HEAD commit twice, compares both SHA-256 values and writes the ZIP, checksum and machine-readable evidence manifest below `dist/releases/`. It does not create a tag or release, connect to production or mutate a database.
 
 Every newly generated PHP, JavaScript, TypeScript, Vue and CSS source starts with the short MIT/SPDX notice and references the full generated `LICENSE`. JSON remains comment-free and carries its license through Composer metadata and the containing package license.
 
@@ -26,6 +27,11 @@ Record the following before tagging:
 - release notes, security changes and known limitations;
 - installation, upgrade, migration and recovery commands;
 - matching website, download and documentation status.
+
+The JSON evidence manifest records the application identity, semantic version,
+exact commit, commit timestamp, public API version, byte size and SHA-256. Compare
+the checksum with the uploaded artifact after publication. A CI evidence archive
+is short-lived test output and is not a public framework release.
 
 Do not publish credentials, environment files, caches, database exports or local plugin trust stores. Sign published artifacts only with the designated release identity. A later Store must consume the same package identity, compatibility, checksum and publisher metadata rather than introduce a second package format.
 
