@@ -136,7 +136,7 @@ input:focus, select:focus { border-color: var(--violet); box-shadow: 0 0 0 4px r
 .avatar { width: 42px; height: 42px; flex: 0 0 auto; }
 .avatar.large { width: 74px; height: 74px; font-size: 23px; }
 .admin-shell { min-height: 100vh; padding-left: 280px; }
-.topbar { position: sticky; top: 0; z-index: 4; height: 76px; display: flex; align-items: center; justify-content: space-between; padding: 0 38px; background: rgba(255,254,253,.94); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
+.topbar { position: sticky; top: 0; z-index: 4; height: 76px; display: flex; align-items: center; justify-content: space-between; padding: 0 46px; background: rgba(255,254,253,.94); border-bottom: 1px solid var(--line); backdrop-filter: blur(12px); }
 .breadcrumb { color: var(--muted); font-size: 13px; }
 .breadcrumb strong { color: var(--graphite); }
 .breadcrumb span { margin: 0 10px; color: var(--accent); }
