@@ -1,0 +1,39 @@
+# Companyware Web release gate
+# SPDX-License-Identifier: MIT
+
+name: Release gate
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          extensions: ctype, iconv, sodium, zip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install locked dependencies
+        run: composer install --no-interaction --prefer-dist
+      - name: Validate framework release gates
+        run: composer release-check
+      - name: Build reproducible evidence archive
+        run: php tools/build-release.php 0.0.0-ci.${{ github.run_number }} --verify-reproducible
+      - uses: actions/upload-artifact@v4
+        with:
+          name: companyware-web-release-evidence
+          path: dist/releases/
+          if-no-files-found: error
+          retention-days: 7
