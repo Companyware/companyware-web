@@ -190,7 +190,7 @@ final class AdminController
         $saved = (bool) $request->getSession()->remove('settings_saved');
         $statement = $database->connection()->query("SELECT config_value FROM system_config WHERE config_key = 'app.name'");
         $activeTheme=$themes->selected();
-        return $this->page($request, 'settings', 'settings.title', ['appName' => $statement->fetchColumn() ?: 'Companyware', 'saved' => $saved, 'locales' => $locales->available(), 'currentLocale' => $locales->current(), 'themes' => array_values(array_filter($themes->themes(), static fn($theme):bool=>$theme->type==='full')), 'currentTheme' => $activeTheme, 'themeValues'=>$themeConfiguration->values($activeTheme)]);
+        return $this->page($request, 'settings', 'settings.title', ['appName' => $statement->fetchColumn() ?: 'Companyware Web', 'saved' => $saved, 'locales' => $locales->available(), 'currentLocale' => $locales->current(), 'themes' => array_values(array_filter($themes->themes(), static fn($theme):bool=>$theme->type==='full')), 'currentTheme' => $activeTheme, 'themeValues'=>$themeConfiguration->values($activeTheme)]);
     }
 
     private function page(Request $request, string $template, string $title, array $context = []): Response

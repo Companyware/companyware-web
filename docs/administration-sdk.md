@@ -1,6 +1,6 @@
-# Administration SDK 1.0
+# Companyware Web Administration SDK 1.0
 
-Companyware's administration SDK is a public TypeScript contract independent from Core and individual plugins. The browser-ready build is served at `/admin-sdk/companyware-admin-sdk.js`; semantic design tokens are served beside it. Core loads both before its own administration assets, and the same APIs are available to every active plugin as `window.CompanywareAdmin`.
+Companyware Web's administration SDK is a public TypeScript contract independent from Core and individual plugins. The browser-ready build is served at `/admin-sdk/companyware-admin-sdk.js`; semantic design tokens are served beside it. Core loads both before its own administration assets, and the same APIs are available to every active plugin as `window.CompanywareAdmin`.
 
 ## Technology direction
 

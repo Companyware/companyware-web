@@ -1,6 +1,6 @@
 {
     "name": "mbdus/admin-framework",
-    "description": "Companyware is an extensible, Symfony-native process platform.",
+    "description": "Companyware Web is the extensible Symfony application of the Companyware platform.",
     "type": "project",
     "license": "MIT",
     "minimum-stability": "stable",
