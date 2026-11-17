@@ -32,12 +32,15 @@ foreach ([
     'CHANGELOG.md',
     'docs/public-api.md',
     'docs/plugin-development.md',
+    'docs/release-notes/README.md',
+    'docs/release-notes/0.1.0-preview.1.md',
     'docs/releasing-framework.md',
     'docs/upgrade-and-recovery.md',
     'docs/administration-sdk.md',
     'docs/http-api.md',
     'plugins/README.md',
     'tools/build-release.php',
+    'tools/release-note-policy.php',
     '.github/workflows/release-gate.yml',
 ] as $requiredDocumentation) {
     $require(is_file($root.'/'.$requiredDocumentation), sprintf('Required release documentation is missing: %s.', $requiredDocumentation));
@@ -50,6 +53,27 @@ $require(!preg_match('/default.{0,24}(password|credential|login)/i', $readme), '
 
 $publicApiSource = (string) file_get_contents($root.'/src/Core/Framework/Api/PublicApi.php');
 $require(str_contains($publicApiSource, "public const VERSION = '1.0';"), 'The PHP public API version must match composer.json.');
+
+$publicApiDocumentation = (string) file_get_contents($root.'/docs/public-api.md');
+foreach ([
+    'ColorSchemeInterface',
+    'ThemeConfigurationInterface',
+    'ThemeDefinition',
+    'ThemeRegistryInterface',
+] as $themeContract) {
+    $require(
+        str_contains($publicApiDocumentation, $themeContract),
+        sprintf('Public API documentation must list the stable theme contract %s.', $themeContract)
+    );
+}
+$require(
+    preg_match('/\| Theme registry and semantic theme package contract \|[^\r\n]+\| stable in API 1\.x \|/', $publicApiDocumentation) === 1,
+    'The implemented theme contract must be classified as stable in the extension-point inventory.'
+);
+$require(
+    !preg_match('/Theme registry and semantic theme package contract[^\r\n]+(?:planned|experimental)/i', $publicApiDocumentation),
+    'The implemented theme contract must not be classified as planned or experimental.'
+);
 
 foreach (['admin-sdk/dist/companyware-admin-sdk.js', 'admin-sdk/dist/companyware-admin-sdk.d.ts', 'admin-sdk/dist/companyware-admin-tokens.css'] as $artifact) {
     $require(is_file($root.'/'.$artifact) && filesize($root.'/'.$artifact) > 0, sprintf('Required Administration SDK artifact is missing or empty: %s.', $artifact));

@@ -35,6 +35,10 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\Migration\\MigrationState`
 - `Companyware\\Core\\Framework\\Plugin\\Contract\\PluginConfigurationInterface`
 - `Companyware\\Core\\Framework\\File\\FileNameNormalizerInterface` (decoration supported)
+- `Companyware\\Core\\Framework\\Theme\\ColorSchemeInterface`
+- `Companyware\\Core\\Framework\\Theme\\ThemeConfigurationInterface`
+- `Companyware\\Core\\Framework\\Theme\\ThemeDefinition`
+- `Companyware\\Core\\Framework\\Theme\\ThemeRegistryInterface`
 - `Companyware\\Core\\Framework\\Plugin\\Event\\BeforePluginLifecycleEvent`
 - `Companyware\\Core\\Framework\\Plugin\\Event\\AfterPluginLifecycleEvent`
 - `Companyware\\Core\\Framework\\Plugin\\Event\\PluginConfigurationChangedEvent`
@@ -47,20 +51,20 @@ Companyware plugins may depend only on symbols below the `Companyware\\Core\\` n
 | --- | --- | --- |
 | PHP contracts | the interfaces, events, enum and `Plugin` base class listed above | stable in API 1.x |
 | Composer package | package type `companyware-plugin` and `extra.companyware-plugin.manifest` | stable in API 1.x |
-| Runtime manifest | `name`, `label`, `description`, `version`, `navigation`, `migrations`, `assets`, `uninstall.data`, optional `locales`, `compatibility`, `require`, `optional`, `conflict`, `provide`, `replace`, optional `settings` | stable in API 1.x |
+| Runtime manifest | `name`, `label`, `description`, `version`, `navigation`, `migrations`, `assets`, `uninstall.data`, optional `locales`, `compatibility`, `require`, `optional`, `conflict`, `provide`, `replace`, `settings`, `themes` | stable in API 1.x |
 | Translation catalogs | plugin-owned `translations/messages.<locale>.yaml` catalogs using stable message keys | stable in API 1.x |
 | Twig slots | `document.stylesheets`, `document.javascripts`, `login.form.before`, `login.form.after`, `admin.navigation.after`, `admin.content.before`, `admin.content.after`, `admin.profile.form.before`, `admin.profile.form.after`, `admin.settings.fields`, `admin.settings.sections`, `dashboard.content.before`, `dashboard.continue`, `dashboard.quick_actions`, `dashboard.widgets`, `dashboard.activity`, `dashboard.content.after` | stable in API 1.x |
-| Twig blocks | `head`, `title`, `stylesheets`, `body_class`, `body`, `javascripts`, `login_visual`, `login_form`, `sidebar`, `topbar`, `content`, `dashboard_header`, `dashboard_continue`, `dashboard_quick_actions`, `dashboard_widgets`, `dashboard_activity` | stable in API 1.x |
+| Twig blocks | `head`, `title`, `theme_stylesheets`, `stylesheets`, `body_class`, `body`, `javascripts`, `login_visual`, `login_form`, `sidebar`, `topbar`, `content`, `dashboard_header`, `dashboard_continue`, `dashboard_quick_actions`, `dashboard_widgets`, `dashboard_activity` | stable in API 1.x |
 | Asset handles | `core-admin`, `core-plugin-manager`, `core-admin-js` plus plugin-owned globally unique handles | stable in API 1.x |
 | Administration SDK | `window.CompanywareAdmin` 1.0 routes, navigation, slots, modules, components, services, permissions, API, notifications, forms, tables, modals and hooks | stable in API 1.x |
 | Browser compatibility facade | `window.AdminFramework.on()`, `emit()` and the `ready`, `dashboard:ready` and `dashboard:storage-error` events | stable in API 1.x |
 | Public plugin frontend | `FrontendProviderInterface` for `/`; guarded plugin routes for additional public paths | stable in API 1.x |
-| Theme registry and semantic theme package contract | planned for the platform foundation | experimental; not yet public API |
+| Theme registry and semantic theme package contract | `ColorSchemeInterface`, `ThemeConfigurationInterface`, `ThemeDefinition`, `ThemeRegistryInterface`; manifest `themes`; `theme_stylesheets`; semantic `--cw-*` tokens and documented color-scheme selectors | stable in API 1.x |
 | Core service decoration | `FileNameNormalizerInterface`; decorate the public interface service ID | stable in API 1.x |
 | Core events | lifecycle before/after events and configuration-changed event listed above | stable in API 1.x |
 | HTTP API operations | `ApiOperationProviderInterface`; active plugins contribute OpenAPI 3.1 path operations under `/api/v1` | stable in API 1.x |
 
-No other experimental surface is currently published.
+No experimental surface is currently published.
 
 The `App\\` namespace is internal application implementation. Plugins must not import it, decorate it or treat its service identifiers as stable. Only public interfaces explicitly documented as decoration-supported may be decorated. Container compilation rejects decoration of unpublished or protected services. Authentication, authorization, plugin activation checks, package validation, the plugin manager and fallback rendering are protected recovery paths and are not replaceable.
 

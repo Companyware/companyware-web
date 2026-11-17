@@ -21,11 +21,28 @@ use App\Security\PasswordPolicy;
 use App\Security\AccountRecoveryService;
 
 require dirname(__DIR__).'/vendor/autoload.php';
+require dirname(__DIR__).'/tools/release-note-policy.php';
 PluginClassLoader::register(dirname(__DIR__).'/plugins');
 
 $assert = static function (bool $condition, string $message): void {
     if (!$condition) throw new RuntimeException($message);
 };
+$assert(
+    companywareReleaseNotesHaveVersionHeading("# Companyware Web 0.1.0-preview.1\n", '0.1.0-preview.1'),
+    'Release-note policy must accept the exact first version heading.'
+);
+$assert(
+    companywareReleaseNotesHaveVersionHeading("\xEF\xBB\xBF# Companyware Web 0.1.0-preview.1\r\n", '0.1.0-preview.1'),
+    'Release-note policy must normalize an optional UTF-8 BOM and line endings.'
+);
+$assert(
+    !companywareReleaseNotesHaveVersionHeading("# Draft\n# Companyware Web 0.1.0-preview.1\n", '0.1.0-preview.1'),
+    'Release-note policy must reject a version heading that is not the first line.'
+);
+$assert(
+    !companywareReleaseNotesHaveVersionHeading("Notes for # Companyware Web 0.1.0-preview.1\n", '0.1.0-preview.1'),
+    'Release-note policy must reject an embedded version heading.'
+);
 $filesystem = new Filesystem();
 $root = sys_get_temp_dir().'/companyware-cw008-'.bin2hex(random_bytes(6));
 try {
