@@ -8,6 +8,8 @@
 
 declare(strict_types=1);
 
+require __DIR__.'/release-note-policy.php';
+
 $root = dirname(__DIR__);
 $arguments = array_values(array_slice($argv, 1));
 $verifyReproducible = false;
@@ -51,6 +53,26 @@ try {
         throw new RuntimeException('Refusing to build a release archive from a dirty working tree.');
     }
 
+    $releaseNotesRelativePath = sprintf('docs/release-notes/%s.md', $version);
+    $releaseNotesPath = $root.'/'.$releaseNotesRelativePath;
+    if (!is_file($releaseNotesPath)) {
+        throw new RuntimeException(sprintf(
+            'Version-bound release notes are required before building an archive: %s',
+            $releaseNotesRelativePath
+        ));
+    }
+    $releaseNotes = (string) file_get_contents($releaseNotesPath);
+    if (!companywareReleaseNotesHaveVersionHeading($releaseNotes, $version)) {
+        throw new RuntimeException(sprintf(
+            'The first release-notes line must be exactly "# Companyware Web %s".',
+            $version
+        ));
+    }
+    $releaseNotesChecksum = hash_file('sha256', $releaseNotesPath);
+    if (!is_string($releaseNotesChecksum)) {
+        throw new RuntimeException('Unable to calculate the release-notes checksum.');
+    }
+
     $commit = $run(['git', 'rev-parse', 'HEAD']);
     $commitDate = $run(['git', 'show', '-s', '--format=%cI', 'HEAD']);
     $prefix = sprintf('companyware-web-%s/', $version);
@@ -87,6 +109,8 @@ try {
         'commit' => $commit,
         'commitDate' => $commitDate,
         'publicApi' => '1.0',
+        'releaseNotes' => $releaseNotesRelativePath,
+        'releaseNotesSha256' => $releaseNotesChecksum,
         'artifact' => $archiveName,
         'bytes' => filesize($archivePath),
         'sha256' => $checksum,

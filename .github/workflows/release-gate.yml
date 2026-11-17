@@ -30,7 +30,7 @@ jobs:
       - name: Validate framework release gates
         run: composer release-check
       - name: Build reproducible evidence archive
-        run: php tools/build-release.php 0.0.0-ci.${{ github.run_number }} --verify-reproducible
+        run: php tools/build-release.php 0.1.0-preview.1 --verify-reproducible
       - uses: actions/upload-artifact@v4
         with:
           name: companyware-web-release-evidence
