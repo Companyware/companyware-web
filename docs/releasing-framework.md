@@ -35,6 +35,9 @@ Record the following before tagging:
 - installation, upgrade, migration and recovery commands;
 - matching website, download and documentation status.
 
+The repository, external-security, production and approval gates are tracked in
+[the GitHub publication checklist](github-publication-checklist.md).
+
 The JSON evidence manifest records the application identity, semantic version,
 exact commit, commit timestamp, public API version, version-bound release-note
 path and checksum, artifact byte size and SHA-256. Compare the checksums with the

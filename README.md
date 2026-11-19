@@ -65,7 +65,9 @@ private keys.
 - [Framework release process](docs/releasing-framework.md)
 - [Upgrade and recovery](docs/upgrade-and-recovery.md)
 - [Security policy](SECURITY.md)
+- [Support and compatibility](SUPPORT.md)
 - [Contributing](CONTRIBUTING.md)
+- [GitHub publication checklist](docs/github-publication-checklist.md)
 
 ## Release integrity
 
