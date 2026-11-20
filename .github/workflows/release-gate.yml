@@ -31,7 +31,7 @@ jobs:
         run: composer release-check
       - name: Build reproducible evidence archive
         run: php tools/build-release.php 0.1.0-preview.1 --verify-reproducible
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: companyware-web-release-evidence
           path: dist/releases/
